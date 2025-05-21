@@ -1,0 +1,73 @@
+## Ignore Visual Studio temporary files, build results, and
+## user-specific files
+
+# Build results
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.lib
+*.app
+*.pdb
+*.cache
+*.ilk
+*.iobj
+*.ipdb
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code workspace settings (optional if you use VS Code)
+.vscode/
+
+# Auto-generated files
+*.log
+*.tlog
+*.lastbuildstate
+*.sdf
+*.opensdf
+
+# Backup and crash files
+*.bak
+*.tmp
+*.log
+
+# CMake-generated build directories (if using CMake)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# NuGet packages
+*.nupkg
+packages/
+project.lock.json
+*.nuget.props
+*.nuget.targets
+
+# Visual Studio cache and extensions
+.vs/
+.vscode/
+
+# Windows image thumbs
+Thumbs.db
+
+# OS generated files
+.DS_Store
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Optional: Ignore debug/release folders
+Debug/
+Release/
+x64/
+x86/
+
+# Optional: Ignore compiled shaders or asset caches (customize for your engine)
+*.hlsl.h
+*.glsl.spv
+*.assetcache

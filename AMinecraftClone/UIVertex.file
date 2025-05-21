@@ -1,0 +1,14 @@
+#version 330 core
+
+layout (location = 0) in vec2 aPos; //position of widgets in screenspace
+layout (location = 1) in vec2 aTexCoords; //texture coordinates for the widget
+
+out vec2 TexCoords;
+
+uniform mat4 projection; //this is where you get the orthographic projection
+uniform mat4 model;
+
+void main() {
+	TexCoords = aTexCoords;
+	gl_Position = projection * model * vec4(aPos, -1.0, 1.0);
+}

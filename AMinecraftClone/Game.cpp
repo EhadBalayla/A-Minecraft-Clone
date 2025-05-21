@@ -1,0 +1,181 @@
+#include "Game.h"
+#include <iostream>
+#include <glad/glad.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+// the screens for adding em
+#include "PlayerHUDScreen.h"
+
+Window Game::e_Window;
+Shader Game::e_DefaultShader;
+glm::mat4 Game::Proj;
+glm::mat4 Game::View;
+std::vector<Model*> Game::e_LoadedModels;
+std::vector<Texture*> Game::e_LoadedTextures;
+Player Game::player;
+Level* Game::overworld;
+std::unordered_map<BlockType, BlockUV> Game::e_BlockRegistery;
+bool Game::IsGameRunning = true;
+UIManager Game::m_UIManager;
+
+
+void Game::Init() {
+	e_Window.Init();
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+		std::cerr << "Failed to initialize GLAD" << std::endl;
+		exit(-1);
+	}
+
+	e_DefaultShader.loadShader("defaultVertex.file", "defaultFragment.file");
+	Proj = glm::mat4(1.0f);
+	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 300.0f);
+
+	m_UIManager.Init(); //initialize the UI manager
+
+	//after finishing loading all engines and setting engine's default rendering parameters, cache in and register the necessary objects for the game
+	LoadAllModels();
+	LoadAllTextures();
+	RegisterAllBlocks();
+
+	//start the game loop
+	GameLoop();
+}
+void Game::GameLoop() {
+
+	SDL_ShowCursor(0);
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+
+	//enables backface culling
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK); // Cull back faces
+	glFrontFace(GL_CW); // Clockwise instead
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	overworld = new Level();
+	overworld->UpdateChunks(0, 0);
+	player.SetPosition(10, 64, 10);
+	CreatePlayerHud();
+
+	//stuff for deltatime calculations
+	Uint64 now = SDL_GetPerformanceCounter();
+	Uint64 last = 0;
+	float deltaTime = 0.0;
+
+	//for having the game run and for events
+	SDL_Event event;
+	//the actualy game loop
+	while (IsGameRunning) { //the game loop
+		//these 3 lines are for updating DeltaTime
+		last = now;
+		now = SDL_GetPerformanceCounter();
+		deltaTime = ((now - last) * 1000) / SDL_GetPerformanceFrequency();
+
+		while (SDL_PollEvent(&event)) {
+			player.ProcessInput(event);
+			if (event.type == SDL_QUIT) {
+				CloseGame(); //quit
+			}
+		}
+
+
+		player.Update(deltaTime);
+
+		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
+
+
+		//simply put set the clear color
+		glClearColor(0.0, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+
+		//set the view matrix to the current camera's view
+		View = player.getViewMatrix();
+
+		//literally just render the entire world... lol
+		e_DefaultShader.use();
+		e_DefaultShader.setMat4("view", View);
+		e_DefaultShader.setMat4("projection", Proj);
+		e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
+		overworld->RenderLevel();
+		e_LoadedTextures[0]->unbind();
+
+		//render all the current UI stuff
+		m_UIManager.Render();
+
+
+		//swap buffers
+		SDL_GL_SwapWindow(e_Window.m_Window);
+	}
+
+	delete overworld;
+
+	//once the game stops terminate the game
+	Terminate();
+}
+// terminates all engines for the game when the game closes and unloads every cached object
+void Game::Terminate() {
+
+
+	UnloadAllTextures();
+	UnloadAllModels();
+	e_Window.Termintate();
+}
+
+void Game::RegisterAllBlocks() { //register all block types in the hash map so they can be replicated for changing a block's type with custom parameters
+	e_BlockRegistery[Air] = { 0, 0, 0, 0, 0, 0 }; //registers the AirBlock... not that it matters since Air has no physical appearance and is disregarded in the creation of a chunk but still
+	e_BlockRegistery[Grass] = { 0, 2, 3, 3, 3, 3 }; //register the grass block
+	e_BlockRegistery[Stone] = { 1, 1, 1, 1, 1, 1 }; //register the stone block
+	e_BlockRegistery[Dirt] = { 2, 2, 2, 2, 2, 2 }; //register the dirt block
+	e_BlockRegistery[Sand] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
+	e_BlockRegistery[Cobblestone] = { 16, 16, 16, 16, 16, 16 }; //register the sand block
+	e_BlockRegistery[WoodenPlanks] = { 4, 4, 4, 4, 4, 4 }; //register the sand block
+	e_BlockRegistery[Wood] = { 20, 20, 20, 20, 20, 20 }; //register the sand block
+	e_BlockRegistery[Bedrock] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
+	e_BlockRegistery[Bricks] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
+	e_BlockRegistery[CoalOre] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
+	e_BlockRegistery[IronOre] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
+	e_BlockRegistery[GoldOre] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
+	e_BlockRegistery[DiamondOre] = { 50, 50, 50, 50, 50, 50 }; //register the sand block
+	e_BlockRegistery[Glass] = { 49, 49, 49, 49, 49, 49 }; //register the glass block
+}
+
+void Game::RegisterAllItems() { //register all item types in the hash map so they can be replicated for changing a block's type with custom parameters
+
+}
+
+void Game::LoadAllModels() {// function is called at the start of the game to load everything in
+	e_LoadedModels.push_back(InitModels::InitializeCube()); //the model for a block
+}
+
+void Game::UnloadAllModels() {//function is called when the game closes to unload everything out
+	for (auto& n : e_LoadedModels) {
+		n->DeleteModel();
+		delete n;
+	}
+	e_LoadedModels.clear();
+}
+
+void Game::LoadAllTextures() {// function is called at the start of the game to load everything in
+	e_LoadedTextures.push_back(new Texture("TextureAtlas.png")); //the texture atlas for the blocks
+	e_LoadedTextures.push_back(new Texture("GUI/gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
+	e_LoadedTextures.push_back(new Texture("GUI/icons.png"));
+	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
+}
+
+void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out
+	for (auto& n : e_LoadedTextures) {
+		delete n;
+	}
+	e_LoadedTextures.clear();
+}
+
+void Game::CloseGame() {
+	IsGameRunning = false;
+}
+
+void Game::CreatePlayerHud() {
+	m_UIManager.AddScreen(std::make_unique<PlayerHUDScreen>());
+}
