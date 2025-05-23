@@ -70,3 +70,16 @@ void Widget::SetRotation(float newRot) {
 void Widget::SetScale(glm::vec2 newScale) {
 	scale = newScale;
 }
+
+
+glm::vec2 Widget::GetPosition() {
+	return position;
+}
+
+float Widget::GetRotation() {
+	return rotation;
+}
+
+glm::vec2 Widget::GetScale() {
+	return scale;
+}

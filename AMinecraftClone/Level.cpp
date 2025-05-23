@@ -9,22 +9,26 @@
 
 
 Level::Level() {
-	srand(time(0));
-	seed = rand();
 
-	var6 = new CombinedNoise(new OctaveNoise(seed, 8), new OctaveNoise(seed, 8));
-	var7 = new CombinedNoise(new OctaveNoise(seed, 8), new OctaveNoise(seed, 8));
-	var8 = new OctaveNoise(seed, 6);
-	var54 = new OctaveNoise(seed, 8);
+	noiseGen1 = new NoiseGeneratorOctave(16);
+	noiseGen2 = new NoiseGeneratorOctave(16);
+	noiseGen3 = new NoiseGeneratorOctave(8);
+	noiseGen4 = new NoiseGeneratorOctave(4);
+	noiseGen5 = new NoiseGeneratorOctave(4);
+	noiseGen6 = new NoiseGeneratorOctave(5);
 
-
+	//NoiseGeneratorOctave(3);
+	//NoiseGeneratorOctave(3);
+	//NoiseGeneratorOctave(3);
 }
 
 Level::~Level() {
-	delete var6;
-	delete var7;
-	delete var8;
-	delete var54;
+	delete noiseGen1;
+	delete noiseGen2;
+	delete noiseGen3;
+	delete noiseGen4;
+	delete noiseGen5;
+	delete noiseGen6;
 }
 
 void Level::RenderLevel() {
@@ -71,7 +75,7 @@ void Level::LoadNewChunk(int ChunkX, int ChunkZ) { //loads a new chunk at given 
 	chunk->ChunkX = ChunkX;
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningLevel = this;
-	chunk->GenerateChunk(*var6, *var7, *var8, *var54);
+	chunk->GenerateChunk(noiseGen1, noiseGen2, noiseGen3, noiseGen4, noiseGen5, noiseGen6, rand);
 	chunks[glm::ivec2(ChunkX, ChunkZ)] = chunk;
 }
 
@@ -108,7 +112,7 @@ Block* Level::getBlockAt(int x, int y, int z) { //coordinates are in world space
 bool Level::IsSolidBlock(int x, int y, int z) { //coordinates are in world space
 	Block* block = getBlockAt(x, y, z);
 	if(block)
-		return block->getType() != BlockType::Air;
+		return block->getType() != BlockType::Air && block->data.visibility == Opaque;
 	return false;
 }
 

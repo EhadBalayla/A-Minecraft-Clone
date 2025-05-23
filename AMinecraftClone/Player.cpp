@@ -39,7 +39,7 @@ void Player::UpdateChunksAroundPlayer() {
 
 void Player::Update(float DeltaTime) {
 
-    if(!IsInventory) { //basically if inventory is open don't do movement
+    if(CanPerformAbility()) { //basically if inventory is open don't do movement
         if (IsMovingForward)
             velocity += getForwardVector() * DeltaTime * acceleration;
         if (IsMovingBackward)
@@ -53,6 +53,10 @@ void Player::Update(float DeltaTime) {
 
     MoveAndCollide(DeltaTime);
 
+}
+
+bool Player::CanPerformAbility() {
+    return !inventory && !m_PauseMenu;
 }
 
 void Player::ProcessInput(SDL_Event& e) {
@@ -78,7 +82,7 @@ void Player::ProcessInput(SDL_Event& e) {
                 velocity.y = 0.1f;
             }
         }
-        else if (e.key.keysym.sym == SDLK_ESCAPE) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_ESCAPE) { 
             if (!m_PauseMenu) {
                 auto ptr = std::make_unique<PauseMenu>();
                 m_PauseMenu = ptr.get();
@@ -94,8 +98,7 @@ void Player::ProcessInput(SDL_Event& e) {
             }
         }
         else if (e.key.keysym.sym == SDLK_e) { //for opening inventory
-            IsInventory = !IsInventory;
-            if (IsInventory) {
+            if (!inventory) {
                 auto ptr = std::make_unique<PlayerInventory>();
                 inventory = ptr.get();
                 Game::m_UIManager.AddScreen(std::move(ptr));
@@ -109,36 +112,36 @@ void Player::ProcessInput(SDL_Event& e) {
                 SDL_SetRelativeMouseMode(SDL_TRUE);
             }
         }
-        else if (e.key.keysym.sym == SDLK_1) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_1) { 
             setSelectedSlot(1);
         }
-        else if (e.key.keysym.sym == SDLK_2) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_2) { 
             setSelectedSlot(2);
         }
-        else if (e.key.keysym.sym == SDLK_3) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_3) { 
             setSelectedSlot(3);
         }
-        else if (e.key.keysym.sym == SDLK_4) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_4) { 
             setSelectedSlot(4);
         }
-        else if (e.key.keysym.sym == SDLK_5) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_5) {
             setSelectedSlot(5);
         }
-        else if (e.key.keysym.sym == SDLK_6) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_6) { 
             setSelectedSlot(6);
         }
-        else if (e.key.keysym.sym == SDLK_7) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_7) { 
             setSelectedSlot(7);
         }
-        else if (e.key.keysym.sym == SDLK_8) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_8) {
             setSelectedSlot(8);
         }
-        else if (e.key.keysym.sym == SDLK_9) { //for opening chat
+        else if (e.key.keysym.sym == SDLK_9) { 
             setSelectedSlot(9);
         }
     }
     else if (e.type == SDL_MOUSEMOTION) { //for mouse movements
-        if(!IsInventory) {
+        if(CanPerformAbility()) { //check if no menu is open
             float dx = e.motion.xrel;
             float dy = e.motion.yrel;
 
@@ -152,38 +155,42 @@ void Player::ProcessInput(SDL_Event& e) {
                 pitch = -89.9;
         }
     }
-    else if (e.type == SDL_MOUSEBUTTONDOWN) { //for mouse clicks
+    else if (e.type == SDL_MOUSEBUTTONDOWN) { //for mouse 
         if (e.button.button == SDL_BUTTON_LEFT) { //for left click
-            Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
-            RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
-            if (rayInfo.HitBlock) {
-                rayInfo.HitBlock->BreakBlock();
+            if(CanPerformAbility()) { //check if no menu is open
+                Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
+                RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
+                if (rayInfo.HitBlock) {
+                    rayInfo.HitBlock->BreakBlock();
+                }
             }
         }
         else if (e.button.button == SDL_BUTTON_RIGHT) { //for right click
-            Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
-            RayHitReturnParams rayInfo = Utils::RayHitBlock(ray, 0.025);
-            if (rayInfo.HitBlock) {
-                glm::ivec3 blockPos = rayInfo.HitBlock->getWorldPosition();
-                switch (rayInfo.HitFace) {
-                case Face::Top:
-                    Game::overworld->PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, BlockType::Cobblestone);
-                    break;
-                case Face::Bottom:
-                    Game::overworld->PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, BlockType::Cobblestone);
-                    break;
-                case Face::Right:
-                    Game::overworld->PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, BlockType::Cobblestone);
-                    break;
-                case Face::Left:
-                    Game::overworld->PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, BlockType::Cobblestone);
-                    break;
-                case Face::Front:
-                    Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, BlockType::Cobblestone);
-                    break;
-                case Face::Back:
-                    Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, BlockType::Cobblestone);
-                    break;
+            if(CanPerformAbility()) { //check if no menu is open
+                Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
+                RayHitReturnParams rayInfo = Utils::RayHitBlock(ray, 0.025);
+                if (rayInfo.HitBlock) {
+                    glm::ivec3 blockPos = rayInfo.HitBlock->getWorldPosition();
+                    switch (rayInfo.HitFace) {
+                    case Face::Top:
+                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, BlockType::Cobblestone);
+                        break;
+                    case Face::Bottom:
+                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, BlockType::Cobblestone);
+                        break;
+                    case Face::Right:
+                        Game::overworld->PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, BlockType::Cobblestone);
+                        break;
+                    case Face::Left:
+                        Game::overworld->PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, BlockType::Cobblestone);
+                        break;
+                    case Face::Front:
+                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, BlockType::Cobblestone);
+                        break;
+                    case Face::Back:
+                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, BlockType::Cobblestone);
+                        break;
+                    }
                 }
             }
         }

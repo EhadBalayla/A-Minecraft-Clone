@@ -15,7 +15,7 @@ std::vector<Model*> Game::e_LoadedModels;
 std::vector<Texture*> Game::e_LoadedTextures;
 Player Game::player;
 Level* Game::overworld;
-std::unordered_map<BlockType, BlockUV> Game::e_BlockRegistery;
+std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
 bool Game::IsGameRunning = true;
 UIManager Game::m_UIManager;
 
@@ -45,11 +45,6 @@ void Game::GameLoop() {
 
 	SDL_ShowCursor(0);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
-
-	//enables backface culling
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK); // Cull back faces
-	glFrontFace(GL_CW); // Clockwise instead
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -87,7 +82,7 @@ void Game::GameLoop() {
 
 
 		//simply put set the clear color
-		glClearColor(0.0, 1.0, 1.0, 1.0);
+		glClearColor(0.2, 1.0, 0.8, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 
@@ -125,21 +120,25 @@ void Game::Terminate() {
 }
 
 void Game::RegisterAllBlocks() { //register all block types in the hash map so they can be replicated for changing a block's type with custom parameters
-	e_BlockRegistery[Air] = { 0, 0, 0, 0, 0, 0 }; //registers the AirBlock... not that it matters since Air has no physical appearance and is disregarded in the creation of a chunk but still
-	e_BlockRegistery[Grass] = { 0, 2, 3, 3, 3, 3 }; //register the grass block
-	e_BlockRegistery[Stone] = { 1, 1, 1, 1, 1, 1 }; //register the stone block
-	e_BlockRegistery[Dirt] = { 2, 2, 2, 2, 2, 2 }; //register the dirt block
-	e_BlockRegistery[Sand] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
-	e_BlockRegistery[Cobblestone] = { 16, 16, 16, 16, 16, 16 }; //register the sand block
-	e_BlockRegistery[WoodenPlanks] = { 4, 4, 4, 4, 4, 4 }; //register the sand block
-	e_BlockRegistery[Wood] = { 20, 20, 20, 20, 20, 20 }; //register the sand block
-	e_BlockRegistery[Bedrock] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
-	e_BlockRegistery[Bricks] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
-	e_BlockRegistery[CoalOre] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
-	e_BlockRegistery[IronOre] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
-	e_BlockRegistery[GoldOre] = { 18, 18, 18, 18, 18, 18 }; //register the sand block
-	e_BlockRegistery[DiamondOre] = { 50, 50, 50, 50, 50, 50 }; //register the sand block
-	e_BlockRegistery[Glass] = { 49, 49, 49, 49, 49, 49 }; //register the glass block
+	e_BlockRegistery[Air] = { { 0, 0, 0, 0, 0, 0 }, BlockVisiblity::Opaque }; //registers the AirBlock... not that it matters since Air has no physical appearance and is disregarded in the creation of a chunk but still
+	e_BlockRegistery[Grass] = { { 0, 2, 3, 3, 3, 3 }, BlockVisiblity::Opaque }; //register the grass block
+	e_BlockRegistery[Stone] = { { 1, 1, 1, 1, 1, 1 }, BlockVisiblity::Opaque }; //register the stone block
+	e_BlockRegistery[Dirt] = { { 2, 2, 2, 2, 2, 2 }, BlockVisiblity::Opaque }; //register the dirt block
+	e_BlockRegistery[Sand] = { { 18, 18, 18, 18, 18, 18 }, BlockVisiblity::Opaque }; //register the sand block
+	e_BlockRegistery[Cobblestone] = { { 16, 16, 16, 16, 16, 16 }, BlockVisiblity::Opaque }; //register the cobblestone block
+	e_BlockRegistery[WoodenPlanks] = { { 4, 4, 4, 4, 4, 4 }, BlockVisiblity::Opaque }; //register the wooden planks block
+	e_BlockRegistery[Wood] = { { 20, 20, 20, 20, 20, 20 }, BlockVisiblity::Opaque }; //register the wood block
+	e_BlockRegistery[Bedrock] = { { 18, 18, 18, 18, 18, 18 }, BlockVisiblity::Opaque }; //register the bedrock block
+	e_BlockRegistery[Bricks] = { { 7, 7, 7, 7, 7, 7 }, BlockVisiblity::Opaque }; //register the bricks block
+	e_BlockRegistery[CoalOre] = { { 34, 34, 34, 34, 34, 34 }, BlockVisiblity::Opaque }; //register the coal ore block
+	e_BlockRegistery[IronOre] = { { 33, 33, 33, 33, 33, 33 }, BlockVisiblity::Opaque }; //register the iron ore block
+	e_BlockRegistery[GoldOre] = { { 32, 32, 32, 32, 32, 32 }, BlockVisiblity::Opaque }; //register the gold ore block
+	e_BlockRegistery[DiamondOre] = { { 50, 50, 50, 50, 50, 50 }, BlockVisiblity::Opaque }; //register the diamond ore block
+	e_BlockRegistery[Glass] = { { 49, 49, 49, 49, 49, 49 }, BlockVisiblity::Opaque }; //register the glass block
+	e_BlockRegistery[Obsidian] = { { 37, 37, 37, 37, 37, 37 }, BlockVisiblity::Opaque }; //register the obsidian block
+	e_BlockRegistery[YellowFlower] = { { 13, 13, 13, 13, 13, 13 }, BlockVisiblity::Plant }; //register the red flower block
+	e_BlockRegistery[RedFlower] = { { 12, 12, 12, 12, 12, 12 }, BlockVisiblity::Plant }; //register the red flower block
+	e_BlockRegistery[WaterStill] = { { 205, 205, 205, 205, 205, 205 }, BlockVisiblity::Liquid }; //register the still water block
 }
 
 void Game::RegisterAllItems() { //register all item types in the hash map so they can be replicated for changing a block's type with custom parameters

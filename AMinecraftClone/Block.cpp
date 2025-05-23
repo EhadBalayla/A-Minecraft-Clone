@@ -13,7 +13,7 @@ Block::Block(BlockType newType) {
 
 void Block::setType(BlockType newType) {
 		m_Type = newType;
-		FaceUVs = Game::e_BlockRegistery[m_Type];
+		data = Game::e_BlockRegistery[m_Type];
 }
 
 void Block::BreakBlock() {

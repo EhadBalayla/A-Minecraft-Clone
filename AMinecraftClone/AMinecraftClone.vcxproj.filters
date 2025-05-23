@@ -20,6 +20,9 @@
     <Filter Include="Source Files\UI\ActualWidgets">
       <UniqueIdentifier>{5804e0b9-d769-4069-95bf-1cf593363516}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\EarlyInfdevNoise">
+      <UniqueIdentifier>{b62f7c0f-c96c-4227-90ab-8a836bac96db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -103,6 +106,15 @@
     <ClCompile Include="PauseMenu.cpp">
       <Filter>Source Files\UI\ActualScreens</Filter>
     </ClCompile>
+    <ClCompile Include="NoiseGeneratorOne.cpp">
+      <Filter>Source Files\EarlyInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseGeneratorPerlin.cpp">
+      <Filter>Source Files\EarlyInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseGeneratorOctave.cpp">
+      <Filter>Source Files\EarlyInfdevNoise</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -182,6 +194,18 @@
     </ClInclude>
     <ClInclude Include="PauseMenu.h">
       <Filter>Source Files\UI\ActualScreens</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorOne.h">
+      <Filter>Source Files\EarlyInfdevNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorPerlin.h">
+      <Filter>Source Files\EarlyInfdevNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="Random.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorOctave.h">
+      <Filter>Source Files\EarlyInfdevNoise</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

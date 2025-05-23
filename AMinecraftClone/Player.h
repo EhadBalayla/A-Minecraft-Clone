@@ -34,9 +34,10 @@ private:
 	bool IsJumping = false;
 	bool IsShifting = false;
 
+	bool CanPerformAbility(); //returns wether the player can perform an ability, as in wether any menu that should interrupt the player such as inventory is open
+
 	//inventory stuff
 	PlayerInventory* inventory;
-	bool IsInventory = false;
 
 	//Pause Menu stuff
 	PauseMenu* m_PauseMenu;

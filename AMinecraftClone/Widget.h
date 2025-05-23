@@ -40,7 +40,11 @@ public:
 	void SetRotation(float newRot);
 	void SetScale(glm::vec2 newScale);
 
-private:
+	glm::vec2 GetPosition();
+	float GetRotation();
+	glm::vec2 GetScale();
+
+protected:
 	void MakeData();
 };
 

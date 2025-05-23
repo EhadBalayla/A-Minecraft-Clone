@@ -6,5 +6,5 @@ in vec2 TexCoords;
 uniform sampler2D textureAtlas;
 
 void main() {
-	FragColor = vec4(texture(textureAtlas, TexCoords).rgb, 1.0);
+	FragColor = texture(textureAtlas, TexCoords);
 }

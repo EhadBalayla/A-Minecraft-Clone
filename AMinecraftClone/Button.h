@@ -13,5 +13,12 @@ protected:
 	UIUVQuad m_OffUV;
 	UIUVQuad m_NormalUV;
 	UIUVQuad m_HoveredUV;
+
+private:
+
+	void UpdateButtonUVs(UIUVQuad uvs);
+
+
+	bool IsHovered = false;
 };
 

@@ -10,6 +10,17 @@ struct BlockUV {
 	int Back = 0;
 };
 
+enum BlockVisiblity {
+	Opaque,
+	Plant,
+	Liquid
+};
+
+struct BlockData {
+	BlockUV uv = {0, 0, 0, 0, 0, 0};
+	BlockVisiblity visibility = BlockVisiblity::Opaque;
+};
+
 enum BlockType { //block ids
 	Air, 
 	Grass, 
@@ -25,7 +36,15 @@ enum BlockType { //block ids
 	IronOre,
 	GoldOre,
 	DiamondOre,
-	Glass
+	Glass,
+	Obsidian,
+	YellowFlower,
+	RedFlower,
+	WaterStill, //for water source blocks
+	WaterFlowNorth, //for water that flows to the north
+	WaterFlowEast, //for water that flows to the east
+	WaterFlowSouth, //for water that flows to the south
+	WaterFlowWest //for water that flows to the west
 };
 
 class Chunk;
@@ -37,7 +56,7 @@ public:
 	int BlockX, BlockY, BlockZ; //the coords of the block in chunk space
 
 	BlockType m_Type = Air;
-	BlockUV FaceUVs = {0, 0, 0, 0, 0, 0};
+	BlockData data;
 
 	static AABB blockHitbox;
 

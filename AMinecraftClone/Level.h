@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "NoiseGeneratorOctave.h"
+
 
 constexpr int Chunks_X = 16;
 
@@ -48,10 +50,13 @@ private:
 	void RemoveChunk(int ChunkX, int ChunkZ);
 
 	//all noise maps for terrain generation
-	CombinedNoise* var6;
-	CombinedNoise* var7;
-	OctaveNoise* var8;
-	OctaveNoise* var54;
+	Random rand;
+	NoiseGeneratorOctave* noiseGen1;
+	NoiseGeneratorOctave* noiseGen2;
+	NoiseGeneratorOctave* noiseGen3;
+	NoiseGeneratorOctave* noiseGen4;
+	NoiseGeneratorOctave* noiseGen5;
+	NoiseGeneratorOctave* noiseGen6;
 
 	std::vector<glm::ivec2> chunkRemovalQueue;
 	void DeleteRemovalQueuedChunks(); //a helper function to remove any deleted chunk from the hashmap, will be called after deleting

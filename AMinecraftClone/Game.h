@@ -34,7 +34,7 @@ public:
 	static Level* overworld;
 
 	//where we register the blocks, basically we call a function to register the blocks in this hashmap at the very start of the game
-	static std::unordered_map<BlockType, BlockUV> e_BlockRegistery;
+	static std::unordered_map<BlockType, BlockData> e_BlockRegistery;
 
 	void Init(); //initialize the engine
 private:
@@ -43,7 +43,7 @@ private:
 	void Terminate(); //ends the game when needed
 
 	void RegisterAllBlocks(); //registers all the blocks into the game
-	void RegisterAllItems();
+	void RegisterAllItems(); //registers all items into the game
 
 	void LoadAllModels(); //loads the models into memory
 	void UnloadAllModels(); //Unloads the models from memory
@@ -56,6 +56,6 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void CloseGame();
 	static void CreatePlayerHud();
 
-	const static int RenderDistance = 8;
+	const static int RenderDistance = 4;
 };
 
