@@ -10,16 +10,23 @@
 
 Level::Level() {
 
+	//initialize noise for first world generation
 	noiseGen1 = new NoiseGeneratorOctave(16);
 	noiseGen2 = new NoiseGeneratorOctave(16);
 	noiseGen3 = new NoiseGeneratorOctave(8);
 	noiseGen4 = new NoiseGeneratorOctave(4);
 	noiseGen5 = new NoiseGeneratorOctave(4);
 	noiseGen6 = new NoiseGeneratorOctave(5);
+	NoiseGeneratorOctave n1(3);
+	NoiseGeneratorOctave n2(3);
+	NoiseGeneratorOctave n3(3);
 
-	//NoiseGeneratorOctave(3);
-	//NoiseGeneratorOctave(3);
-	//NoiseGeneratorOctave(3);
+
+	//initialize noise for second world generation
+	noiseGen1_2 = new NoiseGeneratorOctave2(rand, 16);
+	noiseGen2_2 = new NoiseGeneratorOctave2(rand, 16);
+	noiseGen3_2 = new NoiseGeneratorOctave2(rand, 8);
+	mobSpawnerNoise_2 = new NoiseGeneratorOctave2(rand, 5);
 }
 
 Level::~Level() {
@@ -29,45 +36,93 @@ Level::~Level() {
 	delete noiseGen4;
 	delete noiseGen5;
 	delete noiseGen6;
+
+	delete noiseGen1_2;
+	delete noiseGen2_2;
+	delete noiseGen3_2;
+	delete mobSpawnerNoise_2;
 }
 
+void Level::LevelUpdate(float DeltaTime) {
+	//generate chunks
+	if (!chunkGenQueue.empty()) {
+		chunkGenTimer += DeltaTime;
+		float dynamicDelay = chunkGenDelay + (chunkGenQueue.size() - 1) * 0.1f;
+		if (chunkGenTimer >= dynamicDelay) {
+			chunkGenTimer = 0;
+			glm::ivec2 chunkPos = chunkGenQueue.front();
+			chunkGenQueue.pop();
+			LoadNewChunk(chunkPos.x, chunkPos.y);
+
+			GenerateChunkMeshes();
+		}
+	}
+}
+float squaredDistance(const glm::vec2& p1, const glm::vec2& p2) {
+	float dx = p2.x - p1.x;
+	float dy = p2.y - p1.y;
+	return dx * dx + dy * dy;
+}
 void Level::RenderLevel() {
+	//render opaque and also collect those with water
+	std::vector<Chunk*> waterChunks;
 	for (auto& pair : chunks) {
-		glm::vec3 relativePos = glm::dvec3(pair.second->ChunkX * 16, 0, pair.second->ChunkZ * 16) - Game::player.GetPosition();
-		Game::e_DefaultShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
-		pair.second->RenderChunk();
+		if(pair.second->RenderReady) {
+			pair.second->RenderOpaqueAndPlants();
+		}
+		if(pair.second->HasWater)
+			waterChunks.push_back(pair.second);
+	}
+
+	//sorts chunks with water in their order
+	std::sort(waterChunks.begin(), waterChunks.end(), [&](Chunk* a, Chunk* b) {
+		float distA = squaredDistance(glm::vec3(a->ChunkX + 8, 0, a->ChunkZ + 8), Game::player.GetPosition());
+		float distB = squaredDistance(glm::vec3(b->ChunkX + 8, 0, b->ChunkZ + 8), Game::player.GetPosition());
+		return distA > distB; // Furthest first
+		});
+
+
+	//rendering features for the waters
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+	for (auto& pair : chunks) {
+		if (pair.second->RenderReady) {
+			pair.second->RenderWater();
+		}
 	}
 }
 
 void Level::UpdateChunks(int ChunkX, int ChunkZ) { //this function updates render distance chunks, the parameters are the central chunk to use as the center
-	
-	//remove chunks outside of render distance
-	for (auto& pair : chunks) {
-		Chunk* chunkToCompare = getChunkAt(ChunkX, ChunkZ);
-		if(chunkToCompare) {
-			if (pair.second->DistanceFromChunk(getChunkAt(ChunkX, ChunkZ)) > Game::RenderDistance) {
-				chunkRemovalQueue.push_back(pair.first);
-			}
+
+	//chunks removal
+	for (auto it = chunks.begin(); it != chunks.end(); ) {
+		const glm::ivec2& pos = it->first;
+
+		int dx = std::abs(pos.x - ChunkX);
+		int dz = std::abs(pos.y - ChunkZ);
+
+		if (dx > Game::RenderDistance || dz > Game::RenderDistance) {
+			chunkMeshGenQueue.erase(std::remove(chunkMeshGenQueue.begin(), chunkMeshGenQueue.end(), pos), chunkMeshGenQueue.end());
+			delete it->second;
+			it = chunks.erase(it);
 		}
-		//this is in case the player used a teleport and teleported to an unloaded chunk where we can't compare render distances
-		else chunkRemovalQueue.push_back(pair.first);
+		else {
+			++it;
+		}
 	}
-	DeleteRemovalQueuedChunks();
 
 	//generate new chunks that aren't in render distance.
-	for (int x = -Game::RenderDistance; x <= Game::RenderDistance; x++) {
-		for (int z = -Game::RenderDistance; z <= Game::RenderDistance; z++) {
-			if (chunks.find(glm::ivec2(ChunkX + x, ChunkZ + z)) == chunks.end()) {
-				LoadNewChunk(ChunkX + x, ChunkZ + z);
+	for (int r = 0; r <= Game::RenderDistance; ++r) {
+		for (int dx = -r; dx <= r; ++dx) {
+			for (int dz = -r; dz <= r; ++dz) {
+				if (std::abs(dx) != r && std::abs(dz) != r) continue; // Only edges of the square
+				if (chunks.find(glm::ivec2(ChunkX + dx, ChunkZ + dz)) == chunks.end()) {
+					chunkGenQueue.push(glm::ivec2(ChunkX + dx, ChunkZ + dz));
+				}
 			}
 		}
 	}
-
-	// generates the mesh for the chunks after finished generating loading all chunks
-	for (auto& pair : chunks) {
-		pair.second->GenerateMesh();
-	}
-
 }
 
 void Level::LoadNewChunk(int ChunkX, int ChunkZ) { //loads a new chunk at given ChunkX and ChunkZ
@@ -75,16 +130,14 @@ void Level::LoadNewChunk(int ChunkX, int ChunkZ) { //loads a new chunk at given 
 	chunk->ChunkX = ChunkX;
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningLevel = this;
-	chunk->GenerateChunk(noiseGen1, noiseGen2, noiseGen3, noiseGen4, noiseGen5, noiseGen6, rand);
-	chunks[glm::ivec2(ChunkX, ChunkZ)] = chunk;
-}
 
-void Level::RemoveChunk(int ChunkX, int ChunkZ) { //removes a chunk at given ChunkX and ChunkZ
-	auto it = chunks.find(glm::ivec2(ChunkX, ChunkZ));
-	if (it != chunks.end()) { //basically if the chunk is found
-		delete it->second;
-		chunks.erase(it);
-	}
+	//the commented "GenerateChunk" functions are for different terrain generations, i wanna keep all the terrain generations from older versions of Minecraft
+	//if you are interested you can check em out by uncommenting another option and commenting the rest
+	// 
+	//chunk->GenerateChunk(noiseGen1, noiseGen2, noiseGen3, noiseGen4, noiseGen5, noiseGen6, rand);
+	chunk->GenerateChunk2(noiseGen1_2, noiseGen2_2, noiseGen3_2, rand, mobSpawnerNoise_2);
+	chunkMeshGenQueue.push_back(glm::ivec2(ChunkX, ChunkZ));
+	chunks[glm::ivec2(ChunkX, ChunkZ)] = chunk;
 }
 
 bool Level::IsValidChunk(int ChunkX, int ChunkZ) { //coordinates are in chunk space
@@ -123,12 +176,32 @@ void Level::PlaceBlock(int x, int y, int z, BlockType type) { //coordinates are 
 	}
 }
 
-void Level::DeleteRemovalQueuedChunks() {
-	for (auto& n : chunkRemovalQueue) {
-		delete chunks[n];
-		chunks.erase(n);
+bool Level::IsChunkNeighboorsGood(int ChunkX, int ChunkZ) {
+	if (chunks.find(glm::ivec2(ChunkX, ChunkZ)) == chunks.end())
+		return false;
+
+	int centerChunkX = static_cast<int>(std::floor(Game::player.GetPosition().x / 16.0));
+	int centerChunkZ = static_cast<int>(std::floor(Game::player.GetPosition().z / 16.0));
+
+	bool IsPositiveX = (ChunkX + 1 > centerChunkX + Game::RenderDistance) || IsValidChunk(ChunkX + 1, ChunkZ); //positive X of render distance
+	bool IsNegativeX = (ChunkX - 1 < centerChunkX - Game::RenderDistance) || IsValidChunk(ChunkX - 1, ChunkZ); //negative X of render distance
+	bool IsPositiveZ = (ChunkZ + 1 > centerChunkZ + Game::RenderDistance) || IsValidChunk(ChunkX, ChunkZ + 1); //positive Z of render distanec
+	bool IsNegativeZ = (ChunkZ - 1 < centerChunkZ - Game::RenderDistance) || IsValidChunk(ChunkX, ChunkZ - 1); //negative Z of render distance
+
+
+	return IsPositiveX && IsNegativeX && IsPositiveZ && IsNegativeZ;
+}
+
+void Level::GenerateChunkMeshes() {
+	if (!chunkMeshGenQueue.empty()) {
+		for (auto it = chunkMeshGenQueue.begin(); it != chunkMeshGenQueue.end(); ) {
+			glm::ivec2 chunkPos = *it;
+			if (IsChunkNeighboorsGood(chunkPos.x, chunkPos.y)) {
+				chunks[chunkPos]->GenerateMesh();
+				chunks[chunkPos]->RenderReady = true;
+				it = chunkMeshGenQueue.erase(it);
+			}
+			else ++it;
+		}
 	}
-	chunkRemovalQueue.clear();
-
-
 }

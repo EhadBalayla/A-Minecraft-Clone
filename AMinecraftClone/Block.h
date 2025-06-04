@@ -64,6 +64,7 @@ public:
 	Block(BlockType type);
 
 	BlockType getType() { return m_Type; }
+	BlockData getData() { return data; };
 	void setType(BlockType newType);
 
 	void BreakBlock();

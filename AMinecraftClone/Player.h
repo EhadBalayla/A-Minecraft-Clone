@@ -4,11 +4,15 @@
 #include "SDL.h"
 #include "PlayerInventory.h"
 #include "PauseMenu.h"
+#include "InventoryItem.h"
 
 class Player : public Entity
 {
 public:
 	
+	//a temporary function to add the starter items
+	void AddStarterItems();
+
 	Player();
 	~Player();
 
@@ -38,6 +42,8 @@ private:
 
 	//inventory stuff
 	PlayerInventory* inventory;
+	InventoryItem m_PlayerItems[36];
+	void AddItem(Item item, int amount); //basically adds an item to the player's inventory,
 
 	//Pause Menu stuff
 	PauseMenu* m_PauseMenu;
@@ -49,5 +55,7 @@ private:
 	//selected slot in hotbar
 	uint8_t selectedSlot = 1; //ranges from 1 - 9, basically whatever slot you selct in hotbar
 	void setSelectedSlot(uint8_t slot);
+
+	void PlayerPlaceBlocks();
 };
 

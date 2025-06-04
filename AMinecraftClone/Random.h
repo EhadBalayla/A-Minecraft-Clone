@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdint>
 #include <climits>
+#include <chrono>
 
 class Random {
 private:
@@ -12,11 +13,12 @@ private:
     static constexpr int64_t mask = (1LL << 48) - 1;
 
 public:
+
     Random(int64_t seed) {
         setSeed(seed);
     }
 
-    Random() : Random(static_cast<int>(std::time(nullptr))) {}
+    Random() : Random(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count()) {}
 
     void setSeed(int64_t newSeed) {
         seed = (newSeed ^ multiplier) & mask;

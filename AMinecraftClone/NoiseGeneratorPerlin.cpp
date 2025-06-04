@@ -1,5 +1,6 @@
 #include "NoiseGeneratorPerlin.h"
 #include <cmath>
+#include "MathHelper.h"
 
 
 NoiseGeneratorPerlin::NoiseGeneratorPerlin(Random var1) {
@@ -33,12 +34,12 @@ double NoiseGeneratorPerlin::generateNoise(double var1, double var3, double var5
 	double var7 = var1 + this->xCoord;
 	double var9 = var3 + this->yCoord;
 	double var11 = var5 + this->zCoord;
-	int var22 = static_cast<int>(std::floor(var7)) & 255;
-	int var2 = static_cast<int>(std::floor(var9)) & 255;
-	int var23 = static_cast<int>(std::floor(var11)) & 255;
-	var7 -= std::floor(var7);
-	var9 -= std::floor(var9);
-	var11 -= std::floor(var11);
+	int var22 = MathHelper::floor_double(var7) & 255;
+	int var2 = MathHelper::floor_double(var9) & 255;
+	int var23 = MathHelper::floor_double(var11) & 255;
+	var7 -= (double)MathHelper::floor_double(var7);
+	var9 -= (double)MathHelper::floor_double(var9);
+	var11 -= (double)MathHelper::floor_double(var11);
 	double var16 = generateNoise(var7);
 	double var18 = generateNoise(var9);
 	double var20 = generateNoise(var11);

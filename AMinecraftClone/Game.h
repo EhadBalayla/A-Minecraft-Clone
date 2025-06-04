@@ -9,16 +9,18 @@
 #include "Level.h"
 #include "UIManager.h"
 #include <unordered_map>
+#include "Item.h"
 
 class Game
 {
-public:
+public: //this public section is simply for the members
 	//just to clarify e_ is meant to represent the engine's members, because in the window class i already have an m_Window
 	static Window e_Window; 
 	static UIManager m_UIManager; // the manager of all UI in the game
 
-	//the default shader, since this isn't a game engine we can have multiple shaders hardcoded
+	//the shaders
 	static Shader e_DefaultShader;
+	static Shader e_WaterShader;
 	
 	//object caching
 	static std::vector<Model*> e_LoadedModels; //for entities and such, like player, zombie, or creeper for example
@@ -35,9 +37,10 @@ public:
 
 	//where we register the blocks, basically we call a function to register the blocks in this hashmap at the very start of the game
 	static std::unordered_map<BlockType, BlockData> e_BlockRegistery;
+	static std::unordered_map<ItemType, ItemData> e_ItemRegistery;
 
 	void Init(); //initialize the engine
-private:
+private: //this private section is for the gameplay function
 
 	void GameLoop(); //the game loop
 	void Terminate(); //ends the game when needed
@@ -52,10 +55,10 @@ private:
 	void UnloadAllTextures(); //Unloasd all textures from memory
 
 	static bool IsGameRunning;
-public: //this "public" section is for gameplay functions such as closing game or creating a specific new UI screen
+public: //this "public" section is for gameplay functions such as closing game or creating a specific new UI screen and more
 	static void CloseGame();
 	static void CreatePlayerHud();
 
-	const static int RenderDistance = 4;
+	const static int RenderDistance = 8;
 };
 

@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,14 +164,20 @@
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="InventoryItem.cpp" />
+    <ClCompile Include="Item.cpp" />
+    <ClCompile Include="ItemDisplayer.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="MenuButtons.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="NoiseGeneratorOctave.cpp" />
+    <ClCompile Include="NoiseGeneratorOctave2.cpp" />
     <ClCompile Include="NoiseGeneratorOne.cpp" />
     <ClCompile Include="NoiseGeneratorPerlin.cpp" />
+    <ClCompile Include="NoiseGeneratorPerlin2.cpp" />
     <ClCompile Include="OctaveNoise.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
@@ -195,13 +201,19 @@
     <ClInclude Include="CombinedNoise.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="InventoryItem.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="ItemDisplayer.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="MathHelper.h" />
     <ClInclude Include="MenuButtons.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Noise.h" />
     <ClInclude Include="NoiseGeneratorOctave.h" />
+    <ClInclude Include="NoiseGeneratorOctave2.h" />
     <ClInclude Include="NoiseGeneratorOne.h" />
     <ClInclude Include="NoiseGeneratorPerlin.h" />
+    <ClInclude Include="NoiseGeneratorPerlin2.h" />
     <ClInclude Include="OctaveNoise.h" />
     <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="PerlinNoise.h" />
@@ -223,6 +235,8 @@
     <None Include="defaultVertex.file" />
     <None Include="UIFragment.file" />
     <None Include="UIVertex.file" />
+    <None Include="waterFragment.file" />
+    <None Include="waterVertex.file" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

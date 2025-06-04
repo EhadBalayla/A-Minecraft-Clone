@@ -9,6 +9,7 @@
 
 Window Game::e_Window;
 Shader Game::e_DefaultShader;
+Shader Game::e_WaterShader;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
@@ -16,6 +17,7 @@ std::vector<Texture*> Game::e_LoadedTextures;
 Player Game::player;
 Level* Game::overworld;
 std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
+std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
 bool Game::IsGameRunning = true;
 UIManager Game::m_UIManager;
 
@@ -28,8 +30,9 @@ void Game::Init() {
 	}
 
 	e_DefaultShader.loadShader("defaultVertex.file", "defaultFragment.file");
+	e_WaterShader.loadShader("waterVertex.file", "waterFragment.file");
 	Proj = glm::mat4(1.0f);
-	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 300.0f);
+	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 100000.0f);
 
 	m_UIManager.Init(); //initialize the UI manager
 
@@ -37,6 +40,7 @@ void Game::Init() {
 	LoadAllModels();
 	LoadAllTextures();
 	RegisterAllBlocks();
+	RegisterAllItems();
 
 	//start the game loop
 	GameLoop();
@@ -51,7 +55,8 @@ void Game::GameLoop() {
 
 	overworld = new Level();
 	overworld->UpdateChunks(0, 0);
-	player.SetPosition(10, 64, 10);
+	player.SetPosition(10, 100, 10);
+	player.AddStarterItems();
 	CreatePlayerHud();
 
 	//stuff for deltatime calculations
@@ -74,9 +79,8 @@ void Game::GameLoop() {
 				CloseGame(); //quit
 			}
 		}
-
-
 		player.Update(deltaTime);
+		overworld->LevelUpdate(deltaTime);
 
 		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
 
@@ -90,9 +94,6 @@ void Game::GameLoop() {
 		View = player.getViewMatrix();
 
 		//literally just render the entire world... lol
-		e_DefaultShader.use();
-		e_DefaultShader.setMat4("view", View);
-		e_DefaultShader.setMat4("projection", Proj);
 		e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
 		overworld->RenderLevel();
 		e_LoadedTextures[0]->unbind();
@@ -127,8 +128,8 @@ void Game::RegisterAllBlocks() { //register all block types in the hash map so t
 	e_BlockRegistery[Sand] = { { 18, 18, 18, 18, 18, 18 }, BlockVisiblity::Opaque }; //register the sand block
 	e_BlockRegistery[Cobblestone] = { { 16, 16, 16, 16, 16, 16 }, BlockVisiblity::Opaque }; //register the cobblestone block
 	e_BlockRegistery[WoodenPlanks] = { { 4, 4, 4, 4, 4, 4 }, BlockVisiblity::Opaque }; //register the wooden planks block
-	e_BlockRegistery[Wood] = { { 20, 20, 20, 20, 20, 20 }, BlockVisiblity::Opaque }; //register the wood block
-	e_BlockRegistery[Bedrock] = { { 18, 18, 18, 18, 18, 18 }, BlockVisiblity::Opaque }; //register the bedrock block
+	e_BlockRegistery[Wood] = { { 21, 21, 20, 20, 20, 20 }, BlockVisiblity::Opaque }; //register the wood block
+	e_BlockRegistery[Bedrock] = { { 17, 17, 17, 17, 17, 17 }, BlockVisiblity::Opaque }; //register the bedrock block
 	e_BlockRegistery[Bricks] = { { 7, 7, 7, 7, 7, 7 }, BlockVisiblity::Opaque }; //register the bricks block
 	e_BlockRegistery[CoalOre] = { { 34, 34, 34, 34, 34, 34 }, BlockVisiblity::Opaque }; //register the coal ore block
 	e_BlockRegistery[IronOre] = { { 33, 33, 33, 33, 33, 33 }, BlockVisiblity::Opaque }; //register the iron ore block
@@ -142,7 +143,16 @@ void Game::RegisterAllBlocks() { //register all block types in the hash map so t
 }
 
 void Game::RegisterAllItems() { //register all item types in the hash map so they can be replicated for changing a block's type with custom parameters
-
+	e_ItemRegistery[NoItem] = { "No Item", ItemUsageType::PlaceableBlock, 64, BlockType::Air};
+	e_ItemRegistery[GrassBlock] = { "Grass Block", ItemUsageType::PlaceableBlock, 64, BlockType::Grass }; //register the grass block item
+	e_ItemRegistery[CobblestoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Cobblestone }; //register the grass block item
+	e_ItemRegistery[DiamondBlock] = { "Diamond Ore Block", ItemUsageType::PlaceableBlock, 64, BlockType::DiamondOre }; //register the grass block item
+	e_ItemRegistery[BrickBlock] = { "Brick Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bricks }; //register the grass block item
+	e_ItemRegistery[WoodBlock] = { "Wood Block", ItemUsageType::PlaceableBlock, 64, BlockType::Wood }; //register the grass block item
+	e_ItemRegistery[WoodPlankBlock] = { "Wooden Plank Block", ItemUsageType::PlaceableBlock, 64, BlockType::WoodenPlanks }; //register the grass block item
+	e_ItemRegistery[BedrockBlock] = { "Bedrock Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bedrock }; //register the grass block item
+	e_ItemRegistery[ObsidianBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Obsidian }; //register the grass block item
+	e_ItemRegistery[StoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Stone }; //register the grass block item
 }
 
 void Game::LoadAllModels() {// function is called at the start of the game to load everything in

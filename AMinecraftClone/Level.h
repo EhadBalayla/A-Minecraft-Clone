@@ -2,11 +2,13 @@
 #include "Chunk.h"
 #include <unordered_map>
 #include <vector>
+#include <queue>
 
 #include "NoiseGeneratorOctave.h"
+#include "NoiseGeneratorOctave2.h"
 
 
-constexpr int Chunks_X = 16;
+
 
 namespace std {
 	template<>
@@ -31,6 +33,7 @@ public:
 
 	void RenderLevel();
 
+	void LevelUpdate(float DeltaTime);
 	void UpdateChunks(int ChunkX, int ChunkZ); //basically called for when the player switches a chunk
 	
 
@@ -47,7 +50,6 @@ private:
 	std::unordered_map<glm::ivec2, Chunk*> chunks;
 
 	void LoadNewChunk(int ChunkX, int ChunkZ); //loads a new chunk
-	void RemoveChunk(int ChunkX, int ChunkZ);
 
 	//all noise maps for terrain generation
 	Random rand;
@@ -58,7 +60,17 @@ private:
 	NoiseGeneratorOctave* noiseGen5;
 	NoiseGeneratorOctave* noiseGen6;
 
-	std::vector<glm::ivec2> chunkRemovalQueue;
-	void DeleteRemovalQueuedChunks(); //a helper function to remove any deleted chunk from the hashmap, will be called after deleting
+	//all noise maps for second terrain generation
+	NoiseGeneratorOctave2* noiseGen1_2;
+	NoiseGeneratorOctave2* noiseGen2_2;
+	NoiseGeneratorOctave2* noiseGen3_2;
+	NoiseGeneratorOctave2* mobSpawnerNoise_2;
+
+	float chunkGenTimer = 0.0f;
+	const float chunkGenDelay = 0.05f;
+	std::queue<glm::ivec2> chunkGenQueue;
+	std::vector<glm::ivec2> chunkMeshGenQueue; //so we generate chunks if they have the info of all their 
+	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ); //check if a chunk's neighbors are ALL generated
+	void GenerateChunkMeshes();
 };
 

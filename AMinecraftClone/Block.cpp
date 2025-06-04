@@ -12,8 +12,8 @@ Block::Block(BlockType newType) {
 }
 
 void Block::setType(BlockType newType) {
-		m_Type = newType;
-		data = Game::e_BlockRegistery[m_Type];
+	m_Type = newType;
+	data = Game::e_BlockRegistery[m_Type];
 }
 
 void Block::BreakBlock() {

@@ -25,6 +25,36 @@ glm::mat4 Player::getViewMatrix() {
     return glm::lookAt(glm::vec3(0.0, cameraHeight, 0.0), glm::vec3(0.0, cameraHeight, 0.0) + glm::normalize(front), {0, 1, 0});
 }
 
+void Player::AddStarterItems() {
+    Item i;
+    i.setType(ItemType::GrassBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::CobblestoneBlock);
+    AddItem(i, 48);
+
+    i.setType(ItemType::DiamondBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::BrickBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::WoodBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::WoodPlankBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::StoneBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::ObsidianBlock);
+    AddItem(i, 32);
+
+    i.setType(ItemType::BedrockBlock);
+    AddItem(i, 32);
+}
+
 void Player::UpdateChunksAroundPlayer() {
     int newChunkX = static_cast<int>(std::floor(position.x / 16.0));
     int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
@@ -68,7 +98,7 @@ void Player::ProcessInput(SDL_Event& e) {
             std::cout << std::endl;
             std::cout << "Type Y: ";
             int y;
-            std::cin >> y;
+            std::cin >> y;                                                     
             std::cout << std::endl;
             std::cout << "Type Z: ";
             int z;
@@ -167,28 +197,11 @@ void Player::ProcessInput(SDL_Event& e) {
         }
         else if (e.button.button == SDL_BUTTON_RIGHT) { //for right click
             if(CanPerformAbility()) { //check if no menu is open
-                Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
-                RayHitReturnParams rayInfo = Utils::RayHitBlock(ray, 0.025);
-                if (rayInfo.HitBlock) {
-                    glm::ivec3 blockPos = rayInfo.HitBlock->getWorldPosition();
-                    switch (rayInfo.HitFace) {
-                    case Face::Top:
-                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, BlockType::Cobblestone);
-                        break;
-                    case Face::Bottom:
-                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, BlockType::Cobblestone);
-                        break;
-                    case Face::Right:
-                        Game::overworld->PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, BlockType::Cobblestone);
-                        break;
-                    case Face::Left:
-                        Game::overworld->PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, BlockType::Cobblestone);
-                        break;
-                    case Face::Front:
-                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, BlockType::Cobblestone);
-                        break;
-                    case Face::Back:
-                        Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, BlockType::Cobblestone);
+                if(m_PlayerItems[selectedSlot - 1].m_Item.getType() != ItemType::NoItem) {
+                    switch (m_PlayerItems[selectedSlot - 1].m_Item.getData().type) {
+                    case ItemUsageType::PlaceableBlock:
+                        PlayerPlaceBlocks();
+                        std::cout << "placed block" << std::endl;
                         break;
                     }
                 }
@@ -210,4 +223,65 @@ void Player::setSelectedSlot(uint8_t slot) {
     selectedSlot = slot;
     uint8_t slotMultiplier = slot - 1;
     Game::m_UIManager.GetScreen(0)->GetWidget(2)->SetPosition(glm::vec2(420.2195 + 55 * slotMultiplier, 689.7805));
+}
+
+void Player::AddItem(Item item, int amount) { //add item to inventory
+    int currentAmount = amount;
+    for (int i = 0; i < 36; i++) { //iterates through the slots in the inventory
+        if (m_PlayerItems[i].m_Item.getType() == ItemType::NoItem) { //if the item in the currently iterated inventory slot is NoItem (item equivalent of block air... AKA hardcoded to act as nothing)
+            
+            m_PlayerItems[i].m_Amount = 0; //resets the amount of the item to be 0 just to be safe... it should already be in theory
+            m_PlayerItems[i].m_Item.setOnlyType(item.getType()); //sets the type to the item's type
+            m_PlayerItems[i].m_Item.setData(item.getData()); //copies the item data directly from the given item
+
+            while (currentAmount > 0 && m_PlayerItems[i].m_Amount < m_PlayerItems[i].m_Item.getData().StackAmount) {
+                m_PlayerItems[i].m_Amount++;
+                currentAmount--;
+            }
+        }
+        else if (m_PlayerItems[i].m_Item == item && m_PlayerItems[i].m_Amount < m_PlayerItems[i].m_Item.getData().StackAmount) //if the item that you want to add is already in the current hotbar slot and the amount isn't the stack amount
+        {
+            //basically if the item already exists in currently iterated slot and its not in the stack amount... add more one at a time so that we won't go above the stack count
+            while (currentAmount > 0 && m_PlayerItems[i].m_Amount < m_PlayerItems[i].m_Item.getData().StackAmount) {
+                m_PlayerItems[i].m_Amount++;
+                currentAmount--;
+            }
+        }
+
+        //after we finished adding items to a slot, check if we added all of the amounts or we only finished filling a stack
+        if (currentAmount == 0) {
+            return;
+        }
+    }
+}
+
+
+//place block item
+void Player::PlayerPlaceBlocks() {
+    Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
+    RayHitReturnParams rayInfo = Utils::RayHitBlock(ray, 0.025);
+    if (rayInfo.HitBlock) {
+        glm::ivec3 blockPos = rayInfo.HitBlock->getWorldPosition();
+        BlockType typeToPlace = m_PlayerItems[selectedSlot - 1].m_Item.getData().blockID;
+        switch (rayInfo.HitFace) {
+        case Face::Top:
+            Game::overworld->PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, typeToPlace);
+            break;
+        case Face::Bottom:
+            Game::overworld->PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, typeToPlace);
+            break;
+        case Face::Right:
+            Game::overworld->PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, typeToPlace);
+            break;
+        case Face::Left:
+            Game::overworld->PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, typeToPlace);
+            break;
+        case Face::Front:
+            Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, typeToPlace);
+            break;
+        case Face::Back:
+            Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, typeToPlace);
+            break;
+        }
+    }
 }

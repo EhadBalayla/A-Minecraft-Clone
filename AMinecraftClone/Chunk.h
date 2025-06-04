@@ -2,8 +2,8 @@
 #include "Block.h"
 #include <glm/glm.hpp>
 #include <vector>
-
 #include "NoiseGeneratorOctave.h"
+#include "NoiseGeneratorOctave2.h"
 
 constexpr int Chunk_Width = 16;
 constexpr int Chunk_Height = 128;
@@ -19,16 +19,15 @@ enum Face {
 };
 
 struct UVQuad {
-	glm::vec2 topLeft;
-	glm::vec2 topRight;
-	glm::vec2 bottomRight;
-	glm::vec2 bottomLeft;
+	glm::u8vec2 topLeft;
+	glm::u8vec2 topRight;
+	glm::u8vec2 bottomRight;
+	glm::u8vec2 bottomLeft;
 };
 
 struct Vertex {
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 uv;
+	glm::u8vec3 pos;
+	glm::u8vec2 uv;
 };
 
 class Level;
@@ -43,19 +42,24 @@ public:
 
 	Level* owningLevel;
 	int ChunkX, ChunkZ;
+	bool RenderReady = false;
+	bool HasOpaque = true;
+	bool HasWater = false;
 
 	void GenerateChunk(NoiseGeneratorOctave* NoiseGen1, NoiseGeneratorOctave* NoiseGen2, NoiseGeneratorOctave* NoiseGen3, 
 		NoiseGeneratorOctave* NoiseGen4, NoiseGeneratorOctave* NoiseGen5, NoiseGeneratorOctave* NoiseGen6,
 		Random& Rand); //procedural chunk generation
-	void RenderChunk();
+	void GenerateChunk2(NoiseGeneratorOctave2* noiseGen1, NoiseGeneratorOctave2* noiseGen2, NoiseGeneratorOctave2* noiseGen3, Random& Rand, NoiseGeneratorOctave2* mobSpawnerNoise);
+	void RenderOpaqueAndPlants();
+	void RenderWater();
 	void GenerateMesh();
 
 	int DistanceFromChunk(Chunk* chunk);
 private:
 	// a function to add a block's face to the chunk's mesh when generating a chunk mesh
-	void AddFace(glm::vec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset);
-	void AddPlantFace(glm::vec3 pos, int faceIndexOffset, uint32_t& indexOffset);
-	void AddLiquidFace(glm::vec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset, bool IsMiddle);
+	void AddFace(glm::u8vec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset);
+	void AddPlantFace(glm::u8vec3 pos, int faceIndexOffset, uint32_t& indexOffset);
+	void AddLiquidFace(glm::u8vec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset, bool IsMiddle);
 	
 	//3D graphics data for the chunk
 	//for the opaque blocks

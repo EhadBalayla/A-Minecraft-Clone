@@ -23,6 +23,12 @@
     <Filter Include="Source Files\EarlyInfdevNoise">
       <UniqueIdentifier>{b62f7c0f-c96c-4227-90ab-8a836bac96db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Items">
+      <UniqueIdentifier>{c74ba829-374a-4c32-8e8b-226663aede78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MidInfdevNoise">
+      <UniqueIdentifier>{975523eb-10ed-4475-829a-62d981da98f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -114,6 +120,24 @@
     </ClCompile>
     <ClCompile Include="NoiseGeneratorOctave.cpp">
       <Filter>Source Files\EarlyInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="InventoryItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemDisplayer.cpp">
+      <Filter>Source Files\UI\ActualWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseGeneratorOctave2.cpp">
+      <Filter>Source Files\MidInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseGeneratorPerlin2.cpp">
+      <Filter>Source Files\MidInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="MathHelper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +231,24 @@
     <ClInclude Include="NoiseGeneratorOctave.h">
       <Filter>Source Files\EarlyInfdevNoise</Filter>
     </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>Source Files\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="InventoryItem.h">
+      <Filter>Source Files\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemDisplayer.h">
+      <Filter>Source Files\UI\ActualWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorOctave2.h">
+      <Filter>Source Files\MidInfdevNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorPerlin2.h">
+      <Filter>Source Files\MidInfdevNoise</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="defaultVertex.file">
@@ -221,5 +263,7 @@
     <None Include="UIFragment.file">
       <Filter>Source Files\UI</Filter>
     </None>
+    <None Include="waterVertex.file" />
+    <None Include="waterFragment.file" />
   </ItemGroup>
 </Project>
