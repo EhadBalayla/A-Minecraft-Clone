@@ -231,6 +231,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cloudsFragment.file" />
+    <None Include="cloudsVertex.file" />
     <None Include="defaultFragment.file" />
     <None Include="defaultVertex.file" />
     <None Include="UIFragment.file" />

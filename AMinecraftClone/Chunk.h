@@ -30,6 +30,12 @@ struct Vertex {
 	glm::u8vec2 uv;
 };
 
+struct WaterVertex {
+	glm::u8vec3 pos;
+	glm::u8vec2 uv;
+	uint8_t flag; //the flag can be from 1 - 10, 10 means no height difference, less than 10 means the fluid vertex will be n/10 of a block lower (will only be used on top and side faces of fluids)
+};
+
 class Level;
 
 class Chunk
@@ -73,7 +79,7 @@ private:
 	unsigned int m_VAO2, m_VBO2, m_EBO2;
 
 	//for the liquid blocks
-	std::vector<Vertex> m_Verticies3;
+	std::vector<WaterVertex> m_Verticies3;
 	std::vector<unsigned int> m_Indicies3;
 	unsigned int m_VAO3, m_VBO3, m_EBO3;
 };

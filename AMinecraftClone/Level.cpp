@@ -76,8 +76,8 @@ void Level::RenderLevel() {
 
 	//sorts chunks with water in their order
 	std::sort(waterChunks.begin(), waterChunks.end(), [&](Chunk* a, Chunk* b) {
-		float distA = squaredDistance(glm::vec3(a->ChunkX + 8, 0, a->ChunkZ + 8), Game::player.GetPosition());
-		float distB = squaredDistance(glm::vec3(b->ChunkX + 8, 0, b->ChunkZ + 8), Game::player.GetPosition());
+		float distA = squaredDistance(glm::vec3(a->ChunkX + 8.0f, 0, a->ChunkZ + 8.0f), Game::player.GetPosition());
+		float distB = squaredDistance(glm::vec3(b->ChunkX + 8.0f, 0, b->ChunkZ + 8.0f), Game::player.GetPosition());
 		return distA > distB; // Furthest first
 		});
 
@@ -86,10 +86,8 @@ void Level::RenderLevel() {
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 
-	for (auto& pair : chunks) {
-		if (pair.second->RenderReady) {
-			pair.second->RenderWater();
-		}
+	for (auto& n : waterChunks) {
+		n->RenderWater();
 	}
 }
 

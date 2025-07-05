@@ -464,6 +464,8 @@ void Chunk::RenderOpaqueAndPlants() {
 
     glBindVertexArray(m_VAO2);
     glDrawElements(GL_TRIANGLES, m_Indicies2.size(), GL_UNSIGNED_INT, 0);
+
+    glDepthMask(GL_TRUE);
 }
 
 void Chunk::RenderWater() {
@@ -472,6 +474,9 @@ void Chunk::RenderWater() {
     Game::e_WaterShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * 16, 0, ChunkZ * 16) - Game::player.GetPosition();
     Game::e_WaterShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
+    Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
+    glEnable(GL_CULL_FACE);
+    glDepthMask(GL_TRUE);
 
     glBindVertexArray(m_VAO3);
     glDrawElements(GL_TRIANGLES, m_Indicies3.size(), GL_UNSIGNED_INT, 0);
@@ -581,7 +586,7 @@ void Chunk::GenerateMesh() {
                     return  m_Blocks[nx][ny][nz].data.visibility == visibility;
                     };
 
-                switch (m_Blocks[x][y][z].data.visibility) { //basically add opaque blocks data
+                switch (m_Blocks[x][y][z].data.visibility) {
                 case BlockVisiblity::Opaque:
                     if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, m_Blocks[x][y][z].data.uv.Back, index);
                     if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, m_Blocks[x][y][z].data.uv.Front, index);
@@ -646,7 +651,7 @@ void Chunk::GenerateMesh() {
         glEnableVertexAttribArray(0); // position
         glVertexAttribPointer(0, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), (void*)0);
 
-        glEnableVertexAttribArray(2); // uv
+        glEnableVertexAttribArray(1); // uv
         glVertexAttribPointer(1, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
 
         glBindVertexArray(0);
@@ -660,17 +665,21 @@ void Chunk::GenerateMesh() {
     if (m_Verticies3.size() > 0) {
         glBindVertexArray(m_VAO3);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO3);
-        glBufferData(GL_ARRAY_BUFFER, m_Verticies3.size() * sizeof(Vertex), m_Verticies3.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, m_Verticies3.size() * sizeof(WaterVertex), m_Verticies3.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO3);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indicies3.size() * sizeof(uint32_t), m_Indicies3.data(), GL_STATIC_DRAW);
 
         // Vertex layout
         glEnableVertexAttribArray(0); // position
-        glVertexAttribPointer(0, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), (void*)0);
+        glVertexAttribPointer(0, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(WaterVertex), (void*)0);
 
         glEnableVertexAttribArray(1); // uv
-        glVertexAttribPointer(1, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+        glVertexAttribPointer(1, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(WaterVertex), (void*)offsetof(WaterVertex, uv));
+
+        glEnableVertexAttribArray(2); // liquid height
+        //glVertexAttribPointer(2, 1, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(WaterVertex), (void*)offsetof(WaterVertex, flag));
+        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(WaterVertex), (void*)offsetof(WaterVertex, flag));
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -692,11 +701,11 @@ UVQuad getUVQuad(int tileID, int atlasWidth, int atlasHeight) {
     float pixelOffsetX = 0.5f / 256.0f;
     float pixelOffsetY = 0.5f / 256.0f;
 
-    float u = x * tileWidth + pixelOffsetX;
-    float v = y * tileHeight + pixelOffsetY;
+    float u = x * tileWidth;
+    float v = y * tileHeight;
 
-    float u2 = (x + 1) * tileWidth - pixelOffsetX;
-    float v2 = (y + 1) * tileHeight - pixelOffsetY;
+    float u2 = (x + 1) * tileWidth;
+    float v2 = (y + 1) * tileHeight;
 
     return UVQuad{
         glm::u8vec2(u * 256.0f, v * 256.0f),     // top-left
@@ -807,7 +816,7 @@ void Chunk::AddFace(glm::u8vec3 pos, Face face, int faceIndexOffset, uint32_t& i
 void Chunk::AddPlantFace(glm::u8vec3 pos, int faceIndexOffset, uint32_t& indexOffset) {
     glm::u8vec3 p = pos;
     glm::u8vec3 v0, v1, v2, v3;
-    glm::u8vec2 uv0, uv1, uv2, uv3;
+
 
     UVQuad uv = getUVQuad(faceIndexOffset, 16, 16);
 
@@ -857,7 +866,10 @@ void Chunk::AddPlantFace(glm::u8vec3 pos, int faceIndexOffset, uint32_t& indexOf
 //adds face for a liquid block
 void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32_t& indexOffset, bool IsMiddle) {
     glm::u8vec3 p = pos;
-    glm::u8vec3 normal;
+    uint8_t flag1;
+    uint8_t flag2;
+    uint8_t flag3;
+    uint8_t flag4;
     glm::u8vec3 v0, v1, v2, v3;
     glm::u8vec2 uv0, uv1, uv2, uv3;
     UVQuad uv = getUVQuad(faceIndexOffset, 16, 16); //calculates the UVs based on the index
@@ -865,11 +877,15 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
     switch (face) {
     case Face::Top:
-        v0 = p + glm::u8vec3(0, 0.8, 0);
-        v1 = p + glm::u8vec3(1, 0.8, 0);
-        v2 = p + glm::u8vec3(1, 0.8, 1);
-        v3 = p + glm::u8vec3(0, 0.8, 1);
+        v0 = p + glm::u8vec3(0, 1, 0);
+        v1 = p + glm::u8vec3(1, 1, 0);
+        v2 = p + glm::u8vec3(1, 1, 1);
+        v3 = p + glm::u8vec3(0, 1, 1);
 
+        flag1 = 8;
+        flag2 = 8;
+        flag3 = 8;
+        flag4 = 8;
 
         uv0 = uv.topLeft;
         uv1 = uv.topRight;
@@ -882,6 +898,11 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
         v2 = p + glm::u8vec3(1, 0, 1);
         v3 = p + glm::u8vec3(1, 0, 0);
 
+        flag1 = 10;
+        flag2 = 10;
+        flag3 = 10;
+        flag4 = 10;
+
         uv0 = uv.bottomLeft;
         uv1 = uv.bottomRight;
         uv2 = uv.topRight;
@@ -889,9 +910,14 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
         break;
     case Face::Left:
         v0 = p + glm::u8vec3(0, 0, 0);
-        v1 = p + glm::u8vec3(0, IsMiddle ? 1 : 0.8, 0);
-        v2 = p + glm::u8vec3(0, IsMiddle ? 1 : 0.8, 1);
+        v1 = p + glm::u8vec3(0, 1, 0);
+        v2 = p + glm::u8vec3(0, 1, 1);
         v3 = p + glm::u8vec3(0, 0, 1);
+
+        flag1 = 10;
+        flag2 = IsMiddle ? 10 : 8;
+        flag3 = IsMiddle ? 10 : 8;
+        flag4 = 10;
 
         uv0 = uv.bottomLeft;
         uv1 = uv.topLeft;
@@ -901,8 +927,13 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
     case Face::Right:
         v0 = p + glm::u8vec3(1, 0, 0);
         v1 = p + glm::u8vec3(1, 0, 1);
-        v2 = p + glm::u8vec3(1, IsMiddle ? 1 : 0.8, 1);
-        v3 = p + glm::u8vec3(1, IsMiddle ? 1 : 0.8, 0);
+        v2 = p + glm::u8vec3(1, 1, 1);
+        v3 = p + glm::u8vec3(1, 1, 0);
+
+        flag1 = 10;
+        flag2 = 10;
+        flag3 = IsMiddle ? 10 : 8;
+        flag4 = IsMiddle ? 10 : 8;
 
         uv0 = uv.bottomRight;
         uv1 = uv.bottomLeft;
@@ -911,9 +942,14 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
         break;
     case Face::Front:
         v0 = p + glm::u8vec3(0, 0, 1);
-        v1 = p + glm::u8vec3(0, IsMiddle ? 1 : 0.8, 1);
-        v2 = p + glm::u8vec3(1, IsMiddle ? 1 : 0.8, 1);
+        v1 = p + glm::u8vec3(0, 1, 1);
+        v2 = p + glm::u8vec3(1, 1, 1);
         v3 = p + glm::u8vec3(1, 0, 1);
+
+        flag1 = 10;
+        flag2 = IsMiddle ? 10 : 8;
+        flag3 = IsMiddle ? 10 : 8;
+        flag4 = 10;
 
         uv0 = uv.bottomLeft;
         uv1 = uv.topLeft;
@@ -923,8 +959,13 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
     case Face::Back:
         v0 = p + glm::u8vec3(0, 0, 0);
         v1 = p + glm::u8vec3(1, 0, 0);
-        v2 = p + glm::u8vec3(1, IsMiddle ? 1 : 0.8, 0);
-        v3 = p + glm::u8vec3(0, IsMiddle ? 1 : 0.8, 0);
+        v2 = p + glm::u8vec3(1, 1, 0);
+        v3 = p + glm::u8vec3(0, 1, 0);
+
+        flag1 = 10;
+        flag2 = 10;
+        flag3 = IsMiddle ? 10 : 8;
+        flag4 = IsMiddle ? 10 : 8;
 
         uv0 = uv.bottomRight;
         uv1 = uv.bottomLeft;
@@ -935,10 +976,10 @@ void Chunk::AddLiquidFace(glm::u8vec3 pos, Face face,int faceIndexOffset, uint32
 
 
     //adds the 4 verticies
-    m_Verticies3.push_back({ v0, uv0 });
-    m_Verticies3.push_back({ v1, uv1 });
-    m_Verticies3.push_back({ v2, uv2 });
-    m_Verticies3.push_back({ v3, uv3 });
+    m_Verticies3.push_back({ v0, uv0, flag1 });
+    m_Verticies3.push_back({ v1, uv1, flag2 });
+    m_Verticies3.push_back({ v2, uv2, flag3 });
+    m_Verticies3.push_back({ v3, uv3, flag4 });
 
 
     //adds the 6 indicies for the 4 verticies

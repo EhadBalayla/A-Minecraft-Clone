@@ -21,6 +21,7 @@ public: //this public section is simply for the members
 	//the shaders
 	static Shader e_DefaultShader;
 	static Shader e_WaterShader;
+	static Shader e_CloudShader;
 	
 	//object caching
 	static std::vector<Model*> e_LoadedModels; //for entities and such, like player, zombie, or creeper for example
@@ -40,7 +41,7 @@ public: //this public section is simply for the members
 	static std::unordered_map<ItemType, ItemData> e_ItemRegistery;
 
 	void Init(); //initialize the engine
-private: //this private section is for the gameplay function
+private: //this private section is for basic engine functions and initializations
 
 	void GameLoop(); //the game loop
 	void Terminate(); //ends the game when needed
@@ -60,5 +61,7 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void CreatePlayerHud();
 
 	const static int RenderDistance = 8;
+
+private: //this "private" section is for gameplay functions such as cloud rendering etc...
 };
 

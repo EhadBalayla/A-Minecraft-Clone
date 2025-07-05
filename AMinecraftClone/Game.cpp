@@ -10,6 +10,7 @@
 Window Game::e_Window;
 Shader Game::e_DefaultShader;
 Shader Game::e_WaterShader;
+Shader Game::e_CloudShader;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
@@ -29,10 +30,13 @@ void Game::Init() {
 		exit(-1);
 	}
 
+	//loads in all shaders
 	e_DefaultShader.loadShader("defaultVertex.file", "defaultFragment.file");
 	e_WaterShader.loadShader("waterVertex.file", "waterFragment.file");
+	e_CloudShader.loadShader("cloudsVertex.file", "cloudsFragment.file");
+
 	Proj = glm::mat4(1.0f);
-	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 100000.0f);
+	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 400.0f);
 
 	m_UIManager.Init(); //initialize the UI manager
 
@@ -93,10 +97,28 @@ void Game::GameLoop() {
 		//set the view matrix to the current camera's view
 		View = player.getViewMatrix();
 
+		glDisable(GL_CULL_FACE);
+		e_CloudShader.use();
+		e_CloudShader.setMat4("view", View);
+		e_CloudShader.setMat4("projection", Proj);
+		glm::dvec3 cloudPos = glm::dvec3(0.0f, 128.0f, 0.0f);
+		glm::vec3 relativePos = cloudPos - player.GetPosition();
+		glm::mat4 cloudsMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, relativePos.y, 0.0f));
+		cloudsMatrix = glm::scale(cloudsMatrix, glm::vec3(1024.0f, 1.0f, 1024.0f));
+		e_CloudShader.setMat4("model", cloudsMatrix);
+		e_CloudShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
+		e_CloudShader.setVec3("playerWorldPos", player.GetPosition());
+		e_LoadedTextures[4]->bind();
+		e_LoadedModels[1]->DrawModel();
+
+		glEnable(GL_CULL_FACE);
+
+
 		//literally just render the entire world... lol
 		e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
 		overworld->RenderLevel();
 		e_LoadedTextures[0]->unbind();
+
 
 		//render all the current UI stuff
 		m_UIManager.Render();
@@ -157,6 +179,7 @@ void Game::RegisterAllItems() { //register all item types in the hash map so the
 
 void Game::LoadAllModels() {// function is called at the start of the game to load everything in
 	e_LoadedModels.push_back(InitModels::InitializeCube()); //the model for a block
+	e_LoadedModels.push_back(InitModels::InitializeCloudsPlane()); //the model for the clouds
 }
 
 void Game::UnloadAllModels() {//function is called when the game closes to unload everything out
@@ -172,6 +195,7 @@ void Game::LoadAllTextures() {// function is called at the start of the game to 
 	e_LoadedTextures.push_back(new Texture("GUI/gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
 	e_LoadedTextures.push_back(new Texture("GUI/icons.png"));
 	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
+	e_LoadedTextures.push_back(new Texture("SkyTextures/clouds.png")); //the texture atlas for the blocks
 }
 
 void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out

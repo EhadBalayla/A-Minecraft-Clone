@@ -1,6 +1,7 @@
 #include "PerlinNoise.h"
 #include <cmath>
 #include <random>
+#include "MathHelper.h"
 
 PerlinNoise::PerlinNoise(unsigned int seed) {
     
@@ -26,13 +27,13 @@ double PerlinNoise::compute(double var1, double var3) {
     double var7 = var3;
     double var9 = var1;
 
-    int var18 = (int)floor(var1) & 255;
-    int var2 = (int)floor(var3) & 255;
-    int var19 = (int)floor(0.0) & 255;
+    int var18 = (int)MathHelper::floor_double(var1) & 255;
+    int var2 = (int)MathHelper::floor_double(var3) & 255;
+    int var19 = (int)MathHelper::floor_double(0.0) & 255;
 
-    var9 -= floor(var9);
-    var7 -= floor(var7);
-    var5 = 0.0 - floor(0.0);
+    var9 -= MathHelper::floor_double(var9);
+    var7 -= MathHelper::floor_double(var7);
+    var5 = 0.0 - MathHelper::floor_double(0.0);
 
     double var11 = fade(var9);
     double var13 = fade(var7);

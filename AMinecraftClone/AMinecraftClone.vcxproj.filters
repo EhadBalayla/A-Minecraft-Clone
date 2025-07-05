@@ -263,7 +263,17 @@
     <None Include="UIFragment.file">
       <Filter>Source Files\UI</Filter>
     </None>
-    <None Include="waterVertex.file" />
-    <None Include="waterFragment.file" />
+    <None Include="cloudsVertex.file">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="cloudsFragment.file">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="waterFragment.file">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="waterVertex.file">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

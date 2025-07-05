@@ -13,7 +13,7 @@ class Model
 public:
 	unsigned int VBO;
 	unsigned int VAO;
-	uint32_t verticiesCount;
+	int verticiesCount;
 
 	void DrawModel();
 	void DeleteModel();
@@ -21,5 +21,6 @@ public:
 
 namespace InitModels {
 	Model* InitializeCube();
+	Model* InitializeCloudsPlane();
 }
 
