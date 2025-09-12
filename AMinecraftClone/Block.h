@@ -2,12 +2,12 @@
 #include "AABB.h"
 
 struct BlockUV {
-	int Top = 0;
-	int Bottom = 0;
-	int Left = 0;
-	int Right = 0;
-	int Front = 0;
-	int Back = 0;
+	uint8_t Top = 0;
+	uint8_t Bottom = 0;
+	uint8_t Left = 0;
+	uint8_t Right = 0;
+	uint8_t Front = 0;
+	uint8_t Back = 0;
 };
 
 enum BlockVisiblity {

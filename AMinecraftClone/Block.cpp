@@ -24,26 +24,26 @@ void Block::BreakBlock() {
 		int ChunksX = owningChunk->ChunkX;
 		int ChunksZ = owningChunk->ChunkZ;
 
-		owningChunk->owningLevel->getChunkAt(ChunksX - 1, ChunksZ)->GenerateMesh();
+		owningChunk->owningWorld->getChunkAt(ChunksX - 1, ChunksZ)->GenerateMesh();
 	}
 	else if (BlockX == 15) { //if at the other X edge of the chunk
 		int ChunksX = owningChunk->ChunkX;
 		int ChunksZ = owningChunk->ChunkZ;
 
-		owningChunk->owningLevel->getChunkAt(ChunksX + 1, ChunksZ)->GenerateMesh();
+		owningChunk->owningWorld->getChunkAt(ChunksX + 1, ChunksZ)->GenerateMesh();
 	}
 	if (BlockZ == 0) //if at the Z edge of the chunk
 	{
 		int ChunksX = owningChunk->ChunkX;
 		int ChunksZ = owningChunk->ChunkZ;
 
-		owningChunk->owningLevel->getChunkAt(ChunksX, ChunksZ - 1)->GenerateMesh();
+		owningChunk->owningWorld->getChunkAt(ChunksX, ChunksZ - 1)->GenerateMesh();
 	}
 	else if (BlockZ == 15) { //if at the other Z edge of the chunk
 		int ChunksX = owningChunk->ChunkX;
 		int ChunksZ = owningChunk->ChunkZ;
 
-		owningChunk->owningLevel->getChunkAt(ChunksX, ChunksZ + 1)->GenerateMesh();
+		owningChunk->owningWorld->getChunkAt(ChunksX, ChunksZ + 1)->GenerateMesh();
 	}
 }
 

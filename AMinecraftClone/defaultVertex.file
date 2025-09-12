@@ -1,6 +1,5 @@
 #version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoords;
+layout (location = 0) in uint vert;
 
 out vec2 TexCoords;
 
@@ -8,8 +7,52 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
 
+uvec3 decodePos(uint pos);
+uvec3 decodeOffset(uint extra);
+vec2 decodeUVoffset(uint extra);
+
 void main() {
-	vec2 uv = vec2(aTexCoords) / 256;
-	gl_Position = projection * view * model * vec4(aPos, 1.0);
-	TexCoords = uv;
+	uint pos = vert & 0xFFFFu;
+	uint texIndex = (vert >> 16) & 0xFFu;
+	uint extras = (vert >> 24) & 0xFFu;
+	
+	uvec3 actualPos = decodePos(pos);
+	uvec3 posOffset = decodeOffset(extras);
+
+	gl_Position = projection * view * model * vec4(actualPos + posOffset, 1.0);
+	
+	uint indexX = texIndex % uint(16);
+	uint indexY = texIndex / uint(16);
+	float uvX =  float(indexX) / 16;
+	float uvY = float(indexY) / 16;
+	vec2 uvOffset = decodeUVoffset(extras);
+	
+	TexCoords = vec2(uvX, uvY) + uvOffset;
+}
+
+
+uvec3 decodePos(uint pos) {
+	uvec3 ret;
+	ret.x = pos & 0xFu;
+	pos >>= 4;
+	ret.z = pos & 0xFu;
+	pos >>= 4;
+	ret.y = pos & 0xFFu;
+	
+	return ret;
+}
+uvec3 decodeOffset(uint extra) {
+	uint number = (extra >> 2) & 0x7u; //gets the block corner number
+	const uvec3 offsets[8] = uvec3[8](
+        uvec3(0,0,0), uvec3(1,0,0), uvec3(1,0,1), uvec3(0,0,1),
+        uvec3(0,1,0), uvec3(1,1,0), uvec3(1,1,1), uvec3(0,1,1)
+    );
+	return offsets[number];
+}
+vec2 decodeUVoffset(uint extra) {
+	uint number = extra & 0x3u;
+	const vec2 offsets[4] = vec2[4](
+		vec2(0, 0), vec2(0.0625, 0), vec2(0.0625, 0.0625), vec2(0, 0.0625)
+	);
+	return offsets[number];
 }

@@ -60,7 +60,7 @@ void Player::UpdateChunksAroundPlayer() {
     int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
 
     if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
-        Game::overworld->UpdateChunks(newChunkX, newChunkZ);
+        Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
 
         currentChunkX = newChunkX;
         currentChunkZ = newChunkZ;
@@ -265,22 +265,22 @@ void Player::PlayerPlaceBlocks() {
         BlockType typeToPlace = m_PlayerItems[selectedSlot - 1].m_Item.getData().blockID;
         switch (rayInfo.HitFace) {
         case Face::Top:
-            Game::overworld->PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, typeToPlace);
+            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, typeToPlace);
             break;
         case Face::Bottom:
-            Game::overworld->PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, typeToPlace);
+            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, typeToPlace);
             break;
         case Face::Right:
-            Game::overworld->PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, typeToPlace);
+            Game::overworld->GetWorld().PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, typeToPlace);
             break;
         case Face::Left:
-            Game::overworld->PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, typeToPlace);
+            Game::overworld->GetWorld().PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, typeToPlace);
             break;
         case Face::Front:
-            Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, typeToPlace);
+            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, typeToPlace);
             break;
         case Face::Back:
-            Game::overworld->PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, typeToPlace);
+            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, typeToPlace);
             break;
         }
     }
