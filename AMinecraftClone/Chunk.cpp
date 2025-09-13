@@ -380,6 +380,8 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint
                     }
                 }
             }
+
+            delete chunk;
         }
     }
 

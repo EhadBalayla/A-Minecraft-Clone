@@ -98,6 +98,9 @@ private:
 
 	std::unordered_map<glm::ivec2, Chunk*> chunks;
 	std::unordered_map<glm::ivec2, SuperChunk*> LOD1;
+	std::unordered_map<glm::ivec2, SuperChunk*> LOD2;
+	std::unordered_map<glm::ivec2, SuperChunk*> LOD3;
+	std::unordered_map<glm::ivec2, SuperChunk*> LOD4;
 
 	//chunks thread queues
 	std::queue<glm::ivec2> chunkGenQueue;

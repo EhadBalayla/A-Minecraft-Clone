@@ -11,7 +11,7 @@ void Window::Init() { //initializes SDL and the window
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    m_Window = SDL_CreateWindow("Minecraft", 100, 100, 1280, 720, SDL_WINDOW_OPENGL); //creates the window
+    m_Window = SDL_CreateWindow("Minecraft", 0, 0, 1920, 1080, SDL_WINDOW_OPENGL); //creates the window
 
     if (m_Window == nullptr) {
         std::cerr << "Failed to create the window" << std::endl;

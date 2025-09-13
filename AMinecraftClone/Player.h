@@ -60,7 +60,7 @@ private:
 	void PlayerPlaceBlocks();
 
 
-	bool CreativeMode = true;
+	bool CreativeMode = false;
 	const float CreativeSpeed = 0.1f;
 };
 

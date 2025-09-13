@@ -240,7 +240,8 @@ Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ) {
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningWorld = this;
 
-	chunkGenerator.GenerateChunk2(*chunk);
+	//chunkGenerator.GenerateChunk2(*chunk);
+	chunkGenerator.GenerateChunk(*chunk);
 
 	return chunk;
 }
