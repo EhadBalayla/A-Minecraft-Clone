@@ -36,7 +36,7 @@ void Game::Init() {
 	e_CloudShader.loadShader("cloudsVertex.file", "cloudsFragment.file");
 
 	Proj = glm::mat4(1.0f);
-	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 400.0f);
+	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 5000.0f);
 
 	m_UIManager.Init(); //initialize the UI manager
 

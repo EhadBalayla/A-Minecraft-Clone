@@ -15,24 +15,26 @@ WorldManager::WorldManager() {
 
 	running = true;
 	chunkThread = std::thread(&WorldManager::ChunkThreadLoop, this);
-	//chunkMeshesThread = std::thread(&WorldManager::ChunkMeshesThreadLoop, this);
+	chunkMeshesThread = std::thread(&WorldManager::ChunkMeshesThreadLoop, this);
 }
 WorldManager::~WorldManager() {
 	running = false;
 	chunkThread.join();
-	//chunkMeshesThread.join();
+	chunkMeshesThread.join();
 }
 
 
 void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
 	//chunks removal
+	int renderDistance = Game::Radius_LOD0 + Game::Radius_LOD1 + Game::Radius_LOD2 + Game::Radius_LOD3 + Game::Radius_LOD4;
+
 	for (auto it = chunks.begin(); it != chunks.end(); ) {
 		const glm::ivec2& pos = it->first;
 
 		int dx = std::abs(pos.x - ChunkX);
 		int dz = std::abs(pos.y - ChunkZ);
 
-		if (dx > Game::Radius_LOD0 || dz > Game::Radius_LOD0) {
+		if (dx > renderDistance || dz > renderDistance) {
 			it->second->DeleteMeshObjects();
 			delete it->second;
 			it = chunks.erase(it);
@@ -43,7 +45,6 @@ void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
 	}
 
 	//generate new chunks that aren't in render distance.
-	int renderDistance = Game::Radius_LOD0 + Game::Radius_LOD1 + Game::Radius_LOD2 + Game::Radius_LOD3 + Game::Radius_LOD4;
 	for (int r = 0; r <= renderDistance; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
 			for (int dz = -r; dz <= r; ++dz) {
@@ -58,18 +59,20 @@ void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
 	}
 }
 void WorldManager::WorldUpdate(float DeltaTime) {
-	while (!chunkMeshGenQueue.empty()) {
-		Chunk* chunk = chunkMeshGenQueue.front();
-		chunkMeshGenQueue.pop();
-		chunk->CreateMeshObjects();
+	while (!chunkMeshFinalQueue.empty()) {
+		ChunkReady chunk = chunkMeshFinalQueue.front();
+		chunkMeshFinalQueue.pop();
 
-		for (uint8_t lod = 0; lod < 5; lod++) {
-			ChunkMeshUpload meshData = CreateChunkMeshData(*chunk, lod);
-			chunk->ChunkUpload(meshData, lod);
-		}
+		Chunk* TheChunk = chunk.chunkPos;
+		TheChunk->CreateMeshObjects();
+		TheChunk->ChunkUpload(chunk.meshData0, 0);
+		TheChunk->ChunkUpload(chunk.meshData1, 1);
+		TheChunk->ChunkUpload(chunk.meshData2, 2);
+		TheChunk->ChunkUpload(chunk.meshData3, 3);
+		TheChunk->ChunkUpload(chunk.meshData4, 4);
 
-		chunk->RenderReady = true;
-		chunks[glm::ivec2(chunk->ChunkX, chunk->ChunkZ)] = chunk;
+		TheChunk->RenderReady = true;
+		chunks[glm::ivec2(TheChunk->ChunkX, TheChunk->ChunkZ)] = TheChunk;
 	}
 }
 
@@ -240,7 +243,7 @@ void WorldManager::ChunkThreadLoop() {
 			std::lock_guard<std::mutex> lock(meshMutex);
 			chunkMeshGenQueue.push({ chunk });
 		}
-		//meshCV.notify_one();
+		meshCV.notify_one();
 	}
 }
 void WorldManager::ChunkMeshesThreadLoop() {
@@ -257,11 +260,15 @@ void WorldManager::ChunkMeshesThreadLoop() {
 			chunkMeshGenQueue.pop();
 		}
 
-		ChunkMeshUpload chunkMesh = CreateChunkMeshData(*chunk, 0);
+		ChunkMeshUpload meshData[5];
+
+		for (uint8_t lod = 0; lod < 5; lod++) {
+			meshData[lod] = CreateChunkMeshData(*chunk, lod);
+		}
 
 		{
 			std::lock_guard<std::mutex> lock(finalMutex);
-			chunkMeshFinalQueue.push({ chunk, std::move(chunkMesh) });
+			chunkMeshFinalQueue.push({ chunk, std::move(meshData[0]), std::move(meshData[1]), std::move(meshData[2]) , std::move(meshData[3]) , std::move(meshData[4]) });
 		}
 	}
 }

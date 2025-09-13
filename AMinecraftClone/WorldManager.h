@@ -11,7 +11,11 @@
 
 struct ChunkReady {
 	Chunk* chunkPos;
-	ChunkMeshUpload meshData;
+	ChunkMeshUpload meshData0;
+	ChunkMeshUpload meshData1;
+	ChunkMeshUpload meshData2;
+	ChunkMeshUpload meshData3;
+	ChunkMeshUpload meshData4;
 };
 
 namespace std {
