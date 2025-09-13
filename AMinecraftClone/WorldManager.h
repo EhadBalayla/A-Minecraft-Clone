@@ -5,6 +5,14 @@
 
 #include "ChunkGenerator.h"
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
+struct ChunkReady {
+	Chunk* chunkPos;
+	ChunkMeshUpload meshData;
+};
 
 namespace std {
 	template<>
@@ -47,16 +55,26 @@ public:
 
 	//coords converters
 private:
+	bool running;
+	std::thread chunkThread;
+	std::thread chunkMeshesThread;
+	std::mutex chunkMutex;
+	std::mutex meshMutex;
+	std::mutex finalMutex;
+	std::condition_variable cv;
+	std::condition_variable meshCV;
+
 	std::unordered_map<glm::ivec2, Chunk*> chunks;
 	ChunkGenerator chunkGenerator;
 
-	float chunkGenTimer = 0.0f;
-	const float chunkGenDelay = 0.05f;
 	std::queue<glm::ivec2> chunkGenQueue;
-	std::vector<glm::ivec2> chunkMeshGenQueue;
+	std::queue<Chunk*> chunkMeshGenQueue;
+	std::queue<ChunkReady> chunkMeshFinalQueue;
 
-	void LoadNewChunk(int ChunkX, int ChunkZ);
-	void GenerateChunkMeshes(); 
+	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
 	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ); 
+
+	void ChunkThreadLoop();
+	void ChunkMeshesThreadLoop();
 };
 

@@ -3,6 +3,8 @@ layout (location = 0) in uint vert;
 
 out vec2 TexCoords;
 
+uniform uint LODFactor;
+
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
@@ -19,7 +21,7 @@ void main() {
 	uvec3 actualPos = decodePos(pos);
 	uvec3 posOffset = decodeOffset(extras);
 
-	gl_Position = projection * view * model * vec4(actualPos + posOffset, 1.0);
+	gl_Position = projection * view * model * vec4(actualPos + posOffset * LODFactor, 1.0);
 	
 	uint indexX = texIndex % uint(16);
 	uint indexY = texIndex / uint(16);

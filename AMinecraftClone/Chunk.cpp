@@ -10,6 +10,21 @@ void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t
 
 
 Chunk::Chunk() {
+}
+Chunk::~Chunk() {
+
+}
+
+int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given chunk, only on a single axis tho, this is generally used for render distance
+    int DistanceX = std::abs(std::abs(chunk->ChunkX) - std::abs(ChunkX));
+    int DistanceZ = std::abs(std::abs(chunk->ChunkZ) - std::abs(ChunkZ));
+    if (DistanceX > DistanceZ)
+        return DistanceX;
+    return DistanceZ;
+}
+
+
+void Chunk::CreateMeshObjects() {
     //generate buffer objects for opaque
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
@@ -25,7 +40,7 @@ Chunk::Chunk() {
     glGenBuffers(1, &m_VBO3);
     glGenBuffers(1, &m_EBO3);
 }
-Chunk::~Chunk() {
+void Chunk::DeleteMeshObjects() {
     //delete buffer objects for opaque
     glDeleteVertexArrays(1, &m_VAO);
     glDeleteBuffers(1, &m_VBO);
@@ -42,17 +57,6 @@ Chunk::~Chunk() {
     glDeleteBuffers(1, &m_EBO3);
 }
 
-int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given chunk, only on a single axis tho, this is generally used for render distance
-    int DistanceX = std::abs(std::abs(chunk->ChunkX) - std::abs(ChunkX));
-    int DistanceZ = std::abs(std::abs(chunk->ChunkZ) - std::abs(ChunkZ));
-    if (DistanceX > DistanceZ)
-        return DistanceX;
-    return DistanceZ;
-}
-
-
-
-
 
 
 void Chunk::RenderOpaqueAndPlants() {
@@ -61,6 +65,7 @@ void Chunk::RenderOpaqueAndPlants() {
     Game::e_DefaultShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * 16, 0, ChunkZ * 16) - Game::player.GetPosition();
     Game::e_DefaultShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
+    Game::e_DefaultShader.setUInt("LODFactor", 1 << LOD);
 
     //enable rendering features for opaque blocks
     glEnable(GL_CULL_FACE);
@@ -86,6 +91,7 @@ void Chunk::RenderWater() {
     glm::vec3 relativePos = glm::dvec3(ChunkX * 16, 0, ChunkZ * 16) - Game::player.GetPosition();
     Game::e_WaterShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
     Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
+    Game::e_WaterShader.setUInt("LODFactor", 1 << LOD);
     glEnable(GL_CULL_FACE);
     glDepthMask(GL_TRUE);
 
@@ -94,24 +100,19 @@ void Chunk::RenderWater() {
 }
 
 
-void Chunk::GenerateMesh() {
+ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
+    uint8_t LODFactor = 1 << chunk.LOD;
+
     uint32_t index = 0;
     uint32_t index1 = 0;
     uint32_t index2 = 0;
 
-    std::vector<Vertex> opaqueVerticies;
-    std::vector<uint32_t> opaqueIndicies;
+    ChunkMeshUpload ret{};
 
-    std::vector<Vertex> plantVerticies;
-    std::vector<uint32_t> plantIndicies;
-
-    std::vector<Vertex> waterVerticies;
-    std::vector<uint32_t> waterIndicies;
-
-    for (int x = 0; x < Chunk_Width; ++x) {
-        for (int y = 0; y < Chunk_Height; ++y) {
-            for (int z = 0; z < Chunk_Length; ++z) {
-                BlockType type = m_Blocks[x][y][z].m_Type;
+    for (int x = 0; x < Chunk_Width; x += LODFactor) {
+        for (int y = 0; y < Chunk_Height; y += LODFactor) {
+            for (int z = 0; z < Chunk_Length; z += LODFactor) {
+                BlockType type = chunk.m_Blocks[x][y][z].m_Type;
                 if (type == BlockType::Air)
                     continue;
 
@@ -120,17 +121,17 @@ void Chunk::GenerateMesh() {
                 auto isAir = [&](int dx, int dy, int dz, BlockVisiblity visibility) -> bool { //for opaque blocks
                     Block* block;
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
-                    nx = x + dx, ny = y + dy, nz = z + dz;
+                    nx = x + (dx * LODFactor), ny = y + (dy * LODFactor), nz = z + (dz * LODFactor);
                     if (nx < 0) { //check if outside on the X on the negative
-                        if (owningWorld->IsValidChunk(ChunkX - 1, ChunkZ)) {
-                            block = &owningWorld->getChunkAt(ChunkX - 1, ChunkZ)->m_Blocks[15][ny][nz];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
                         }
                         return true;
                     }
                     else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                        if (owningWorld->IsValidChunk(ChunkX + 1, ChunkZ)) {
-                            block = &owningWorld->getChunkAt(ChunkX + 1, ChunkZ)->m_Blocks[0][ny][nz];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
                         }
                         return true;
@@ -140,37 +141,37 @@ void Chunk::GenerateMesh() {
                         return true; 
                     }
                     else if (nz < 0) { //check if outside on the Z on the negative
-                        if (owningWorld->IsValidChunk(ChunkX, ChunkZ - 1)) {
-                            block = &owningWorld->getChunkAt(ChunkX, ChunkZ - 1)->m_Blocks[nx][ny][15];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
                         }
                         return true;
                     }
                     else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                        if (owningWorld->IsValidChunk(ChunkX, ChunkZ + 1)) {
-                            block = &owningWorld->getChunkAt(ChunkX, ChunkZ + 1)->m_Blocks[nx][ny][0];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
                         }
                         return true;
                     }
 
                     //if inside the chunk
-                    return m_Blocks[nx][ny][nz].getType() == BlockType::Air || m_Blocks[nx][ny][nz].data.visibility != visibility;
+                    return chunk.m_Blocks[nx][ny][nz].getType() == BlockType::Air || chunk.m_Blocks[nx][ny][nz].data.visibility != visibility;
                     };
                 auto isVis = [&](int dx, int dy, int dz, BlockVisiblity visibility)  -> bool {
                     Block* block;
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
                     nx = x + dx, ny = y + dy, nz = z + dz;
                     if (nx < 0) { //check if outside on the X on the negative
-                        if (owningWorld->IsValidChunk(ChunkX - 1, ChunkZ)) {
-                            block = &owningWorld->getChunkAt(ChunkX - 1, ChunkZ)->m_Blocks[15][ny][nz];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
                             return block->data.visibility == visibility;
                         }
                         return true;
                     }
                     else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                        if (owningWorld->IsValidChunk(ChunkX + 1, ChunkZ)) {
-                            block = &owningWorld->getChunkAt(ChunkX + 1, ChunkZ)->m_Blocks[0][ny][nz];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
                             return block->data.visibility == visibility;
                         }
                         return true;
@@ -180,59 +181,61 @@ void Chunk::GenerateMesh() {
                         return true;
                     }
                     else if (nz < 0) { //check if outside on the Z on the negative
-                        if (owningWorld->IsValidChunk(ChunkX, ChunkZ - 1)) {
-                            block = &owningWorld->getChunkAt(ChunkX, ChunkZ - 1)->m_Blocks[nx][ny][15];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
                             return block->data.visibility == visibility;
                         }
                         return true;
                     }
                     else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                        if (owningWorld->IsValidChunk(ChunkX, ChunkZ + 1)) {
-                            block = &owningWorld->getChunkAt(ChunkX, ChunkZ + 1)->m_Blocks[nx][ny][0];
+                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
                             return block->data.visibility == visibility;
                         }
                         return true;
                     }
 
                     //if inside the chunk
-                    return  m_Blocks[nx][ny][nz].data.visibility == visibility;
+                    return  chunk.m_Blocks[nx][ny][nz].data.visibility == visibility;
                     };
 
-                switch (m_Blocks[x][y][z].data.visibility) {
+                switch (chunk.m_Blocks[x][y][z].data.visibility) {
                 case BlockVisiblity::Opaque:
-                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, m_Blocks[x][y][z].data.uv.Back, index, opaqueVerticies, opaqueIndicies);
-                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, m_Blocks[x][y][z].data.uv.Front, index, opaqueVerticies, opaqueIndicies);
-                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, m_Blocks[x][y][z].data.uv.Left, index, opaqueVerticies, opaqueIndicies);
-                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, m_Blocks[x][y][z].data.uv.Right, index, opaqueVerticies, opaqueIndicies);
-                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, m_Blocks[x][y][z].data.uv.Top, index, opaqueVerticies, opaqueIndicies);
-                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, m_Blocks[x][y][z].data.uv.Bottom, index, opaqueVerticies, opaqueIndicies);
+                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, chunk.m_Blocks[x][y][z].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, chunk.m_Blocks[x][y][z].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, chunk.m_Blocks[x][y][z].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, chunk.m_Blocks[x][y][z].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, chunk.m_Blocks[x][y][z].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, chunk.m_Blocks[x][y][z].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
                 case BlockVisiblity::Plant:
-                    AddPlantFace(blockPos, m_Blocks[x][y][z].data.uv.Back, index1, plantVerticies, plantIndicies);
+                    AddPlantFace(blockPos, chunk.m_Blocks[x][y][z].data.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
                     break;
                 case BlockVisiblity::Liquid:
-                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, m_Blocks[x][y][z].data.uv.Back, index2, isVis(0, 1, 0, Liquid), waterVerticies, waterIndicies);
-                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, m_Blocks[x][y][z].data.uv.Front, index2, isVis(0, 1, 0, Liquid), waterVerticies, waterIndicies);
-                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, m_Blocks[x][y][z].data.uv.Left, index2, isVis(0, 1, 0, Liquid), waterVerticies, waterIndicies);
-                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, m_Blocks[x][y][z].data.uv.Right, index2, isVis(0, 1, 0, Liquid), waterVerticies, waterIndicies);
-                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, m_Blocks[x][y][z].data.uv.Top, index2, false, waterVerticies, waterIndicies);
-                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, m_Blocks[x][y][z].data.uv.Bottom, index2, false, waterVerticies, waterIndicies);
+                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, chunk.m_Blocks[x][y][z].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, chunk.m_Blocks[x][y][z].data.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, chunk.m_Blocks[x][y][z].data.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, chunk.m_Blocks[x][y][z].data.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, chunk.m_Blocks[x][y][z].data.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, chunk.m_Blocks[x][y][z].data.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
                     break;
                 }
             }
         }
     }
 
-    //Set Up opaque mesh
-    if(opaqueVerticies.size() > 0)
+    return ret;
+}
+void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
+    if (meshData.opaqueVerticies.size() > 0)
     {
         // Upload to GPU
         glBindVertexArray(m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, opaqueVerticies.size() * sizeof(Vertex), opaqueVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, opaqueIndicies.size() * sizeof(uint32_t), opaqueIndicies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
@@ -241,21 +244,21 @@ void Chunk::GenerateMesh() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        opaqueCount = opaqueIndicies.size();
+        opaqueCount = meshData.opaqueIndicies.size();
     }
 
 
 
     //Set Up plant mesh
-    if (plantVerticies.size() > 0)
+    if (meshData.plantVerticies.size() > 0)
     {
         // Upload to GPU
         glBindVertexArray(m_VAO2);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO2);
-        glBufferData(GL_ARRAY_BUFFER, plantVerticies.size() * sizeof(Vertex), plantVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.plantVerticies.size() * sizeof(Vertex), meshData.plantVerticies.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO2);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, plantIndicies.size() * sizeof(uint32_t), plantIndicies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.plantIndicies.size() * sizeof(uint32_t), meshData.plantIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
@@ -264,19 +267,19 @@ void Chunk::GenerateMesh() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        plantCount = plantIndicies.size();
+        plantCount = meshData.plantIndicies.size();
     }
 
 
 
     //Set Up liquid mesh
-    if (waterVerticies.size() > 0) {
+    if (meshData.waterVerticies.size() > 0) {
         glBindVertexArray(m_VAO3);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO3);
-        glBufferData(GL_ARRAY_BUFFER, waterVerticies.size() * sizeof(Vertex), waterVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.waterVerticies.size() * sizeof(Vertex), meshData.waterVerticies.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO3);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, waterIndicies.size() * sizeof(uint32_t), waterIndicies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.waterIndicies.size() * sizeof(uint32_t), meshData.waterIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
@@ -286,7 +289,7 @@ void Chunk::GenerateMesh() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         HasWater = true;
-        waterCount = waterIndicies.size();
+        waterCount = meshData.waterIndicies.size();
     }
     else HasWater = false;
 }

@@ -3,6 +3,8 @@ layout (location = 0) in uint vert;
 
 out vec2 TexCoords;
 
+uniform uint LODFactor;
+
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
@@ -22,7 +24,7 @@ void main() {
 	uint liquidFlag = decodeWaterFlag(pos, extras);
 
 	vec3 realPos = vec3(actualPos.x, actualPos.y - (1 - (float(liquidFlag) / 10.0)), actualPos.z);
-	gl_Position = projection * view * model * vec4(realPos + posOffset, 1.0);
+	gl_Position = projection * view * model * vec4(realPos + posOffset * LODFactor, 1.0);
 	
 	uint indexX = texIndex % uint(16);
 	uint indexY = texIndex / uint(16);

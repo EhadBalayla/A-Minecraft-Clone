@@ -60,7 +60,11 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void CloseGame();
 	static void CreatePlayerHud();
 
-	const static int RenderDistance = 8;
+	const static int Radius_LOD0 = 8;
+	const static int Radius_LOD1 = 4;
+	const static int Radius_LOD2 = 4;
+	const static int Radius_LOD3 = 2;
+	const static int Radius_LOD4 = 2;
 
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
 };

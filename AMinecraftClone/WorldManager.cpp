@@ -12,68 +12,75 @@ float squaredDistance(const glm::vec2& p1, const glm::vec2& p2) {
 
 WorldManager::WorldManager() {
 	chunkGenerator.owningWorld = this;
+
+	running = true;
+	chunkThread = std::thread(&WorldManager::ChunkThreadLoop, this);
+	//chunkMeshesThread = std::thread(&WorldManager::ChunkMeshesThreadLoop, this);
 }
 WorldManager::~WorldManager() {
-
+	running = false;
+	chunkThread.join();
+	//chunkMeshesThread.join();
 }
 
 
 void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
 	//chunks removal
-	/*for (auto it = chunks.begin(); it != chunks.end(); ) {
+	for (auto it = chunks.begin(); it != chunks.end(); ) {
 		const glm::ivec2& pos = it->first;
 
 		int dx = std::abs(pos.x - ChunkX);
 		int dz = std::abs(pos.y - ChunkZ);
 
-		if (dx > Game::RenderDistance || dz > Game::RenderDistance) {
-			chunkMeshGenQueue.erase(std::remove(chunkMeshGenQueue.begin(), chunkMeshGenQueue.end(), pos), chunkMeshGenQueue.end());
+		if (dx > Game::Radius_LOD0 || dz > Game::Radius_LOD0) {
+			it->second->DeleteMeshObjects();
 			delete it->second;
 			it = chunks.erase(it);
 		}
 		else {
 			++it;
 		}
-	}*/
+	}
 
 	//generate new chunks that aren't in render distance.
-	for (int r = 0; r <= Game::RenderDistance; ++r) {
+	for (int r = 0; r <= Game::Radius_LOD0; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
 			for (int dz = -r; dz <= r; ++dz) {
 				if (std::abs(dx) != r && std::abs(dz) != r) continue; // Only edges of the square
 				if (chunks.find(glm::ivec2(ChunkX + dx, ChunkZ + dz)) == chunks.end()) {
+					std::lock_guard<std::mutex> lock(chunkMutex);
 					chunkGenQueue.push(glm::ivec2(ChunkX + dx, ChunkZ + dz));
+					cv.notify_one();
 				}
 			}
 		}
 	}
 }
 void WorldManager::WorldUpdate(float DeltaTime) {
-	//generate chunks that are in queue for being generated
-	if (!chunkGenQueue.empty()) {
-		chunkGenTimer += DeltaTime;
-		float dynamicDelay = chunkGenDelay + (chunkGenQueue.size() - 1) * 0.1f;
-		if (chunkGenTimer >= dynamicDelay) {
-			chunkGenTimer = 0;
-			glm::ivec2 chunkPos = chunkGenQueue.front();
-			chunkGenQueue.pop();
-			LoadNewChunk(chunkPos.x, chunkPos.y);
+	while (!chunkMeshGenQueue.empty()) {
+		Chunk* chunk = chunkMeshGenQueue.front();
+		chunkMeshGenQueue.pop();
 
-			GenerateChunkMeshes();
-		}
+		ChunkMeshUpload meshData = CreateChunkMeshData(*chunk);
+
+		chunk->CreateMeshObjects();
+		chunk->ChunkUpload(meshData);
+		chunk->RenderReady = true;
+		chunks[glm::ivec2(chunk->ChunkX, chunk->ChunkZ)] = chunk;
 	}
 }
+
 void WorldManager::RenderWorld() {
 	//render opaque and also collect those with water
 	std::vector<Chunk*> waterChunks;
 	for (auto& pair : chunks) {
 		if (pair.second->RenderReady) {
 			pair.second->RenderOpaqueAndPlants();
+			if (pair.second->HasWater)
+				waterChunks.push_back(pair.second);
 		}
-		if (pair.second->HasWater)
-			waterChunks.push_back(pair.second);
 	}
-
+	
 	//sorts chunks with water in their order
 	std::sort(waterChunks.begin(), waterChunks.end(), [&](Chunk* a, Chunk* b) {
 		float distA = squaredDistance(glm::vec3(a->ChunkX + 8.0f, 0, a->ChunkZ + 8.0f), Game::player.GetPosition());
@@ -136,7 +143,6 @@ bool WorldManager::IsSolidBlock(int x, int y, int z) { //coordinates are in worl
 void WorldManager::PlaceBlock(int x, int y, int z, BlockType type) { //coordinates are in world space
 	if (!IsSolidBlock(x, y, z)) {
 		getBlockAt(x, y, z)->setType(type);
-		getChunkAt(floor((float)x / 16.0f), floor((float)z / 16.0f))->GenerateMesh();
 	}
 }
 int WorldManager::getHeightValue(int x, int z) { //coordinates are in world space
@@ -163,31 +169,15 @@ int WorldManager::getHeightValue(int x, int z) { //coordinates are in world spac
 
 
 
-void WorldManager::LoadNewChunk(int ChunkX, int ChunkZ) {
+Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ) {
 	Chunk* chunk = new Chunk();
 	chunk->ChunkX = ChunkX;
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningWorld = this;
 
-	//chunkGenerator.GenerateChunk2(*chunk);
-	chunks[glm::ivec2(ChunkX, ChunkZ)] = chunk;
-	chunkGenerator.GenerateChunk(*chunk);
+	chunkGenerator.GenerateChunk2(*chunk);
 
-	/*int x = ChunkX, z = ChunkZ;
-	if (IsValidChunk(x + 1, z + 1) && IsValidChunk(x, z + 1) && IsValidChunk(x + 1, z)) {
-		chunkGenerator.Populate(x, z);
-	}
-	if (IsValidChunk(x - 1, z + 1) && IsValidChunk(x, z + 1) && IsValidChunk(x - 1, z)) {
-		chunkGenerator.Populate(x - 1, z);
-	}
-	if (IsValidChunk(x + 1, z - 1) && IsValidChunk(x, z - 1) && IsValidChunk(x + 1, z)) {
-		chunkGenerator.Populate(x, z - 1);
-	}
-	if (IsValidChunk(x - 1, z - 1) && IsValidChunk(x, z - 1) && IsValidChunk(x - 1, z)) {
-		chunkGenerator.Populate(x - 1, z - 1);
-	}*/
-
-	chunkMeshGenQueue.push_back(glm::ivec2(ChunkX, ChunkZ));
+	return chunk;
 }
 bool WorldManager::IsChunkNeighboorsGood(int ChunkX, int ChunkZ) {
 	if (chunks.find(glm::ivec2(ChunkX, ChunkZ)) == chunks.end())
@@ -196,24 +186,59 @@ bool WorldManager::IsChunkNeighboorsGood(int ChunkX, int ChunkZ) {
 	int centerChunkX = static_cast<int>(std::floor(Game::player.GetPosition().x / 16.0));
 	int centerChunkZ = static_cast<int>(std::floor(Game::player.GetPosition().z / 16.0));
 
-	bool IsPositiveX = (ChunkX + 1 > centerChunkX + Game::RenderDistance) || IsValidChunk(ChunkX + 1, ChunkZ); //positive X of render distance
-	bool IsNegativeX = (ChunkX - 1 < centerChunkX - Game::RenderDistance) || IsValidChunk(ChunkX - 1, ChunkZ); //negative X of render distance
-	bool IsPositiveZ = (ChunkZ + 1 > centerChunkZ + Game::RenderDistance) || IsValidChunk(ChunkX, ChunkZ + 1); //positive Z of render distanec
-	bool IsNegativeZ = (ChunkZ - 1 < centerChunkZ - Game::RenderDistance) || IsValidChunk(ChunkX, ChunkZ - 1); //negative Z of render distance
+	bool IsPositiveX = (ChunkX + 1 > centerChunkX + Game::Radius_LOD0) || IsValidChunk(ChunkX + 1, ChunkZ); //positive X of render distance
+	bool IsNegativeX = (ChunkX - 1 < centerChunkX - Game::Radius_LOD0) || IsValidChunk(ChunkX - 1, ChunkZ); //negative X of render distance
+	bool IsPositiveZ = (ChunkZ + 1 > centerChunkZ + Game::Radius_LOD0) || IsValidChunk(ChunkX, ChunkZ + 1); //positive Z of render distanec
+	bool IsNegativeZ = (ChunkZ - 1 < centerChunkZ - Game::Radius_LOD0) || IsValidChunk(ChunkX, ChunkZ - 1); //negative Z of render distance
 
 
 	return IsPositiveX && IsNegativeX && IsPositiveZ && IsNegativeZ;
 }
-void WorldManager::GenerateChunkMeshes() {
-	if (!chunkMeshGenQueue.empty()) {
-		for (auto it = chunkMeshGenQueue.begin(); it != chunkMeshGenQueue.end(); ) {
-			glm::ivec2 chunkPos = *it;
-			if (IsChunkNeighboorsGood(chunkPos.x, chunkPos.y)) {
-				chunks[chunkPos]->GenerateMesh();
-				chunks[chunkPos]->RenderReady = true;
-				it = chunkMeshGenQueue.erase(it);
-			}
-			else ++it;
+
+
+void WorldManager::ChunkThreadLoop() {
+	while (running) {
+		glm::ivec2 chunkPos; //the gathered value
+
+		{
+			std::unique_lock<std::mutex> lock(chunkMutex);
+			cv.wait(lock, [this] { return !chunkGenQueue.empty() || !running; });
+
+			if (!running && chunkGenQueue.empty()) break;
+
+			chunkPos = chunkGenQueue.front();
+			chunkGenQueue.pop();
+
+		}
+		
+		Chunk* chunk = LoadNewChunk(chunkPos.x, chunkPos.y); //the produced value
+
+		{
+			std::lock_guard<std::mutex> lock(meshMutex);
+			chunkMeshGenQueue.push({ chunk });
+		}
+		//meshCV.notify_one();
+	}
+}
+void WorldManager::ChunkMeshesThreadLoop() {
+	while (running) {
+		Chunk* chunk;
+
+		{
+			std::unique_lock<std::mutex> lock(meshMutex);
+			meshCV.wait(lock, [this] {return !chunkMeshGenQueue.empty() || !running; });
+
+			if (!running && chunkMeshGenQueue.empty()) break;
+			
+			chunk = chunkMeshGenQueue.front();
+			chunkMeshGenQueue.pop();
+		}
+
+		ChunkMeshUpload chunkMesh = CreateChunkMeshData(*chunk);
+
+		{
+			std::lock_guard<std::mutex> lock(finalMutex);
+			chunkMeshFinalQueue.push({ chunk, std::move(chunkMesh) });
 		}
 	}
 }

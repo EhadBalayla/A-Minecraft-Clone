@@ -68,20 +68,35 @@ void Player::UpdateChunksAroundPlayer() {
 }
 
 void Player::Update(float DeltaTime) {
-
-    if(CanPerformAbility()) { //basically if inventory is open don't do movement
-        if (IsMovingForward)
-            velocity += getForwardVector() * DeltaTime * acceleration;
-        if (IsMovingBackward)
-            velocity -= getForwardVector() * DeltaTime * acceleration;
-        if (IsMovingLeft)
-            velocity -= getRightVector() * DeltaTime * acceleration;
-        if (IsMovingRight)
-            velocity += getRightVector() * DeltaTime * acceleration;
-    }
     UpdateChunksAroundPlayer();
 
-    MoveAndCollide(DeltaTime);
+    if (!CreativeMode) {
+        if (CanPerformAbility()) { //basically if inventory is open don't do movement
+            if (IsMovingForward)
+                velocity += getForwardVector() * DeltaTime * acceleration;
+            if (IsMovingBackward)
+                velocity -= getForwardVector() * DeltaTime * acceleration;
+            if (IsMovingLeft)
+                velocity -= getRightVector() * DeltaTime * acceleration;
+            if (IsMovingRight)
+                velocity += getRightVector() * DeltaTime * acceleration;
+        }
+        MoveAndCollide(DeltaTime);
+    }
+    else {
+        if (IsMovingForward)
+            position += getForwardVector() * DeltaTime * CreativeSpeed;
+        if (IsMovingBackward)
+            position -= getForwardVector() * DeltaTime * CreativeSpeed;
+        if (IsMovingLeft)
+            position -= getRightVector() * DeltaTime * CreativeSpeed;
+        if (IsMovingRight)
+            position += getRightVector() * DeltaTime * CreativeSpeed;
+        if (IsJumping)
+            position += glm::vec3(0.0f, 1.0f, 0.0f) * DeltaTime * CreativeSpeed;
+        if(IsShifting)
+            position += glm::vec3(0.0f, -1.0f, 0.0f) * DeltaTime * CreativeSpeed;
+    }
 
 }
 
@@ -201,7 +216,6 @@ void Player::ProcessInput(SDL_Event& e) {
                     switch (m_PlayerItems[selectedSlot - 1].m_Item.getData().type) {
                     case ItemUsageType::PlaceableBlock:
                         PlayerPlaceBlocks();
-                        std::cout << "placed block" << std::endl;
                         break;
                     }
                 }
