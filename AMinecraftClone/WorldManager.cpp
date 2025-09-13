@@ -43,7 +43,8 @@ void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
 	}
 
 	//generate new chunks that aren't in render distance.
-	for (int r = 0; r <= Game::Radius_LOD0; ++r) {
+	int renderDistance = Game::Radius_LOD0 + Game::Radius_LOD1 + Game::Radius_LOD2 + Game::Radius_LOD3 + Game::Radius_LOD4;
+	for (int r = 0; r <= renderDistance; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
 			for (int dz = -r; dz <= r; ++dz) {
 				if (std::abs(dx) != r && std::abs(dz) != r) continue; // Only edges of the square
@@ -60,11 +61,13 @@ void WorldManager::WorldUpdate(float DeltaTime) {
 	while (!chunkMeshGenQueue.empty()) {
 		Chunk* chunk = chunkMeshGenQueue.front();
 		chunkMeshGenQueue.pop();
-
-		ChunkMeshUpload meshData = CreateChunkMeshData(*chunk);
-
 		chunk->CreateMeshObjects();
-		chunk->ChunkUpload(meshData);
+
+		for (uint8_t lod = 0; lod < 5; lod++) {
+			ChunkMeshUpload meshData = CreateChunkMeshData(*chunk, lod);
+			chunk->ChunkUpload(meshData, lod);
+		}
+
 		chunk->RenderReady = true;
 		chunks[glm::ivec2(chunk->ChunkX, chunk->ChunkZ)] = chunk;
 	}
@@ -75,6 +78,26 @@ void WorldManager::RenderWorld() {
 	std::vector<Chunk*> waterChunks;
 	for (auto& pair : chunks) {
 		if (pair.second->RenderReady) {
+			glm::ivec2 PlayerChunk = Game::player.GetCurrentChunkCoords();
+
+			int diffX = std::abs(pair.second->ChunkX - PlayerChunk.x);
+			int diffZ = std::abs(pair.second->ChunkZ - PlayerChunk.y);
+
+			int maxDiff = std::max(diffX, diffZ);
+
+			if (maxDiff > Game::Radius_LOD3 + Game::Radius_LOD2 + Game::Radius_LOD1 + Game::Radius_LOD0)
+				pair.second->LOD = 4;
+			else if (maxDiff > Game::Radius_LOD2 + Game::Radius_LOD1 + Game::Radius_LOD0)
+				pair.second->LOD = 3;
+			else if (maxDiff > Game::Radius_LOD1 + Game::Radius_LOD0)
+				pair.second->LOD = 2;
+			else if (maxDiff > Game::Radius_LOD0)
+				pair.second->LOD = 1;
+			else
+				pair.second->LOD = 0;
+
+
+
 			pair.second->RenderOpaqueAndPlants();
 			if (pair.second->HasWater)
 				waterChunks.push_back(pair.second);
@@ -234,7 +257,7 @@ void WorldManager::ChunkMeshesThreadLoop() {
 			chunkMeshGenQueue.pop();
 		}
 
-		ChunkMeshUpload chunkMesh = CreateChunkMeshData(*chunk);
+		ChunkMeshUpload chunkMesh = CreateChunkMeshData(*chunk, 0);
 
 		{
 			std::lock_guard<std::mutex> lock(finalMutex);

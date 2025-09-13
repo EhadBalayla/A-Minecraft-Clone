@@ -299,3 +299,10 @@ void Player::PlayerPlaceBlocks() {
         }
     }
 }
+
+
+
+
+glm::ivec2 Player::GetCurrentChunkCoords() {
+    return glm::ivec2(currentChunkX, currentChunkZ);
+}

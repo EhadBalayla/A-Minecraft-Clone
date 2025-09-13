@@ -26,35 +26,39 @@ int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given
 
 void Chunk::CreateMeshObjects() {
     //generate buffer objects for opaque
-    glGenVertexArrays(1, &m_VAO);
-    glGenBuffers(1, &m_VBO);
-    glGenBuffers(1, &m_EBO);
+    for (uint8_t i = 0; i < 5; i++) {
+        glGenVertexArrays(1, &meshes[i].m_VAO);
+        glGenBuffers(1, &meshes[i].m_VBO);
+        glGenBuffers(1, &meshes[i].m_EBO);
 
-    //generate buffer objects for plants
-    glGenVertexArrays(1, &m_VAO2);
-    glGenBuffers(1, &m_VBO2);
-    glGenBuffers(1, &m_EBO2);
+        //generate buffer objects for plants
+        glGenVertexArrays(1, &meshes[i].m_VAO2);
+        glGenBuffers(1, &meshes[i].m_VBO2);
+        glGenBuffers(1, &meshes[i].m_EBO2);
 
-    //generate buffer objects for liquids
-    glGenVertexArrays(1, &m_VAO3);
-    glGenBuffers(1, &m_VBO3);
-    glGenBuffers(1, &m_EBO3);
+        //generate buffer objects for liquids
+        glGenVertexArrays(1, &meshes[i].m_VAO3);
+        glGenBuffers(1, &meshes[i].m_VBO3);
+        glGenBuffers(1, &meshes[i].m_EBO3);
+    }
 }
 void Chunk::DeleteMeshObjects() {
-    //delete buffer objects for opaque
-    glDeleteVertexArrays(1, &m_VAO);
-    glDeleteBuffers(1, &m_VBO);
-    glDeleteBuffers(1, &m_EBO);
+    for (uint8_t i = 0; i < 5; i++) {
+        //delete buffer objects for opaque
+        glDeleteVertexArrays(1, &meshes[i].m_VAO);
+        glDeleteBuffers(1, &meshes[i].m_VBO);
+        glDeleteBuffers(1, &meshes[i].m_EBO);
 
-    //delete buffer objects for plants
-    glDeleteVertexArrays(1, &m_VAO2);
-    glDeleteBuffers(1, &m_VBO2);
-    glDeleteBuffers(1, &m_EBO2);
+        //delete buffer objects for plants
+        glDeleteVertexArrays(1, &meshes[i].m_VAO2);
+        glDeleteBuffers(1, &meshes[i].m_VBO2);
+        glDeleteBuffers(1, &meshes[i].m_EBO2);
 
-    //delete buffer objects for liquids
-    glDeleteVertexArrays(1, &m_VAO3);
-    glDeleteBuffers(1, &m_VBO3);
-    glDeleteBuffers(1, &m_EBO3);
+        //delete buffer objects for liquids
+        glDeleteVertexArrays(1, &meshes[i].m_VAO3);
+        glDeleteBuffers(1, &meshes[i].m_VBO3);
+        glDeleteBuffers(1, &meshes[i].m_EBO3);
+    }
 }
 
 
@@ -72,15 +76,15 @@ void Chunk::RenderOpaqueAndPlants() {
     glCullFace(GL_BACK); // Cull back faces
     glFrontFace(GL_CW); // Clockwise instead
 
-    glBindVertexArray(m_VAO);
-    glDrawElements(GL_TRIANGLES, opaqueCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(meshes[LOD].m_VAO);
+    glDrawElements(GL_TRIANGLES, meshes[LOD].opaqueCount, GL_UNSIGNED_INT, 0);
 
     //disable rendering features for plants
     glDisable(GL_CULL_FACE);
     glDepthMask(GL_FALSE);
 
-    glBindVertexArray(m_VAO2);
-    glDrawElements(GL_TRIANGLES, plantCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(meshes[LOD].m_VAO2);
+    glDrawElements(GL_TRIANGLES, meshes[LOD].plantCount, GL_UNSIGNED_INT, 0);
 
     glDepthMask(GL_TRUE);
 }
@@ -95,13 +99,13 @@ void Chunk::RenderWater() {
     glEnable(GL_CULL_FACE);
     glDepthMask(GL_TRUE);
 
-    glBindVertexArray(m_VAO3);
-    glDrawElements(GL_TRIANGLES, waterCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(meshes[LOD].m_VAO3);
+    glDrawElements(GL_TRIANGLES, meshes[LOD].waterCount, GL_UNSIGNED_INT, 0);
 }
 
 
-ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
-    uint8_t LODFactor = 1 << chunk.LOD;
+ChunkMeshUpload CreateChunkMeshData(Chunk& chunk, uint8_t LOD) {
+    uint8_t LODFactor = 1 << LOD;
 
     uint32_t index = 0;
     uint32_t index1 = 0;
@@ -123,35 +127,35 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
                     nx = x + (dx * LODFactor), ny = y + (dy * LODFactor), nz = z + (dz * LODFactor);
                     if (nx < 0) { //check if outside on the X on the negative
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }
+                        }*/
                         return true;
                     }
                     else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }
+                        }*/
                         return true;
                     }
                     else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
                     {
-                        return true; 
+                        return true;
                     }
                     else if (nz < 0) { //check if outside on the Z on the negative
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }
+                        }*/
                         return true;
                     }
                     else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
                             return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }
+                        }*/
                         return true;
                     }
 
@@ -163,17 +167,17 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
                     nx = x + dx, ny = y + dy, nz = z + dz;
                     if (nx < 0) { //check if outside on the X on the negative
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
                             return block->data.visibility == visibility;
-                        }
+                        }*/
                         return true;
                     }
                     else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
                             return block->data.visibility == visibility;
-                        }
+                        }*/
                         return true;
                     }
                     else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
@@ -181,17 +185,17 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                         return true;
                     }
                     else if (nz < 0) { //check if outside on the Z on the negative
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
                             return block->data.visibility == visibility;
-                        }
+                        }*/
                         return true;
                     }
                     else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                        if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
                             block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
                             return block->data.visibility == visibility;
-                        }
+                        }*/
                         return true;
                     }
 
@@ -209,7 +213,8 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, chunk.m_Blocks[x][y][z].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
                 case BlockVisiblity::Plant:
-                    AddPlantFace(blockPos, chunk.m_Blocks[x][y][z].data.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
+                    if(LOD == 0)
+                        AddPlantFace(blockPos, chunk.m_Blocks[x][y][z].data.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
                     break;
                 case BlockVisiblity::Liquid:
                     if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, chunk.m_Blocks[x][y][z].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
@@ -226,15 +231,15 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
 
     return ret;
 }
-void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
+void Chunk::ChunkUpload(ChunkMeshUpload& meshData, uint8_t LOD) {
     if (meshData.opaqueVerticies.size() > 0)
     {
         // Upload to GPU
-        glBindVertexArray(m_VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        glBindVertexArray(meshes[LOD].m_VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, meshes[LOD].m_VBO);
         glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[LOD].m_EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
@@ -244,7 +249,7 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        opaqueCount = meshData.opaqueIndicies.size();
+        meshes[LOD].opaqueCount = meshData.opaqueIndicies.size();
     }
 
 
@@ -253,11 +258,11 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
     if (meshData.plantVerticies.size() > 0)
     {
         // Upload to GPU
-        glBindVertexArray(m_VAO2);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO2);
+        glBindVertexArray(meshes[LOD].m_VAO2);
+        glBindBuffer(GL_ARRAY_BUFFER, meshes[LOD].m_VBO2);
         glBufferData(GL_ARRAY_BUFFER, meshData.plantVerticies.size() * sizeof(Vertex), meshData.plantVerticies.data(), GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO2);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[LOD].m_EBO2);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.plantIndicies.size() * sizeof(uint32_t), meshData.plantIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
@@ -267,18 +272,18 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        plantCount = meshData.plantIndicies.size();
+        meshes[LOD].plantCount = meshData.plantIndicies.size();
     }
 
 
 
     //Set Up liquid mesh
     if (meshData.waterVerticies.size() > 0) {
-        glBindVertexArray(m_VAO3);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO3);
+        glBindVertexArray(meshes[LOD].m_VAO3);
+        glBindBuffer(GL_ARRAY_BUFFER, meshes[LOD].m_VBO3);
         glBufferData(GL_ARRAY_BUFFER, meshData.waterVerticies.size() * sizeof(Vertex), meshData.waterVerticies.data(), GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO3);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[LOD].m_EBO3);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.waterIndicies.size() * sizeof(uint32_t), meshData.waterIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
@@ -289,7 +294,7 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         HasWater = true;
-        waterCount = meshData.waterIndicies.size();
+        meshes[LOD].waterCount = meshData.waterIndicies.size();
     }
     else HasWater = false;
 }

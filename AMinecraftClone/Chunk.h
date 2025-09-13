@@ -23,7 +23,13 @@ struct ChunkMeshUpload {
 	std::vector<Vertex> waterVerticies;
 	std::vector<uint32_t> waterIndicies;
 };
-ChunkMeshUpload CreateChunkMeshData(Chunk& chunk);
+ChunkMeshUpload CreateChunkMeshData(Chunk& chunk, uint8_t LOD);
+
+struct ChunkMesh { //so we can have multiple meshes for multiple LODs
+	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
+	unsigned int m_VAO2, m_VBO2, m_EBO2, plantCount = 0;
+	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
+};
 
 enum Face {
 	Top,
@@ -52,18 +58,15 @@ public:
 
 	void RenderOpaqueAndPlants();
 	void RenderWater();
-	void ChunkUpload(ChunkMeshUpload& meshData);
+	void ChunkUpload(ChunkMeshUpload& meshData, uint8_t LOD);
 
 	int DistanceFromChunk(Chunk* chunk);
 
 	void CreateMeshObjects();
 	void DeleteMeshObjects();
 
-	uint8_t LOD = 2; //0 - 4
+	uint8_t LOD = 0; //0 - 4
 private:
-	//3D graphics data for the chunk
-	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
-	unsigned int m_VAO2, m_VBO2, m_EBO2, plantCount = 0;
-	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
+	ChunkMesh meshes[5]; //meshes for each LOD
 };
 
