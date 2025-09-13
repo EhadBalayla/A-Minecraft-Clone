@@ -60,7 +60,7 @@ void Player::UpdateChunksAroundPlayer() {
     int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
 
     if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
-        Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
+        //Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
 
         currentChunkX = newChunkX;
         currentChunkZ = newChunkZ;
@@ -229,7 +229,8 @@ void Player::ProcessInput(SDL_Event& e) {
     IsMovingBackward = keystates[SDL_SCANCODE_S]; //basically scan if pressing S
     IsMovingLeft = keystates[SDL_SCANCODE_A]; //basically scan if pressing A
     IsMovingRight = keystates[SDL_SCANCODE_D]; //basically scan if pressing D
-
+    IsShifting = keystates[SDL_SCANCODE_LSHIFT]; //basically if pressing left shift
+    IsJumping = keystates[SDL_SCANCODE_SPACE]; //basically if holding space
 }
 
 

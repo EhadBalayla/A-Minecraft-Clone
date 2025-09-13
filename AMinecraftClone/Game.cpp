@@ -11,6 +11,7 @@ Window Game::e_Window;
 Shader Game::e_DefaultShader;
 Shader Game::e_WaterShader;
 Shader Game::e_CloudShader;
+Shader Game::e_LODShader;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
@@ -34,6 +35,7 @@ void Game::Init() {
 	e_DefaultShader.loadShader("defaultVertex.file", "defaultFragment.file");
 	e_WaterShader.loadShader("waterVertex.file", "waterFragment.file");
 	e_CloudShader.loadShader("cloudsVertex.file", "cloudsFragment.file");
+	e_LODShader.loadShader("lodVertex.file", "lodFragment.file");
 
 	Proj = glm::mat4(1.0f);
 	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 5000.0f);

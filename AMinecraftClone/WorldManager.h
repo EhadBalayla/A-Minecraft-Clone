@@ -9,13 +9,23 @@
 #include <mutex>
 #include <condition_variable>
 
+
+
+struct SuperChunkPrep {
+	Chunk** chunks;
+	size_t chunksCount;
+	glm::ivec2 pos;
+	uint8_t LOD;
+};
+struct SuperChunkReady {
+	SuperChunk* chunk;
+	SuperChunkMeshUpload meshData;
+};
+
+
 struct ChunkReady {
 	Chunk* chunkPos;
-	ChunkMeshUpload meshData0;
-	ChunkMeshUpload meshData1;
-	ChunkMeshUpload meshData2;
-	ChunkMeshUpload meshData3;
-	ChunkMeshUpload meshData4;
+	ChunkMeshUpload meshData;
 };
 
 namespace std {
@@ -38,7 +48,7 @@ public:
 	WorldManager();
 	~WorldManager();
 
-	void UpdateChunks(int ChunkX, int ChunkZ); //basically called for when the player switches a chunk
+	void UpdateChunks(int CenterX, int CenterZ); //basically called for when the player switches a chunk
 	void WorldUpdate(float DeltaTime);
 	void RenderWorld();
 
@@ -59,6 +69,16 @@ public:
 
 	//coords converters
 private:
+	ChunkGenerator chunkGenerator; //the world generator itself
+
+	//world helper functions
+	void UpdateLOD(int CenterX, int CenterZ);
+
+	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
+	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates temporary chunks to prep a super chunk
+	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ);
+
+	//the multithreading stuff
 	bool running;
 	std::thread chunkThread;
 	std::thread chunkMeshesThread;
@@ -68,17 +88,30 @@ private:
 	std::condition_variable cv;
 	std::condition_variable meshCV;
 
-	std::unordered_map<glm::ivec2, Chunk*> chunks;
-	ChunkGenerator chunkGenerator;
+	std::thread superChunkThread;
+	std::thread superChunkMeshesThread;
+	std::mutex superChunkMutex;
+	std::mutex superMeshMutex;
+	std::mutex superFinalMutex;
+	std::condition_variable superCV;
+	std::condition_variable superMeshCV;
 
+	std::unordered_map<glm::ivec2, Chunk*> chunks;
+	std::unordered_map<glm::ivec2, SuperChunk*> LOD1;
+
+	//chunks thread queues
 	std::queue<glm::ivec2> chunkGenQueue;
 	std::queue<Chunk*> chunkMeshGenQueue;
 	std::queue<ChunkReady> chunkMeshFinalQueue;
 
-	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
-	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ); 
+	//super chunks thread queues
+	std::queue<glm::ivec2> superChunkGenQueue;
+	std::queue<SuperChunkPrep> superChunkMeshGenQueue;
+	std::queue<SuperChunkReady> superChunkMeshFinalQueue;
 
+	//threads functions
 	void ChunkThreadLoop();
 	void ChunkMeshesThreadLoop();
+	void LODThreadLoop();
+	void LODMeshThreadLoop();
 };
-

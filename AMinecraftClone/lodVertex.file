@@ -1,5 +1,7 @@
 #version 330 core
-layout (location = 0) in uint vert;
+layout (location = 0) in uvec3 vert;
+layout (location = 1) in uint tex;
+layout (location = 2) in uint ext;
 
 out vec2 TexCoords;
 
@@ -7,22 +9,18 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
 
-uvec3 decodePos(uint pos);
+uniform uint LODFactor;
+
 uvec3 decodeOffset(uint extra);
 vec2 decodeUVoffset(uint extra);
-uint decodeWaterFlag(uint pos, uint extra);
 
 void main() {
-	uint pos = vert & 0x7FFFu;
-	uint texIndex = (vert >> 16) & 0xFFu;
-	uint extras = (vert >> 24) & 0xFFu;
+	uint texIndex = tex;
+	uint extras = ext;
 	
-	uvec3 actualPos = decodePos(pos);
 	uvec3 posOffset = decodeOffset(extras);
-	uint liquidFlag = decodeWaterFlag(pos, extras);
 
-	vec3 realPos = vec3(actualPos.x, actualPos.y - (1 - (float(liquidFlag) / 10.0)), actualPos.z);
-	gl_Position = projection * view * model * vec4(realPos + posOffset, 1.0);
+	gl_Position = projection * view * model * vec4(vert + posOffset * LODFactor, 1.0);
 	
 	uint indexX = texIndex % uint(16);
 	uint indexY = texIndex / uint(16);
@@ -33,16 +31,6 @@ void main() {
 	TexCoords = vec2(uvX, uvY) + uvOffset;
 }
 
-uvec3 decodePos(uint pos) {
-	uvec3 ret;
-	ret.x = pos & 0xFu;
-	pos >>= 4;
-	ret.z = pos & 0xFu;
-	pos >>= 4;
-	ret.y = pos & 0xFFu;
-	
-	return ret;
-}
 uvec3 decodeOffset(uint extra) {
 	uint number = (extra >> 2) & 0x7u; //gets the block corner number
 	const uvec3 offsets[8] = uvec3[8](
@@ -57,7 +45,4 @@ vec2 decodeUVoffset(uint extra) {
 		vec2(0, 0), vec2(0.0625, 0), vec2(0.0625, 0.0625), vec2(0, 0.0625)
 	);
 	return offsets[number];
-}
-uint decodeWaterFlag(uint pos, uint extra) {
-	return (pos >> 15) & 0x1u | (extra >> 5) << 1;
 }

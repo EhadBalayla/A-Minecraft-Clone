@@ -23,9 +23,9 @@ struct ChunkMeshUpload {
 	std::vector<Vertex> waterVerticies;
 	std::vector<uint32_t> waterIndicies;
 };
-ChunkMeshUpload CreateChunkMeshData(Chunk& chunk, uint8_t LOD);
+ChunkMeshUpload CreateChunkMeshData(Chunk& chunk);
 
-struct ChunkMesh { //so we can have multiple meshes for multiple LODs
+struct ChunkMesh {
 	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
 	unsigned int m_VAO2, m_VBO2, m_EBO2, plantCount = 0;
 	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
@@ -47,9 +47,6 @@ class Chunk
 public:
 	Block m_Blocks[Chunk_Width][Chunk_Height][Chunk_Length];
 
-	Chunk();
-	~Chunk();
-
 	WorldManager* owningWorld;
 	int ChunkX, ChunkZ;
 	bool RenderReady = false;
@@ -58,15 +55,47 @@ public:
 
 	void RenderOpaqueAndPlants();
 	void RenderWater();
-	void ChunkUpload(ChunkMeshUpload& meshData, uint8_t LOD);
+	void ChunkUpload(ChunkMeshUpload& meshData);
 
 	int DistanceFromChunk(Chunk* chunk);
 
 	void CreateMeshObjects();
 	void DeleteMeshObjects();
-
-	uint8_t LOD = 0; //0 - 4
 private:
-	ChunkMesh meshes[5]; //meshes for each LOD
+	ChunkMesh meshes; //meshes for each LOD
+};
+
+struct SuperChunkMesh {
+	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
+};
+
+//LOD chunks stuff
+struct SuperChunkVertex {
+	glm::u16vec3 pos;
+	uint8_t texIndex;
+	uint8_t extras;
+};
+struct SuperChunkMeshUpload {
+	std::vector<SuperChunkVertex> opaqueVerticies;
+	std::vector<uint32_t> opaqueIndicies;
+};
+
+SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint8_t LOD);
+
+class SuperChunk {
+public:
+	glm::ivec2 ChunkPos;
+	uint8_t LOD = 1; //from 1 - 4
+
+	bool RenderReady = false;
+
+	void Render();
+
+	void ChunkUpload(SuperChunkMeshUpload& meshData, uint8_t LOD);
+
+	void CreateMeshObjects();
+	void DeleteMeshObjects();
+private:
+	SuperChunkMesh mesh; //only a single one
 };
 

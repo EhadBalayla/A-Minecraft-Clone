@@ -16,25 +16,33 @@ WorldManager::WorldManager() {
 	running = true;
 	chunkThread = std::thread(&WorldManager::ChunkThreadLoop, this);
 	chunkMeshesThread = std::thread(&WorldManager::ChunkMeshesThreadLoop, this);
+
+	superChunkThread = std::thread(&WorldManager::LODThreadLoop, this);
+	superChunkMeshesThread = std::thread(&WorldManager::LODMeshThreadLoop, this);
 }
 WorldManager::~WorldManager() {
 	running = false;
+	cv.notify_all();
+	meshCV.notify_all();
+	superCV.notify_all();
+	superMeshCV.notify_all();
+
 	chunkThread.join();
 	chunkMeshesThread.join();
+
+	superChunkThread.join();
+	superChunkMeshesThread.join();
 }
 
 
-void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
-	//chunks removal
-	int renderDistance = Game::Radius_LOD0 + Game::Radius_LOD1 + Game::Radius_LOD2 + Game::Radius_LOD3 + Game::Radius_LOD4;
-
+void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
 	for (auto it = chunks.begin(); it != chunks.end(); ) {
 		const glm::ivec2& pos = it->first;
 
-		int dx = std::abs(pos.x - ChunkX);
-		int dz = std::abs(pos.y - ChunkZ);
+		int dx = std::abs(pos.x - CenterX);
+		int dz = std::abs(pos.y - CenterZ);
 
-		if (dx > renderDistance || dz > renderDistance) {
+		if (dx > Game::Radius_LOD0 || dz > Game::Radius_LOD0) {
 			it->second->DeleteMeshObjects();
 			delete it->second;
 			it = chunks.erase(it);
@@ -45,34 +53,80 @@ void WorldManager::UpdateChunks(int ChunkX, int ChunkZ) {
 	}
 
 	//generate new chunks that aren't in render distance.
-	for (int r = 0; r <= renderDistance; ++r) {
+	for (int r = 0; r <= Game::Radius_LOD0; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
 			for (int dz = -r; dz <= r; ++dz) {
 				if (std::abs(dx) != r && std::abs(dz) != r) continue; // Only edges of the square
-				if (chunks.find(glm::ivec2(ChunkX + dx, ChunkZ + dz)) == chunks.end()) {
+				if (chunks.find(glm::ivec2(CenterX + dx, CenterZ + dz)) == chunks.end()) {
 					std::lock_guard<std::mutex> lock(chunkMutex);
-					chunkGenQueue.push(glm::ivec2(ChunkX + dx, ChunkZ + dz));
+					chunkGenQueue.push(glm::ivec2(CenterX + dx, CenterZ + dz));
 					cv.notify_one();
 				}
 			}
 		}
 	}
+
+	UpdateLOD(CenterX, CenterZ);
+}
+void WorldManager::UpdateLOD(int CenterX, int CenterZ) {
+	for (auto& pair : LOD1) {
+		pair.second->DeleteMeshObjects();
+		delete pair.second;
+	}
+	LOD1.clear();
+
+	const int step = 3;
+
+	int startX = CenterX - Game::Radius_LOD0 - Game::Radius_LOD1 * step;
+	int endX = CenterX + Game::Radius_LOD0 + Game::Radius_LOD1 * step;
+	int startZ = CenterZ - Game::Radius_LOD0 - Game::Radius_LOD1 * step;
+	int endZ = CenterZ + Game::Radius_LOD0 + Game::Radius_LOD1 * step;
+
+	for (int dx = startX; dx <= endX; dx += step) {
+		for (int dz = startZ; dz <= endZ; dz += step) {
+			if (dx >= CenterX - Game::Radius_LOD0 && dx <= CenterX + Game::Radius_LOD0 &&
+				dz >= CenterZ - Game::Radius_LOD0 && dz <= CenterZ + Game::Radius_LOD0) continue;
+
+			glm::ivec2 superPos(dx, dz);
+
+			if (LOD1.find(superPos) == LOD1.end()) {
+				//std::lock_guard<std::mutex> lock(superChunkMutex);
+				superChunkGenQueue.push(superPos);
+				superCV.notify_one();
+			}
+		}
+	}
 }
 void WorldManager::WorldUpdate(float DeltaTime) {
-	while (!chunkMeshFinalQueue.empty()) {
-		ChunkReady chunk = chunkMeshFinalQueue.front();
-		chunkMeshFinalQueue.pop();
 
-		Chunk* TheChunk = chunk.chunkPos;
-		TheChunk->CreateMeshObjects();
-		TheChunk->ChunkUpload(chunk.meshData0, 0);
-		TheChunk->ChunkUpload(chunk.meshData1, 1);
-		TheChunk->ChunkUpload(chunk.meshData2, 2);
-		TheChunk->ChunkUpload(chunk.meshData3, 3);
-		TheChunk->ChunkUpload(chunk.meshData4, 4);
+	{
+		std::lock_guard<std::mutex> lock(finalMutex);
+		while (!chunkMeshFinalQueue.empty()) {
+			ChunkReady chunk = chunkMeshFinalQueue.front();
+			chunkMeshFinalQueue.pop();
 
-		TheChunk->RenderReady = true;
-		chunks[glm::ivec2(TheChunk->ChunkX, TheChunk->ChunkZ)] = TheChunk;
+			Chunk* TheChunk = chunk.chunkPos;
+			TheChunk->CreateMeshObjects();
+			TheChunk->ChunkUpload(chunk.meshData);
+
+			TheChunk->RenderReady = true;
+			chunks[glm::ivec2(TheChunk->ChunkX, TheChunk->ChunkZ)] = TheChunk;
+		}
+	}
+
+	{
+		std::lock_guard<std::mutex> lock(superFinalMutex);
+		while (!superChunkMeshFinalQueue.empty()) {
+			SuperChunkReady chunk = std::move(superChunkMeshFinalQueue.front());
+			superChunkMeshFinalQueue.pop();
+
+			SuperChunk* TheChunk = chunk.chunk;
+			TheChunk->CreateMeshObjects();
+			TheChunk->ChunkUpload(chunk.meshData, 1);
+
+			TheChunk->RenderReady = true;
+			LOD1[TheChunk->ChunkPos] = TheChunk;
+		}
 	}
 }
 
@@ -81,26 +135,6 @@ void WorldManager::RenderWorld() {
 	std::vector<Chunk*> waterChunks;
 	for (auto& pair : chunks) {
 		if (pair.second->RenderReady) {
-			glm::ivec2 PlayerChunk = Game::player.GetCurrentChunkCoords();
-
-			int diffX = std::abs(pair.second->ChunkX - PlayerChunk.x);
-			int diffZ = std::abs(pair.second->ChunkZ - PlayerChunk.y);
-
-			int maxDiff = std::max(diffX, diffZ);
-
-			if (maxDiff > Game::Radius_LOD3 + Game::Radius_LOD2 + Game::Radius_LOD1 + Game::Radius_LOD0)
-				pair.second->LOD = 4;
-			else if (maxDiff > Game::Radius_LOD2 + Game::Radius_LOD1 + Game::Radius_LOD0)
-				pair.second->LOD = 3;
-			else if (maxDiff > Game::Radius_LOD1 + Game::Radius_LOD0)
-				pair.second->LOD = 2;
-			else if (maxDiff > Game::Radius_LOD0)
-				pair.second->LOD = 1;
-			else
-				pair.second->LOD = 0;
-
-
-
 			pair.second->RenderOpaqueAndPlants();
 			if (pair.second->HasWater)
 				waterChunks.push_back(pair.second);
@@ -121,6 +155,11 @@ void WorldManager::RenderWorld() {
 
 	for (auto& n : waterChunks) {
 		n->RenderWater();
+	}
+
+	for (auto& pair : LOD1) {
+		if (pair.second->RenderReady)
+			pair.second->Render();
 	}
 }
 
@@ -205,6 +244,15 @@ Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ) {
 
 	return chunk;
 }
+SuperChunkPrep WorldManager::PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
+	Chunk** chunks = new Chunk*[9];
+	for (int x = 0; x < 3; x++) {
+		for (int z = 0; z < 3; z++) {
+			chunks[x + z * 3] = LoadNewChunk(ChunkX + x, ChunkZ + z);
+		}
+	}
+	return { chunks, 9, glm::ivec2(ChunkX, ChunkZ), LOD };
+}
 bool WorldManager::IsChunkNeighboorsGood(int ChunkX, int ChunkZ) {
 	if (chunks.find(glm::ivec2(ChunkX, ChunkZ)) == chunks.end())
 		return false;
@@ -221,7 +269,7 @@ bool WorldManager::IsChunkNeighboorsGood(int ChunkX, int ChunkZ) {
 	return IsPositiveX && IsNegativeX && IsPositiveZ && IsNegativeZ;
 }
 
-
+//regular chunks threads
 void WorldManager::ChunkThreadLoop() {
 	while (running) {
 		glm::ivec2 chunkPos; //the gathered value
@@ -260,15 +308,61 @@ void WorldManager::ChunkMeshesThreadLoop() {
 			chunkMeshGenQueue.pop();
 		}
 
-		ChunkMeshUpload meshData[5];
-
-		for (uint8_t lod = 0; lod < 5; lod++) {
-			meshData[lod] = CreateChunkMeshData(*chunk, lod);
-		}
+		ChunkMeshUpload meshData = CreateChunkMeshData(*chunk);
 
 		{
 			std::lock_guard<std::mutex> lock(finalMutex);
-			chunkMeshFinalQueue.push({ chunk, std::move(meshData[0]), std::move(meshData[1]), std::move(meshData[2]) , std::move(meshData[3]) , std::move(meshData[4]) });
+			chunkMeshFinalQueue.push({ chunk, std::move(meshData)});
+		}
+	}
+}
+
+//LOD chunks threads
+void WorldManager::LODThreadLoop() {
+	while (running) {
+		glm::ivec2 pos;
+
+		{
+			std::unique_lock<std::mutex> lock(superChunkMutex);
+			superCV.wait(lock, [this] {return !superChunkGenQueue.empty() || !running; });
+			
+			if (!running && superChunkGenQueue.empty()) break;
+
+			pos = superChunkGenQueue.front();
+			superChunkGenQueue.pop();
+		}
+
+		SuperChunkPrep chunkPrep = PrepSuperChunk(pos.x, pos.y, 1);
+		chunkPrep.pos = pos;
+
+		{
+			std::lock_guard<std::mutex> lock(superMeshMutex);
+			superChunkMeshGenQueue.push(std::move(chunkPrep));
+		}
+		superMeshCV.notify_one();
+	}
+}
+void WorldManager::LODMeshThreadLoop() {
+	while (running) {
+		SuperChunkPrep chunkPrep;
+
+		{
+			std::unique_lock<std::mutex> lock(superMeshMutex);
+			superMeshCV.wait(lock, [this] {return !superChunkMeshGenQueue.empty() || !running; });
+
+			if (!running && superChunkMeshGenQueue.empty()) break;
+
+			chunkPrep = std::move(superChunkMeshGenQueue.front());
+			superChunkMeshGenQueue.pop();
+		}
+		SuperChunk* chunk = new SuperChunk;
+		chunk->LOD = chunkPrep.LOD;
+		chunk->ChunkPos = chunkPrep.pos;
+		SuperChunkMeshUpload meshData = CreateSuperChunkMeshData(chunkPrep.chunks, chunkPrep.chunksCount, 1);
+		delete[] chunkPrep.chunks;
+		{
+			std::lock_guard<std::mutex> lock(superFinalMutex);
+			superChunkMeshFinalQueue.push({ chunk, std::move(meshData) });
 		}
 	}
 }

@@ -22,6 +22,7 @@ public: //this public section is simply for the members
 	static Shader e_DefaultShader;
 	static Shader e_WaterShader;
 	static Shader e_CloudShader;
+	static Shader e_LODShader;
 	
 	//object caching
 	static std::vector<Model*> e_LoadedModels; //for entities and such, like player, zombie, or creeper for example
@@ -53,18 +54,18 @@ private: //this private section is for basic engine functions and initialization
 	void UnloadAllModels(); //Unloads the models from memory
 
 	void LoadAllTextures(); //Loads all textures into memory
-	void UnloadAllTextures(); //Unloasd all textures from memory
+	void UnloadAllTextures(); //Unload all textures from memory
 
 	static bool IsGameRunning;
 public: //this "public" section is for gameplay functions such as closing game or creating a specific new UI screen and more
 	static void CloseGame();
 	static void CreatePlayerHud();
 
-	const static int Radius_LOD0 = 8;
-	const static int Radius_LOD1 = 8;
-	const static int Radius_LOD2 = 8;
-	const static int Radius_LOD3 = 8;
-	const static int Radius_LOD4 = 8;
+	const static uint8_t Radius_LOD0 = 16;
+	const static uint8_t Radius_LOD1 = 8;
+	const static uint8_t Radius_LOD2 = 2;
+	const static uint8_t Radius_LOD3 = 2;
+	const static uint8_t Radius_LOD4 = 2;
 
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
 };
