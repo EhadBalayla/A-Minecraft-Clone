@@ -91,7 +91,7 @@ public:
 
 	void Render();
 
-	void ChunkUpload(SuperChunkMeshUpload& meshData, uint8_t LOD);
+	void ChunkUpload(SuperChunkMeshUpload& meshData);
 
 	void CreateMeshObjects();
 	void DeleteMeshObjects();

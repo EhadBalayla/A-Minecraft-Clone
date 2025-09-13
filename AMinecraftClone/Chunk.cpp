@@ -309,11 +309,11 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint
 
     SuperChunkMeshUpload ret;
     
-    const int chunksPerAxis = 3;
+    size_t countPerAxis[5] = { 1, 3, 9, 27, 81 };
 
-    for (int cx = 0; cx < chunksPerAxis; cx++) {
-        for (int cz = 0; cz < chunksPerAxis; cz++) {
-            Chunk* chunk = chunks[cz * chunksPerAxis + cx];
+    for (int cx = 0; cx < countPerAxis[LOD]; cx++) {
+        for (int cz = 0; cz < countPerAxis[LOD]; cz++) {
+            Chunk* chunk = chunks[cz * countPerAxis[LOD] + cx];
 
             uint8_t LODFactor = 1 << LOD;
 
@@ -387,7 +387,7 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint
 
     return ret;
 }
-void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData, uint8_t LOD) {
+void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData) {
     if (meshData.opaqueVerticies.size() > 0)
     {
         // Upload to GPU

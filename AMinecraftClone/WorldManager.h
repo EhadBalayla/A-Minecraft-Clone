@@ -10,7 +10,10 @@
 #include <condition_variable>
 
 
-
+struct SuperChunkStart {
+	glm::ivec2 pos;
+	uint8_t LOD;
+};
 struct SuperChunkPrep {
 	Chunk** chunks;
 	size_t chunksCount;
@@ -72,7 +75,7 @@ private:
 	ChunkGenerator chunkGenerator; //the world generator itself
 
 	//world helper functions
-	void UpdateLOD(int CenterX, int CenterZ);
+	void UpdateLOD(int CenterX, int CenterZ, uint8_t LOD);
 
 	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
 	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates temporary chunks to prep a super chunk
@@ -108,7 +111,7 @@ private:
 	std::queue<ChunkReady> chunkMeshFinalQueue;
 
 	//super chunks thread queues
-	std::queue<glm::ivec2> superChunkGenQueue;
+	std::queue<SuperChunkStart> superChunkGenQueue;
 	std::queue<SuperChunkPrep> superChunkMeshGenQueue;
 	std::queue<SuperChunkReady> superChunkMeshFinalQueue;
 
