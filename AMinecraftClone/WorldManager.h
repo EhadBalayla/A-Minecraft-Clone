@@ -11,18 +11,24 @@
 
 
 struct SuperChunkStart {
-	glm::ivec2 pos;
+	glm::ivec2 offset;
+	glm::ivec2 center; //since we can't access the center in other threads
 	uint8_t LOD;
+
+	SuperChunk* updatedChunk; //for when we wanna UPDATE an existing superchunk, otherwise it will be nullptr
 };
 struct SuperChunkPrep {
 	Chunk** chunks;
 	size_t chunksCount;
-	glm::ivec2 pos;
+	glm::ivec2 offset;
 	uint8_t LOD;
+
+	SuperChunk* updatedChunk; //for when we wanna UPDATE an existing superchunk, otherwise it will be nullptr
 };
 struct SuperChunkReady {
 	SuperChunk* chunk;
 	SuperChunkMeshUpload meshData;
+	bool Update;
 };
 
 
@@ -51,7 +57,9 @@ public:
 	WorldManager();
 	~WorldManager();
 
+	void ChunksStart(int CenterX, int CenterZ); //performs world startup operations for chunks
 	void UpdateChunks(int CenterX, int CenterZ); //basically called for when the player switches a chunk
+	void UpdateLODs(int CenterX, int CenterZ, uint8_t LOD);
 	void WorldUpdate(float DeltaTime);
 	void RenderWorld();
 
@@ -75,9 +83,9 @@ private:
 	ChunkGenerator chunkGenerator; //the world generator itself
 
 	//world helper functions
-	void UpdateLOD(int CenterX, int CenterZ, uint8_t LOD);
+	void StartupLOD(int CenterX, int CenterZ, uint8_t LOD);
 
-	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
+	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates a new chunk
 	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates temporary chunks to prep a super chunk
 	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ);
 

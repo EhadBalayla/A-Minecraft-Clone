@@ -17,8 +17,8 @@ WorldManager::WorldManager() {
 	chunkThread = std::thread(&WorldManager::ChunkThreadLoop, this);
 	chunkMeshesThread = std::thread(&WorldManager::ChunkMeshesThreadLoop, this);
 
-	superChunkThread = std::thread(&WorldManager::LODThreadLoop, this);
 	superChunkMeshesThread = std::thread(&WorldManager::LODMeshThreadLoop, this);
+	superChunkThread = std::thread(&WorldManager::LODThreadLoop, this);
 }
 WorldManager::~WorldManager() {
 	running = false;
@@ -30,28 +30,11 @@ WorldManager::~WorldManager() {
 	chunkThread.join();
 	chunkMeshesThread.join();
 
-	superChunkThread.join();
 	superChunkMeshesThread.join();
+	superChunkThread.join();
 }
 
-
-void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
-	for (auto it = chunks.begin(); it != chunks.end(); ) {
-		const glm::ivec2& pos = it->first;
-
-		int dx = std::abs(pos.x - CenterX);
-		int dz = std::abs(pos.y - CenterZ);
-
-		if (dx > Game::Radius_LOD0 || dz > Game::Radius_LOD0) {
-			it->second->DeleteMeshObjects();
-			delete it->second;
-			it = chunks.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
-
+void WorldManager::ChunksStart(int CenterX, int CenterZ) {
 	//generate new chunks that aren't in render distance.
 	for (int r = 0; r <= Game::Radius_LOD0; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
@@ -66,12 +49,14 @@ void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
 		}
 	}
 
-	UpdateLOD(CenterX, CenterZ, 1);
-	UpdateLOD(CenterX, CenterZ, 2);
-	UpdateLOD(CenterX, CenterZ, 3);
-	UpdateLOD(CenterX, CenterZ, 4);
+	StartupLOD(CenterX, CenterZ, 1);
+	StartupLOD(CenterX, CenterZ, 2);
+	StartupLOD(CenterX, CenterZ, 3);
+	StartupLOD(CenterX, CenterZ, 4);
 }
-void WorldManager::UpdateLOD(int CenterX, int CenterZ, uint8_t LOD) {
+void WorldManager::StartupLOD(int CenterX, int CenterZ, uint8_t LOD) {
+	//quits if the render distance of a specific LOD is 0
+	if (LOD == 1 && Game::Radius_LOD1 == 0 || LOD == 2 && Game::Radius_LOD2 == 0 || LOD == 3 && Game::Radius_LOD3 == 0 || LOD == 4 && Game::Radius_LOD4 == 0) return;
 
 	std::unordered_map<glm::ivec2, SuperChunk*>& LODMap = LOD == 1 ? LOD1 : LOD == 2 ? LOD2 : LOD == 3 ? LOD3 : LOD4;
 
@@ -102,12 +87,42 @@ void WorldManager::UpdateLOD(int CenterX, int CenterZ, uint8_t LOD) {
 			if (dx >= CenterX - BeforeRadiuses[LOD] && dx <= CenterX + BeforeRadiuses[LOD] &&
 				dz >= CenterZ - BeforeRadiuses[LOD] && dz <= CenterZ + BeforeRadiuses[LOD]) continue;
 
-			glm::ivec2 superPos(dx, dz);
+			glm::ivec2 offsetPos(dx - CenterX, dz - CenterZ);
+			glm::ivec2 centerPos(CenterX, CenterZ);
 
-			if (LODMap.find(superPos) == LODMap.end()) {
-				std::lock_guard<std::mutex> lock(superChunkMutex);
-				superChunkGenQueue.push({ superPos, LOD });
-				superCV.notify_one();
+			std::lock_guard<std::mutex> lock(superChunkMutex);
+			superChunkGenQueue.push({ offsetPos, centerPos, LOD, nullptr });
+			superCV.notify_one();
+		}
+	}
+}
+void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
+	for (auto it = chunks.begin(); it != chunks.end(); ) {
+		const glm::ivec2& pos = it->first;
+
+		int dx = std::abs(pos.x - CenterX);
+		int dz = std::abs(pos.y - CenterZ);
+
+		if (dx > Game::Radius_LOD0 || dz > Game::Radius_LOD0) {
+			it->second->DeleteMeshObjects();
+			delete it->second;
+			it = chunks.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+
+	//generate new chunks that aren't in render distance.
+	for (int r = 0; r <= Game::Radius_LOD0; ++r) {
+		for (int dx = -r; dx <= r; ++dx) {
+			for (int dz = -r; dz <= r; ++dz) {
+				if (std::abs(dx) != r && std::abs(dz) != r) continue; // Only edges of the square
+				if (chunks.find(glm::ivec2(CenterX + dx, CenterZ + dz)) == chunks.end()) {
+					std::lock_guard<std::mutex> lock(chunkMutex);
+					chunkGenQueue.push(glm::ivec2(CenterX + dx, CenterZ + dz));
+					cv.notify_one();
+				}
 			}
 		}
 	}
@@ -136,12 +151,28 @@ void WorldManager::WorldUpdate(float DeltaTime) {
 			superChunkMeshFinalQueue.pop();
 
 			SuperChunk* TheChunk = chunk.chunk;
-			TheChunk->CreateMeshObjects();
-			TheChunk->ChunkUpload(chunk.meshData);
-
-			TheChunk->RenderReady = true;
-			LOD1[TheChunk->ChunkPos] = TheChunk;
+			std::unordered_map<glm::ivec2, SuperChunk*>& MAP = TheChunk->LOD == 1 ? LOD1 : TheChunk->LOD == 2 ? LOD2 : TheChunk->LOD == 3 ? LOD3 : LOD4;
+			if (!chunk.Update) {
+				TheChunk->CreateMeshObjects();
+				TheChunk->ChunkUpload(chunk.meshData, false);
+				MAP[TheChunk->Offset] = TheChunk;
+				TheChunk->RenderReady = true;
+			}
+			else {
+				TheChunk->ChunkUpload(chunk.meshData, true);
+			}
 		}
+	}
+}
+void WorldManager::UpdateLODs(int CenterX, int CenterZ, uint8_t LOD) {
+	for (auto it = LOD1.begin(); it != LOD1.end(); it++) {
+		SuperChunk* chunk = it->second;
+
+		glm::ivec2 centerPos(CenterX, CenterZ);
+
+		std::lock_guard<std::mutex> lock(superChunkMutex);
+		superChunkGenQueue.push({ chunk->Offset, centerPos, LOD, chunk });
+		superCV.notify_one();
 	}
 }
 
@@ -261,14 +292,14 @@ int WorldManager::getHeightValue(int x, int z) { //coordinates are in world spac
 
 
 
-Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ) {
+Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 	Chunk* chunk = new Chunk();
 	chunk->ChunkX = ChunkX;
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningWorld = this;
 
 	//chunkGenerator.GenerateChunk2(*chunk);
-	chunkGenerator.GenerateChunk(*chunk);
+	chunkGenerator.GenerateChunk(*chunk, LOD);
 
 	return chunk;
 }
@@ -278,10 +309,13 @@ SuperChunkPrep WorldManager::PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD)
 	Chunk** chunks = new Chunk*[countPerAxis[LOD] * countPerAxis[LOD]];
 	for (int x = 0; x < countPerAxis[LOD]; x++) {
 		for (int z = 0; z < countPerAxis[LOD]; z++) {
-			chunks[x + z * countPerAxis[LOD]] = LoadNewChunk(ChunkX + x, ChunkZ + z);
+			chunks[x + z * countPerAxis[LOD]] = LoadNewChunk(ChunkX + x, ChunkZ + z, LOD);
 		}
 	}
-	return { chunks, countPerAxis[LOD] * countPerAxis[LOD], glm::ivec2(ChunkX, ChunkZ), LOD };
+	return { chunks, 
+		countPerAxis[LOD] * countPerAxis[LOD], 
+		glm::ivec2(ChunkX, ChunkZ),  //doesn't matter since we already SET the REAL center AND offset AFTER the function anyways,
+		LOD};
 }
 bool WorldManager::IsChunkNeighboorsGood(int ChunkX, int ChunkZ) {
 	if (chunks.find(glm::ivec2(ChunkX, ChunkZ)) == chunks.end())
@@ -315,7 +349,7 @@ void WorldManager::ChunkThreadLoop() {
 
 		}
 		
-		Chunk* chunk = LoadNewChunk(chunkPos.x, chunkPos.y); //the produced value
+		Chunk* chunk = LoadNewChunk(chunkPos.x, chunkPos.y, 0); //the produced value
 
 		{
 			std::lock_guard<std::mutex> lock(meshMutex);
@@ -360,10 +394,20 @@ void WorldManager::LODThreadLoop() {
 			start = superChunkGenQueue.front();
 			superChunkGenQueue.pop();
 		}
-
-		SuperChunkPrep chunkPrep = PrepSuperChunk(start.pos.x, start.pos.y, start.LOD);
-		chunkPrep.pos = start.pos;
-
+		SuperChunkPrep chunkPrep;
+		if (start.updatedChunk) {
+			//update an existing chunk
+			SuperChunk* chunk = start.updatedChunk;
+			chunkPrep = PrepSuperChunk(start.center.x + chunk->Offset.x, start.center.y + chunk->Offset.y, chunk->LOD);
+			chunkPrep.offset = chunk->Offset;
+			chunkPrep.updatedChunk = chunk;
+		}
+		else {
+			//create a new chunk
+			chunkPrep = PrepSuperChunk(start.center.x + start.offset.x, start.center.y + start.offset.y, start.LOD);
+			chunkPrep.offset = start.offset;
+			chunkPrep.updatedChunk = nullptr;
+		}
 		{
 			std::lock_guard<std::mutex> lock(superMeshMutex);
 			superChunkMeshGenQueue.push(std::move(chunkPrep));
@@ -384,14 +428,26 @@ void WorldManager::LODMeshThreadLoop() {
 			chunkPrep = std::move(superChunkMeshGenQueue.front());
 			superChunkMeshGenQueue.pop();
 		}
-		SuperChunk* chunk = new SuperChunk;
-		chunk->LOD = chunkPrep.LOD;
-		chunk->ChunkPos = chunkPrep.pos;
-		SuperChunkMeshUpload meshData = CreateSuperChunkMeshData(chunkPrep.chunks, chunkPrep.chunksCount, chunkPrep.LOD);
+		bool shouldUpdate = false;
+		SuperChunk* chunk;
+		SuperChunkMeshUpload meshData;
+		if (chunkPrep.updatedChunk) {
+			//update an existing chunk
+			chunk = chunkPrep.updatedChunk;
+			shouldUpdate = true;
+			meshData = CreateSuperChunkMeshData(chunkPrep.chunks, chunkPrep.chunksCount, chunk->LOD);
+		}
+		else {
+			//create a new chunk
+			chunk = new SuperChunk;
+			chunk->LOD = chunkPrep.LOD;
+			chunk->Offset = chunkPrep.offset;
+			meshData = CreateSuperChunkMeshData(chunkPrep.chunks, chunkPrep.chunksCount, chunk->LOD);
+		}
 		delete[] chunkPrep.chunks;
 		{
 			std::lock_guard<std::mutex> lock(superFinalMutex);
-			superChunkMeshFinalQueue.push({ chunk, std::move(meshData) });
+			superChunkMeshFinalQueue.push({ chunk, std::move(meshData) , shouldUpdate });
 		}
 	}
 }

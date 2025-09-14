@@ -16,12 +16,14 @@ ChunkGenerator::~ChunkGenerator() {
 }
 
 
-void ChunkGenerator::GenerateChunk(Chunk& chunk) {
+void ChunkGenerator::GenerateChunk(Chunk& chunk, uint8_t LOD) {
+    uint8_t LODFactor = 1 << LOD;
+
     int BaseX = chunk.ChunkX << 4;
     int BaseZ = chunk.ChunkZ << 4;
 
-    for (int x = 0; x < Chunk_Width; x++) {
-        for (int z = 0; z < Chunk_Length; z++) {
+    for (int x = 0; x < Chunk_Width; x += LODFactor) {
+        for (int z = 0; z < Chunk_Length; z += LODFactor) {
             int WorldX = x + BaseX;
             int WorldZ = z + BaseZ;
 
@@ -42,7 +44,7 @@ void ChunkGenerator::GenerateChunk(Chunk& chunk) {
             }
 
 
-            for (int y = 0; y < Chunk_Height; y++) {
+            for (int y = 0; y < Chunk_Height; y += LODFactor) {
                 chunk.m_Blocks[x][y][z].owningChunk = &chunk;
                 chunk.m_Blocks[x][y][z].BlockX = x;
                 chunk.m_Blocks[x][y][z].BlockY = y;

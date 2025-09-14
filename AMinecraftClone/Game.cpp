@@ -60,7 +60,7 @@ void Game::GameLoop() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	overworld = new Level();
-	overworld->GetWorld().UpdateChunks(0, 0);
+	overworld->GetWorld().ChunksStart(0, 0);
 	player.SetPosition(10, 100, 10);
 	player.AddStarterItems();
 	CreatePlayerHud();

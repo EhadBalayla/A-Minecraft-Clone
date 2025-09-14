@@ -84,14 +84,14 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint
 
 class SuperChunk {
 public:
-	glm::ivec2 ChunkPos;
+	glm::ivec2 Offset; //stays consistent upon the SuperChunk's creation
 	uint8_t LOD = 1; //from 1 - 4
 
 	bool RenderReady = false;
 
 	void Render();
 
-	void ChunkUpload(SuperChunkMeshUpload& meshData);
+	void ChunkUpload(SuperChunkMeshUpload& meshData, bool Update);
 
 	void CreateMeshObjects();
 	void DeleteMeshObjects();

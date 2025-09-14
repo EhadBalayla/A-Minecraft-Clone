@@ -60,7 +60,8 @@ void Player::UpdateChunksAroundPlayer() {
     int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
 
     if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
-        //Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
+        Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
+        Game::overworld->GetWorld().UpdateLODs(newChunkX, newChunkZ, 1);
 
         currentChunkX = newChunkX;
         currentChunkZ = newChunkZ;

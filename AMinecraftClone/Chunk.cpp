@@ -291,7 +291,8 @@ void SuperChunk::Render() {
     Game::e_LODShader.use();
     Game::e_LODShader.setMat4("view", Game::View);
     Game::e_LODShader.setMat4("projection", Game::Proj);
-    glm::vec3 relativePos = glm::dvec3(ChunkPos.x * 16, 0, ChunkPos.y * 16) - Game::player.GetPosition();
+    glm::ivec2 centerPos = Game::player.GetCurrentChunkCoords();
+    glm::vec3 relativePos = glm::dvec3((Offset.x + centerPos.x) * 16, 0, (Offset.y + centerPos.y) * 16) - Game::player.GetPosition();
     Game::e_LODShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
     Game::e_LODShader.setUInt("LODFactor", 1 << LOD);
 
@@ -305,6 +306,7 @@ void SuperChunk::Render() {
 }
 
 SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint8_t LOD) {
+    uint8_t LODFactor = 1 << LOD;
     uint32_t index = 0;
 
     SuperChunkMeshUpload ret;
@@ -314,8 +316,6 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint
     for (int cx = 0; cx < countPerAxis[LOD]; cx++) {
         for (int cz = 0; cz < countPerAxis[LOD]; cz++) {
             Chunk* chunk = chunks[cz * countPerAxis[LOD] + cx];
-
-            uint8_t LODFactor = 1 << LOD;
 
             for (int x = 0; x < Chunk_Width; x += LODFactor) {
                 for (int y = 0; y < Chunk_Height; y += LODFactor) {
@@ -387,31 +387,42 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint
 
     return ret;
 }
-void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData) {
-    if (meshData.opaqueVerticies.size() > 0)
-    {
-        // Upload to GPU
-        glBindVertexArray(mesh.m_VAO);
+void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData, bool Update) {
+    if (!Update) {
+        if (meshData.opaqueVerticies.size() > 0)
+        {
+            // Upload to GPU
+            glBindVertexArray(mesh.m_VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, mesh.m_VBO);
+            glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(SuperChunkVertex), meshData.opaqueVerticies.data(), GL_DYNAMIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.m_EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_DYNAMIC_DRAW);
+
+            glEnableVertexAttribArray(0);
+            glVertexAttribIPointer(0, 3, GL_UNSIGNED_SHORT, sizeof(SuperChunkVertex), (void*)0);
+
+            glEnableVertexAttribArray(1);
+            glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, sizeof(SuperChunkVertex), (void*)offsetof(SuperChunkVertex, texIndex));
+
+            glEnableVertexAttribArray(2);
+            glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(SuperChunkVertex), (void*)offsetof(SuperChunkVertex, extras));
+
+            glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+            mesh.opaqueCount = meshData.opaqueIndicies.size();
+        }
+    }
+    else {
         glBindBuffer(GL_ARRAY_BUFFER, mesh.m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(SuperChunkVertex), meshData.opaqueVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(SuperChunkVertex), nullptr, GL_DYNAMIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, meshData.opaqueVerticies.size() * sizeof(SuperChunkVertex), meshData.opaqueVerticies.data());
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.m_EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 3, GL_UNSIGNED_SHORT, sizeof(SuperChunkVertex), (void*)0);
-
-        glEnableVertexAttribArray(1);
-        glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, sizeof(SuperChunkVertex), (void*)offsetof(SuperChunkVertex, texIndex));
-
-        glEnableVertexAttribArray(2);
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(SuperChunkVertex), (void*)offsetof(SuperChunkVertex, extras));
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-        mesh.opaqueCount = meshData.opaqueIndicies.size();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data());
     }
 }
 
