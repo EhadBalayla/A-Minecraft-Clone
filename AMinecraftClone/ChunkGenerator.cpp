@@ -30,15 +30,15 @@ void ChunkGenerator::GenerateChunk(Chunk& chunk, uint8_t LOD) {
             int var7 = WorldX / 1024;
             int var8 = WorldZ / 1024;
 
-            float var9 = (float)(noiseGen1.generateNoise((double)((float)WorldX / 0.03125f), 0.0, (double)((float)WorldZ / 0.03125f)) - noiseGen2.generateNoise((double)((float)WorldX / 0.015625f), 0.0, (double)((float)WorldZ / 0.015625f))) / 512.0f / 4.0f;
-            float var10 = (float)noiseGen5.generateNoise((double)((float)WorldX / 4.0f), (double)((float)WorldZ / 4.0f));
-            float var11 = (float)noiseGen6.generateNoise((double)((float)WorldX / 8.0f), (double)((float)WorldZ / 8.0f)) / 8.0f;
+            float var9 = (float)(noiseGen1.generateNoise(WorldX / 0.03125, 0.0, WorldZ / 0.03125) - noiseGen2.generateNoise(WorldX / 0.015625, 0.0, WorldZ / 0.015625)) / 512.0f / 4.0f;
+            float var10 = (float)noiseGen5.generateNoise(WorldX / 4.0, WorldZ / 4.0);
+            float var11 = (float)noiseGen6.generateNoise(WorldX / 8.0, WorldZ / 8.0) / 8.0;
 
-            var10 = var10 > 0.0f ? (float)(noiseGen3.generateNoise((double)((float)WorldX * 0.25714284f * 2.0f), (double)((float)WorldZ * 0.25714284f * 2.0f)) * (double)var11 / 4.0) : (float)(noiseGen4.generateNoise((double)((float)WorldX * 0.25714284f), (double)((float)WorldZ * 0.25714284f)) * (double)var11);
+            var10 = var10 > 0.0f ? (float)(noiseGen3.generateNoise(WorldX * 0.25714284 * 2.0, WorldZ * 0.25714284 * 2.0) * (double)var11 / 4.0) : (float)(noiseGen4.generateNoise((double)((float)WorldX * 0.25714284f), (double)((float)WorldZ * 0.25714284f)) * (double)var11);
             int FinalHeight = (int)(var9 + 64.0f + var10);
-            if ((float)noiseGen5.generateNoise((double)WorldX, (double)WorldZ) < 0.0f) {
+            if ((float)noiseGen5.generateNoise(WorldX, WorldZ) < 0.0f) {
                 FinalHeight = FinalHeight / 2 << 1;
-                if ((float)noiseGen5.generateNoise((double)(WorldX / 5), (double)(WorldZ / 5)) < 0.0f) {
+                if ((float)noiseGen5.generateNoise(WorldX / 5, WorldZ / 5) < 0.0f) {
                     ++FinalHeight;
                 }
             }
@@ -55,7 +55,7 @@ void ChunkGenerator::GenerateChunk(Chunk& chunk, uint8_t LOD) {
                 if ((WorldX == 0 || WorldZ == 0) && y <= FinalHeight + 2) {
                     chunk.m_Blocks[x][y][z].setType(BlockType::Obsidian); //the obsidian cross in x = 0 and z = 0
                 }
-                else if (y == FinalHeight + 1 && FinalHeight >= 64 && randomDouble < 0.02) {
+                else if (LOD <= 0 && y == FinalHeight + 1 && FinalHeight >= 64 && randomDouble < 0.02) {
                     chunk.m_Blocks[x][y][z].setType(BlockType::YellowFlower);
                 }
                 else if (y == FinalHeight && FinalHeight >= 64) {

@@ -20,7 +20,7 @@ public:
 
     Random() : Random(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count()) {}
 
-    void setSeed(int64_t newSeed) {
+    inline void setSeed(int64_t newSeed) {
         seed = (newSeed ^ multiplier) & mask;
     }
 
@@ -29,11 +29,11 @@ public:
         return static_cast<int32_t>(seed >> (48 - bits));
     }
 
-    int32_t nextInt() {
+    inline  int32_t nextInt() {
         return next(32);
     }
 
-    int32_t nextInt(int32_t bound) {
+    inline int32_t nextInt(int32_t bound) {
         if ((bound & -bound) == bound) { // Power of two
             return (int32_t)((bound * (int64_t)next(31)) >> 31);
         }
@@ -46,15 +46,15 @@ public:
         return val;
     }
 
-    double nextDouble() {
-        return (((int64_t)next(26) << 27) + next(27)) / (double)(1LL << 53);
+    inline  double nextDouble() {
+        return (((int64_t)next(26) << 27) + next(27)) / static_cast<double>(1LL << 53);
     }
 
-    float nextFloat() {
-        return next(24) / ((float)(1 << 24));
+    inline float nextFloat() {
+        return next(24) / (static_cast<float>(1 << 24));
     }
 
-    bool nextBoolean() {
+    inline bool nextBoolean() {
         return next(1) != 0;
     }
 };

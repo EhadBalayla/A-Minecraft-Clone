@@ -11,24 +11,18 @@
 
 
 struct SuperChunkStart {
-	glm::ivec2 offset;
-	glm::ivec2 center; //since we can't access the center in other threads
+	glm::ivec2 pos;
 	uint8_t LOD;
-
-	SuperChunk* updatedChunk; //for when we wanna UPDATE an existing superchunk, otherwise it will be nullptr
 };
 struct SuperChunkPrep {
 	Chunk** chunks;
 	size_t chunksCount;
-	glm::ivec2 offset;
+	glm::ivec2 pos;
 	uint8_t LOD;
-
-	SuperChunk* updatedChunk; //for when we wanna UPDATE an existing superchunk, otherwise it will be nullptr
 };
 struct SuperChunkReady {
 	SuperChunk* chunk;
 	SuperChunkMeshUpload meshData;
-	bool Update;
 };
 
 
@@ -82,9 +76,7 @@ public:
 private:
 	ChunkGenerator chunkGenerator; //the world generator itself
 
-	//world helper functions
-	void StartupLOD(int CenterX, int CenterZ, uint8_t LOD);
-
+	//helper functions
 	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates a new chunk
 	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates temporary chunks to prep a super chunk
 	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ);
@@ -99,8 +91,8 @@ private:
 	std::condition_variable cv;
 	std::condition_variable meshCV;
 
-	std::thread superChunkThread;
-	std::thread superChunkMeshesThread;
+	std::thread superChunkThread[4];
+	std::thread superChunkMeshesThread[4];
 	std::mutex superChunkMutex;
 	std::mutex superMeshMutex;
 	std::mutex superFinalMutex;

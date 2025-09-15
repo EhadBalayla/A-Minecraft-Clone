@@ -56,15 +56,30 @@ void Player::AddStarterItems() {
 }
 
 void Player::UpdateChunksAroundPlayer() {
+    int LOD1Size = 3;
+
     int newChunkX = static_cast<int>(std::floor(position.x / 16.0));
     int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
 
     if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
         Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
-        Game::overworld->GetWorld().UpdateLODs(newChunkX, newChunkZ, 1);
 
         currentChunkX = newChunkX;
         currentChunkZ = newChunkZ;
+    }
+
+    for (int i = 1; i <= 4; i++) {
+        int LODSize = static_cast<int>(std::pow(3, i));
+
+        int newLodChunkX = newChunkX / LODSize;
+        int newLodChunkZ = newChunkZ / LODSize;
+    
+        if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
+            Game::overworld->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
+
+            currentLODChunkX[i - 1] = newLodChunkX;
+            currentLODChunkZ[i - 1] = newLodChunkZ;
+        }
     }
 }
 

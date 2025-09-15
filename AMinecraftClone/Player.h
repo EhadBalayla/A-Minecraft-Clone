@@ -53,6 +53,9 @@ private:
 	int currentChunkX = 0;
 	int currentChunkZ = 0;
 
+	int currentLODChunkX[4] = { 0, 0, 0, 0 };
+	int currentLODChunkZ[4] = { 0, 0, 0, 0 };
+
 	//selected slot in hotbar
 	uint8_t selectedSlot = 1; //ranges from 1 - 9, basically whatever slot you selct in hotbar
 	void setSelectedSlot(uint8_t slot);
