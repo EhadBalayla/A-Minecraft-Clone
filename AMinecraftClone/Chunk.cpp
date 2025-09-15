@@ -8,7 +8,7 @@ void AddFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& inde
 void AddPlantFace(glm::u8vec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 
-void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<SuperChunkVertex>& verticies, std::vector<uint32_t>& indicies, int offsetX, int offsetZ);
+void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<SuperChunkVertex>& verticies, std::vector<uint32_t>& indicies);
 
 
 int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given chunk, only on a single axis tho, this is generally used for render distance
@@ -104,7 +104,8 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
     for (int x = 0; x < Chunk_Width; x++) {
         for (int y = 0; y < Chunk_Height; y++) {
             for (int z = 0; z < Chunk_Length; z++) {
-                BlockType type = chunk.m_Blocks[x][y][z].m_Type;
+                chunk.m_Blocks[IndexAt(x, y, z)].owningChunk = &chunk;
+                BlockType type = chunk.m_Blocks[IndexAt(x, y, z)].m_Type;
                 if (type == BlockType::Air)
                     continue;
 
@@ -148,7 +149,7 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     }
 
                     //if inside the chunk
-                    return chunk.m_Blocks[nx][ny][nz].getType() == BlockType::Air || chunk.m_Blocks[nx][ny][nz].data.visibility != visibility;
+                    return chunk.m_Blocks[IndexAt(nx, ny, nz)].getType() == BlockType::Air || chunk.m_Blocks[IndexAt(nx, ny, nz)].data.visibility != visibility;
                     };
                 auto isVis = [&](int dx, int dy, int dz, BlockVisiblity visibility)  -> bool {
                     Block* block;
@@ -188,28 +189,28 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     }
 
                     //if inside the chunk
-                    return  chunk.m_Blocks[nx][ny][nz].data.visibility == visibility;
+                    return  chunk.m_Blocks[IndexAt(nx, ny, nz)].data.visibility == visibility;
                     };
 
-                switch (chunk.m_Blocks[x][y][z].data.visibility) {
+                switch (chunk.m_Blocks[IndexAt(x, y, z)].data.visibility) {
                 case BlockVisiblity::Opaque:
-                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, chunk.m_Blocks[x][y][z].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, chunk.m_Blocks[x][y][z].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, chunk.m_Blocks[x][y][z].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, chunk.m_Blocks[x][y][z].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, chunk.m_Blocks[x][y][z].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, chunk.m_Blocks[x][y][z].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
                 case BlockVisiblity::Plant:
-                    AddPlantFace(blockPos, chunk.m_Blocks[x][y][z].data.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
+                    AddPlantFace(blockPos, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
                     break;
                 case BlockVisiblity::Liquid:
-                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, chunk.m_Blocks[x][y][z].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, chunk.m_Blocks[x][y][z].data.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, chunk.m_Blocks[x][y][z].data.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, chunk.m_Blocks[x][y][z].data.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, chunk.m_Blocks[x][y][z].data.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, chunk.m_Blocks[x][y][z].data.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
                     break;
                 }
             }
@@ -287,14 +288,17 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
 }
 
 
+int GetLODSize(uint8_t LOD) {
+    return 1 << LOD;
+}
 void SuperChunk::Render() {
     Game::e_LODShader.use();
     Game::e_LODShader.setMat4("view", Game::View);
     Game::e_LODShader.setMat4("projection", Game::Proj);
-    int LODSize = static_cast<int>(std::pow(3, LOD));
-    glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODSize, 0, Pos.y * 16 * LODSize) - Game::player.GetPosition();
-    Game::e_LODShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
-    Game::e_LODShader.setUInt("LODFactor", 1 << LOD);
+    uint8_t LODFactor = GetLODSize(LOD);
+    glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
+    glm::vec3 scale = glm::vec3(LODFactor);
+    Game::e_LODShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
 
     //enable rendering features for opaque blocks
     glEnable(GL_CULL_FACE);
@@ -305,89 +309,78 @@ void SuperChunk::Render() {
     glDrawElements(GL_TRIANGLES, mesh.opaqueCount, GL_UNSIGNED_INT, 0);
 }
 
-SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint8_t LOD) {
-    uint8_t LODFactor = 1 << LOD;
+SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
     uint32_t index = 0;
+    uint8_t LODFactor = 1 << LOD;
 
     SuperChunkMeshUpload ret;
 
     ret.opaqueVerticies.reserve(98304);
     ret.opaqueIndicies.reserve(147456);
-    
-    size_t countPerAxis[5] = { 1, 3, 9, 27, 81 };
 
-    for (int cx = 0; cx < countPerAxis[LOD]; cx++) {
-        for (int cz = 0; cz < countPerAxis[LOD]; cz++) {
-            Chunk* chunk = chunks[cz * countPerAxis[LOD] + cx];
+    for (int x = 0; x < Chunk_Width; x++) {
+        for (int y = 0; y < Chunk_Height; y += 2) {
+            for (int z = 0; z < Chunk_Length; z++) {
+                BlockType type = voxelData[IndexAt(x, y, z)].m_Type;
+                if (type == BlockType::Air)
+                    continue;
 
-            for (int x = 0; x < Chunk_Width; x += LODFactor) {
-                for (int y = 0; y < Chunk_Height; y += LODFactor) {
-                    for (int z = 0; z < Chunk_Length; z += LODFactor) {
-                        BlockType type = chunk->m_Blocks[x][y][z].m_Type;
-                        if (type == BlockType::Air)
-                            continue;
+                glm::u8vec3 blockPos(x, y / LODFactor, z);
 
-                        glm::u8vec3 blockPos(x, y, z);
-
-                        auto isAir = [&](int dx, int dy, int dz, BlockVisiblity visibility) -> bool { //for opaque blocks
-                            Block* block;
-                            int nx, ny, nz; //these are the full coords in chunk space not just the offset
-                            nx = x + (dx * LODFactor), ny = y + (dy * LODFactor), nz = z + (dz * LODFactor);
-                            if (nx < 0) { //check if outside on the X on the negative
-                                /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
-                                    block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
-                                    return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                                }*/
-                                return true;
-                            }
-                            else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                                /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
-                                    block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
-                                    return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                                }*/
-                                return true;
-                            }
-                            else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
-                            {
-                                return true;
-                            }
-                            else if (nz < 0) { //check if outside on the Z on the negative
-                                /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
-                                    block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
-                                    return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                                }*/
-                                return true;
-                            }
-                            else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                                /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
-                                    block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
-                                    return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                                }*/
-                                return true;
-                            }
-
-                            //if inside the chunk
-                            return chunk->m_Blocks[nx][ny][nz].getType() == BlockType::Air || chunk->m_Blocks[nx][ny][nz].data.visibility != visibility;
-                            };
-
-                        switch (chunk->m_Blocks[x][y][z].data.visibility) {
-                        case BlockVisiblity::Opaque:
-                            if (isAir(0, 0, -1, Opaque)) AddLODFace(blockPos, Face::Back, chunk->m_Blocks[x][y][z].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies, cx, cz);
-                            if (isAir(0, 0, 1, Opaque)) AddLODFace(blockPos, Face::Front, chunk->m_Blocks[x][y][z].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies, cx, cz);
-                            if (isAir(-1, 0, 0, Opaque)) AddLODFace(blockPos, Face::Left, chunk->m_Blocks[x][y][z].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies, cx, cz);
-                            if (isAir(1, 0, 0, Opaque)) AddLODFace(blockPos, Face::Right, chunk->m_Blocks[x][y][z].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies, cx, cz);
-                            if (isAir(0, 1, 0, Opaque)) AddLODFace(blockPos, Face::Top, chunk->m_Blocks[x][y][z].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies, cx, cz);
-                            if (isAir(0, -1, 0, Opaque)) AddLODFace(blockPos, Face::Bottom, chunk->m_Blocks[x][y][z].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies, cx, cz);
-                            break;
-                        }
+                auto isAir = [&](int dx, int dy, int dz, BlockVisiblity visibility) -> bool { //for opaque blocks
+                    Block* block;
+                    int nx, ny, nz; //these are the full coords in chunk space not just the offset
+                    nx = x + dx, ny = y + dy * LODFactor, nz = z + dz;
+                    if (nx < 0) { //check if outside on the X on the negative
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
+                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
+                        }*/
+                        return true;
                     }
+                    else if (nx >= Chunk_Width) { //check if outside on the X on the positive
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
+                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
+                        }*/
+                        return true;
+                    }
+                    else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
+                    {
+                        return true;
+                    }
+                    else if (nz < 0) { //check if outside on the Z on the negative
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
+                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
+                        }*/
+                        return true;
+                    }
+                    else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
+                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
+                        }*/
+                        return true;
+                    }
+
+                    //if inside the chunk
+                    return voxelData[IndexAt(nx, ny, nz)].getType() == BlockType::Air || voxelData[IndexAt(nx, ny, nz)].data.visibility != visibility;
+                    };
+
+                switch (voxelData[IndexAt(x, y, z)].data.visibility) {
+                case BlockVisiblity::Opaque:
+                    if (isAir(0, 0, -1, Opaque)) AddLODFace(blockPos, Face::Back, voxelData[IndexAt(x, y, z)].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddLODFace(blockPos, Face::Front, voxelData[IndexAt(x, y, z)].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddLODFace(blockPos, Face::Left, voxelData[IndexAt(x, y, z)].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddLODFace(blockPos, Face::Right, voxelData[IndexAt(x, y, z)].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddLODFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddLODFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    break;
                 }
             }
-
-            delete chunk;
         }
     }
-
     return ret;
 }
 void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData) {
@@ -656,7 +649,7 @@ void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t
 }
 
 
-void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<SuperChunkVertex>& verticies, std::vector<uint32_t>& indicies, int offsetX, int offsetZ) {
+void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<SuperChunkVertex>& verticies, std::vector<uint32_t>& indicies) {
     uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
 
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
@@ -701,10 +694,10 @@ void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& i
 
 
     //adds the 4 verticies
-    verticies.push_back({ {pos.x + offsetX * Chunk_Width, pos.y, pos.z + offsetZ * Chunk_Length}, faceIndexOffset, e0 });
-    verticies.push_back({ {pos.x + offsetX * Chunk_Width, pos.y, pos.z + offsetZ * Chunk_Length}, faceIndexOffset, e1 });
-    verticies.push_back({ {pos.x + offsetX * Chunk_Width, pos.y, pos.z + offsetZ * Chunk_Length}, faceIndexOffset, e2 });
-    verticies.push_back({ {pos.x + offsetX * Chunk_Width, pos.y, pos.z + offsetZ * Chunk_Length}, faceIndexOffset, e3 });
+    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e0 });
+    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e1 });
+    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e2 });
+    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e3 });
 
 
     //adds the 6 indicies for the 4 verticies

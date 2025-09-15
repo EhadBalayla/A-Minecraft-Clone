@@ -16,16 +16,16 @@ ChunkGenerator::~ChunkGenerator() {
 }
 
 
-void ChunkGenerator::GenerateChunk(Chunk& chunk, uint8_t LOD) {
+void ChunkGenerator::GenerateChunk(Block* voxelData, int ChunkX, int ChunkZ, uint8_t LOD) {
     uint8_t LODFactor = 1 << LOD;
 
-    int BaseX = chunk.ChunkX << 4;
-    int BaseZ = chunk.ChunkZ << 4;
+    int BaseX = ChunkX << 4;
+    int BaseZ = ChunkZ << 4;
 
-    for (int x = 0; x < Chunk_Width; x += LODFactor) {
-        for (int z = 0; z < Chunk_Length; z += LODFactor) {
-            int WorldX = x + BaseX;
-            int WorldZ = z + BaseZ;
+    for (int x = 0; x < Chunk_Width; x++) {
+        for (int z = 0; z < Chunk_Length; z++) {
+            int WorldX = x * LODFactor + BaseX;
+            int WorldZ = z * LODFactor + BaseZ;
 
             int var7 = WorldX / 1024;
             int var8 = WorldZ / 1024;
@@ -43,32 +43,30 @@ void ChunkGenerator::GenerateChunk(Chunk& chunk, uint8_t LOD) {
                 }
             }
 
-
-            for (int y = 0; y < Chunk_Height; y += LODFactor) {
-                chunk.m_Blocks[x][y][z].owningChunk = &chunk;
-                chunk.m_Blocks[x][y][z].BlockX = x;
-                chunk.m_Blocks[x][y][z].BlockY = y;
-                chunk.m_Blocks[x][y][z].BlockZ = z;
+            for (int y = 0; y < Chunk_Height; y++) {
+                voxelData[IndexAt(x, y, z)].BlockX = x;
+                voxelData[IndexAt(x, y, z)].BlockY = y;
+                voxelData[IndexAt(x, y, z)].BlockZ = z;
 
                 double randomDouble = rand() / (RAND_MAX + 1.0);
 
                 if ((WorldX == 0 || WorldZ == 0) && y <= FinalHeight + 2) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::Obsidian); //the obsidian cross in x = 0 and z = 0
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::Obsidian); //the obsidian cross in x = 0 and z = 0
                 }
                 else if (LOD <= 0 && y == FinalHeight + 1 && FinalHeight >= 64 && randomDouble < 0.02) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::YellowFlower);
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::YellowFlower);
                 }
                 else if (y == FinalHeight && FinalHeight >= 64) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::Grass); //the grass layer
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::Grass); //the grass layer
                 }
                 else if (y <= FinalHeight - 2) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::Stone); //the stone layers
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::Stone); //the stone layers
                 }
                 else if (y <= FinalHeight) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::Dirt); //the dirt layers
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::Dirt); //the dirt layers
                 }
                 else if (y <= 64) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::WaterStill); //places oceans
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::WaterStill); //places oceans
                 }
 
 
@@ -99,8 +97,8 @@ void ChunkGenerator::GenerateChunk(Chunk& chunk, uint8_t LOD) {
                     var12 = FinalHeight;
                 }
 
-                if (y <= var12 && (chunk.m_Blocks[x][y][z].getType() == BlockType::Air || chunk.m_Blocks[x][y][z].getType() == BlockType::WaterStill)) {
-                    chunk.m_Blocks[x][y][z].setType(BlockType::Bricks);
+                if (y <= var12 && (voxelData[IndexAt(x, y, z)].getType() == BlockType::Air || voxelData[IndexAt(x, y, z)].getType() == BlockType::WaterStill)) {
+                    voxelData[IndexAt(x, y, z)].setType(BlockType::Bricks);
                 }
             }
         }
@@ -154,7 +152,7 @@ void ChunkGenerator::GenerateChunk2(Chunk& chunk) {
                             if (finalNoise > 0.0)
                                 newType = BlockType::Stone;
 
-                            chunk.m_Blocks[blockX][blockY][blockZ].setType(newType);
+                            chunk.m_Blocks[IndexAt(blockX, blockY, blockZ)].setType(newType);
                         }
                     }
                 }
@@ -167,23 +165,23 @@ void ChunkGenerator::GenerateChunk2(Chunk& chunk) {
         for (int z = 0; z < 16; ++z) {
             int dirtDepth = -1;
             for (int y = 127; y >= 0; --y) {
-                chunk.m_Blocks[x][y][z].owningChunk = &chunk;
-                chunk.m_Blocks[x][y][z].BlockX = x;
-                chunk.m_Blocks[x][y][z].BlockY = y;
-                chunk.m_Blocks[x][y][z].BlockZ = z;
+                chunk.m_Blocks[IndexAt(x, y, z)].owningChunk = &chunk;
+                chunk.m_Blocks[IndexAt(x, y, z)].BlockX = x;
+                chunk.m_Blocks[IndexAt(x, y, z)].BlockY = y;
+                chunk.m_Blocks[IndexAt(x, y, z)].BlockZ = z;
 
-                BlockType type = chunk.m_Blocks[x][y][z].getType();
+                BlockType type = chunk.m_Blocks[IndexAt(x, y, z)].getType();
                 if (type == BlockType::Air) {
                     dirtDepth = -1;
                 }
                 else if (type == BlockType::Stone) {
                     if (dirtDepth == -1) {
                         dirtDepth = 3;
-                        chunk.m_Blocks[x][y][z].setType((y >= 63) ? BlockType::Grass : BlockType::Dirt);
+                        chunk.m_Blocks[IndexAt(x, y, z)].setType((y >= 63) ? BlockType::Grass : BlockType::Dirt);
                     }
                     else if (dirtDepth > 0) {
                         --dirtDepth;
-                        chunk.m_Blocks[x][y][z].setType(BlockType::Dirt);
+                        chunk.m_Blocks[IndexAt(x, y, z)].setType(BlockType::Dirt);
                     }
                 }
             }

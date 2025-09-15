@@ -15,8 +15,7 @@ struct SuperChunkStart {
 	uint8_t LOD;
 };
 struct SuperChunkPrep {
-	Chunk** chunks;
-	size_t chunksCount;
+	Block* voxelData;
 	glm::ivec2 pos;
 	uint8_t LOD;
 };

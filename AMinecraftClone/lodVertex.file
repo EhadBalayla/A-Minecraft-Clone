@@ -9,8 +9,6 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
 
-uniform uint LODFactor;
-
 uvec3 decodeOffset(uint extra);
 vec2 decodeUVoffset(uint extra);
 
@@ -19,8 +17,8 @@ void main() {
 	uint extras = ext;
 	
 	uvec3 posOffset = decodeOffset(extras);
-
-	gl_Position = projection * view * model * vec4(vert + posOffset * LODFactor, 1.0);
+	
+	gl_Position = projection * view * model * vec4(vert + posOffset, 1.0);
 	
 	uint indexX = texIndex % uint(16);
 	uint indexY = texIndex / uint(16);

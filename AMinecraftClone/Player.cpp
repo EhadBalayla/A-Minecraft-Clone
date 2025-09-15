@@ -56,29 +56,29 @@ void Player::AddStarterItems() {
 }
 
 void Player::UpdateChunksAroundPlayer() {
-    int LOD1Size = 3;
+    if (ShouldUpdateChunks) {
+        int newChunkX = static_cast<int>(std::floor(position.x / 16.0));
+        int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
 
-    int newChunkX = static_cast<int>(std::floor(position.x / 16.0));
-    int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
+        if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
+            Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
 
-    if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
-        Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
+            currentChunkX = newChunkX;
+            currentChunkZ = newChunkZ;
+        }
 
-        currentChunkX = newChunkX;
-        currentChunkZ = newChunkZ;
-    }
+        for (int i = 1; i <= 4; i++) {
+            int LODSize = GetLODSize(i);
 
-    for (int i = 1; i <= 4; i++) {
-        int LODSize = static_cast<int>(std::pow(3, i));
+            int newLodChunkX = newChunkX / LODSize;
+            int newLodChunkZ = newChunkZ / LODSize;
 
-        int newLodChunkX = newChunkX / LODSize;
-        int newLodChunkZ = newChunkZ / LODSize;
-    
-        if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
-            Game::overworld->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
+            if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
+                Game::overworld->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
 
-            currentLODChunkX[i - 1] = newLodChunkX;
-            currentLODChunkZ[i - 1] = newLodChunkZ;
+                currentLODChunkX[i - 1] = newLodChunkX;
+                currentLODChunkZ[i - 1] = newLodChunkZ;
+            }
         }
     }
 }
@@ -137,6 +137,12 @@ void Player::ProcessInput(SDL_Event& e) {
             std::cout << std::endl;
 
             SetPosition(x, y, z);
+        }
+        else if (e.key.keysym.sym == SDLK_c) { //for jumping
+            CreativeMode = !CreativeMode;
+        }
+        else if (e.key.keysym.sym == SDLK_b) { //for jumping
+            ShouldUpdateChunks = !ShouldUpdateChunks;
         }
         else if (e.key.keysym.sym == SDLK_SPACE) { //for jumping
             if (IsOnGround) {

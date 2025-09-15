@@ -7,6 +7,12 @@ constexpr int Chunk_Width = 16;
 constexpr int Chunk_Height = 128;
 constexpr int Chunk_Length = 16;
 
+constexpr int VOXEL_ARRAY_SIZE = Chunk_Width * Chunk_Height * Chunk_Length;
+
+inline int IndexAt(int x, int y, int z) {
+	return x + z * Chunk_Width + y * Chunk_Width * Chunk_Length;
+}
+
 struct Vertex {
 	uint16_t pos; //4 bits for chunk X, 4 bits for chunk Z, 7 bits for chunk Y
 	uint8_t texIndex; //since the texture atlas is 16x16
@@ -45,7 +51,7 @@ class WorldManager;
 class Chunk
 {
 public:
-	Block m_Blocks[Chunk_Width][Chunk_Height][Chunk_Length];
+	Block m_Blocks[VOXEL_ARRAY_SIZE];
 
 	WorldManager* owningWorld;
 	int ChunkX, ChunkZ;
@@ -69,7 +75,10 @@ struct SuperChunkMesh {
 	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
 };
 
+
+
 //LOD chunks stuff
+int GetLODSize(uint8_t LOD);
 struct SuperChunkVertex {
 	glm::u16vec3 pos;
 	uint8_t texIndex;
@@ -80,7 +89,7 @@ struct SuperChunkMeshUpload {
 	std::vector<uint32_t> opaqueIndicies;
 };
 
-SuperChunkMeshUpload CreateSuperChunkMeshData(Chunk** chunks, size_t count, uint8_t LOD);
+SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD);
 
 class SuperChunk {
 public:

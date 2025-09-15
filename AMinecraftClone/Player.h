@@ -64,6 +64,7 @@ private:
 
 
 	bool CreativeMode = true;
+	bool ShouldUpdateChunks = true;
 	const float CreativeSpeed = 0.1f;
 };
 

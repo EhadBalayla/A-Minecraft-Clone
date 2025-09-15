@@ -61,11 +61,11 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void CloseGame();
 	static void CreatePlayerHud();
 
-	const static uint8_t Radius_LOD0 = 8;
-	const static uint8_t Radius_LOD1 = 8;
-	const static uint8_t Radius_LOD2 = 8;
-	const static uint8_t Radius_LOD3 = 0;
-	const static uint8_t Radius_LOD4 = 0;
+	const static uint8_t Radius_LOD0 = 16;
+	const static uint8_t Radius_LOD1 = 16;
+	const static uint8_t Radius_LOD2 = 16;
+	const static uint8_t Radius_LOD3 = 16;
+	const static uint8_t Radius_LOD4 = 16;
 
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
 };
