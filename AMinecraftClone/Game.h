@@ -22,7 +22,6 @@ public: //this public section is simply for the members
 	static Shader e_DefaultShader;
 	static Shader e_WaterShader;
 	static Shader e_CloudShader;
-	static Shader e_LODShader;
 	
 	//object caching
 	static std::vector<Model*> e_LoadedModels; //for entities and such, like player, zombie, or creeper for example

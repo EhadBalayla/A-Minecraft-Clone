@@ -2,21 +2,15 @@
 #include "Utilities.h"
 #include "Game.h"
 
-Entity::Entity() {
-
-}
-
 void Entity::SetPosition(float x, float y, float z) {
 	position.x = x;
 	position.y = y;
 	position.z = z;
 }
-
 void Entity::SetRotation(float y, float p) {
 	yaw = y;
 	pitch = p;
 }
-
 glm::vec3 Entity::getForwardVector() {
 	float yawRadians = glm::radians(yaw);
 	glm::vec3 forward;
@@ -25,11 +19,9 @@ glm::vec3 Entity::getForwardVector() {
 	forward.z = sin(yawRadians);
 	return forward;
 }
-
 glm::vec3 Entity::getRightVector() {
 	return glm::normalize(glm::cross(getForwardVector(), glm::vec3(0.0f, 1.0f, 0.0f)));
 }
-
 glm::vec3 Entity::getLookVector() {
 	float yawRad = glm::radians(yaw);
 	float pitchRad = glm::radians(pitch);
@@ -46,91 +38,27 @@ glm::vec3 Entity::getLookVector() {
 glm::dvec3 Entity::GetPosition() {
 	return position;
 }
-
 glm::vec2 Entity::GetRotation() {
 	return glm::vec2(yaw, pitch);
 }
 
-void Entity::Gravity(float DeltaTime) {
-	Ray groundDetectionRay = Utils::shootRay(position, glm::vec3(0.0, -1.0, 0.0), 1.0);
-	if (Utils::RayHitBlock(groundDetectionRay).HitBlock == nullptr)
-	{
-		if (IsOnGround) {
-			IsOnGround = false;
-			std::cout << "just left ground right now" << std::endl;
-		}
-	}
-	else
-	{
-		if (!IsOnGround) {
-			IsOnGround = true;
-			std::cout << "just hit ground right now" << std::endl;
-			velocity.y = 0.0;
-		}
-	}
+AABB& Entity::GetCollision() {
+	return aabb;
 }
 
 void Entity::MoveAndCollide(float DeltaTime) {
-	
-	//collision detection
-	Ray ray;
-	for (int i = 0; i < entityHeight; i++) {
-		//detection on the positive X
-		ray = Utils::shootRay(position + glm::dvec3(0.0, i, 0.0), glm::vec3(1.0, 0.0, 0.0), 0.25);
-		if (Utils::RayHitBlock(ray).HitBlock)
-			velocity.x = std::min(velocity.x, 0.0f);
-
-		//detection on the negative X
-		ray = Utils::shootRay(position + glm::dvec3(0.0, i, 0.0), glm::vec3(-1.0, 0.0, 0.0), 0.25);
-		if (Utils::RayHitBlock(ray).HitBlock)
-			velocity.x = std::max(velocity.x, 0.0f);
-
-		//detection on the positive Z
-		ray = Utils::shootRay(position + glm::dvec3(0.0, i, 0.0), glm::vec3(0.0, 0.0, 1.0), 0.25);
-		if (Utils::RayHitBlock(ray).HitBlock)
-			velocity.z = std::min(velocity.z, 0.0f);
-
-		//detection on the positive Z
-		ray = Utils::shootRay(position + glm::dvec3(0.0, i, 0.0), glm::vec3(0.0, 0.0, -1.0), 0.25);
-		if (Utils::RayHitBlock(ray).HitBlock)
-			velocity.z = std::max(velocity.z, 0.0f);
-	}
-
-	//detection on the positive Y
-	ray = Utils::shootRay(position + glm::dvec3(0.0, entityHeight - 1, 0.0), glm::vec3(0.0, 1.0, 0.0), 0.8); //we want to give an entity a little bit of crawling space
-	if (Utils::RayHitBlock(ray).HitBlock)
-		velocity.y = std::max(velocity.y, 0.0f);
-
-	//detection on the negative Y
-	Ray downRay = Utils::shootRay(position, glm::vec3(0.0, -1.0, 0.0), 1.0);
-	if (Utils::RayHitBlock(downRay).HitBlock)
-	{
-		if (!IsOnGround) {
-			IsOnGround = true;
-			velocity.y = 0.0;
-		}
-	}
-	else
-	{
-		velocity += glm::vec3(0.0, -0.00025 * DeltaTime, 0.0);
-		if (IsOnGround) {
-			IsOnGround = false;
-		}
-	}
-
-
+	float dt = DeltaTime * 0.001f;
+	velocity.y -= gravity * dt;
+	if (velocity.y < -78.4f)
+		velocity.y = -78.4f;
 
 	//clamp horizontal movement
 	glm::vec3 temporalClampedVelocity = glm::normalize(velocity) * maxMovementSpeed; //normalized velocity only on the x and z axes not on the y
-	if(velocity.x > 0)
-		velocity.x = std::min(velocity.x, temporalClampedVelocity.x);
-	else if(velocity.x < 0)
-		velocity.x = std::max(velocity.x, temporalClampedVelocity.x);
-	
-	if (velocity.z > 0)
-		velocity.z = std::min(velocity.z, temporalClampedVelocity.z);
-	else if (velocity.z < 0)
-		velocity.z = std::max(velocity.z, temporalClampedVelocity.z);
+	if (velocity.x > 0) velocity.x = std::min(velocity.x, temporalClampedVelocity.x);
+	else if (velocity.x < 0) velocity.x = std::max(velocity.x, temporalClampedVelocity.x);
+
+	if (velocity.z > 0) velocity.z = std::min(velocity.z, temporalClampedVelocity.z);
+	else if (velocity.z < 0) velocity.z = std::max(velocity.z, temporalClampedVelocity.z);
 
 
 	//apply friction
@@ -147,7 +75,55 @@ void Entity::MoveAndCollide(float DeltaTime) {
 		else if (std::abs(velocity.z) - std::abs(temporalFrictionForce.z) < 0)
 			velocity.z -= temporalFrictionForce.z + (std::abs(velocity.z) - std::abs(temporalFrictionForce.z)) * -1;
 
+	
+	float dx = velocity.x * dt;
+	float dy = velocity.y * dt;
+	float dz = velocity.z * dt;
+
+	glm::dvec3 newPos = position;
+
+	Block* above = Game::overworld->GetWorld().getBlockAt(position.x, position.y + entityHeight, position.z);
+	Block* below = Game::overworld->GetWorld().getBlockAt(position.x, position.y - 1, position.z);
+
+	newPos.y += dy;
+	if (dy > 0 && above->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(above->getWorldPosition()), aabb.MovedTo(newPos))) {
+		newPos.y = Block::blockHitbox.MovedTo(above->getWorldPosition()).min.y - entityHeight;
+		velocity.y = 0;
+	}
+	else if (dy < 0 && below->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(below->getWorldPosition()), aabb.MovedTo(newPos))) {
+		newPos.y = Block::blockHitbox.MovedTo(below->getWorldPosition()).max.y;
+		velocity.y = 0;
+		IsOnGround = true;
+	}
+	else IsOnGround = false;
 
 
-	position += velocity;
+	Block* forward = Game::overworld->GetWorld().getBlockAt(position.x, position.y, position.z + 1);
+	Block* backward = Game::overworld->GetWorld().getBlockAt(position.x, position.y, position.z - 1);
+
+	newPos.z += dz;
+	if (dz > 0 && forward->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(forward->getWorldPosition()), aabb.MovedTo(newPos))) {
+		newPos.z = forward->getWorldPosition().z + aabb.min.z;
+		velocity.z = 0;
+	}
+	else if (dz < 0 && backward->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(backward->getWorldPosition()), aabb.MovedTo(newPos))) {
+		newPos.z = backward->getWorldPosition().z + 1 + aabb.max.z;
+		velocity.z = 0;
+	}
+
+
+	Block* right = Game::overworld->GetWorld().getBlockAt(position.x + 1, position.y, position.z);
+	Block* left = Game::overworld->GetWorld().getBlockAt(position.x - 1, position.y, position.z);
+
+	newPos.x += dx;
+	if (dx > 0 && right->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(right->getWorldPosition()), aabb.MovedTo(newPos))) {
+		newPos.x = right->getWorldPosition().x + aabb.min.x;
+		velocity.x = 0;
+	}
+	else if (dx < 0 && left->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(left->getWorldPosition()), aabb.MovedTo(newPos))) {
+		newPos.x = left->getWorldPosition().x + 1 + aabb.max.x;
+		velocity.x = 0;
+	}
+	
+	position = newPos;
 }

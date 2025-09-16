@@ -235,9 +235,9 @@ AABB WorldManager::getBlockHitbox(int x, int y, int z) { //coordinates are in wo
 	return getBlockAt(x, y, z)->blockHitbox.MovedTo(glm::ivec3(x, y, z));
 }
 Block* WorldManager::getBlockAt(int x, int y, int z) { //coordinates are in world space
-	Chunk* chunk = getChunkAt(floor((float)x / 16.0f), floor((float)z / 16.0f));
+	Chunk* chunk = getChunkAt(x / 16, z / 16);
 	if (chunk) {
-		return &chunk->m_Blocks[IndexAt((x % 16 + 16) % 16, y, (z % 16 + 16) % 16)];
+		return &chunk->m_Blocks[IndexAt(x % 16, y, z % 16)];
 	}
 	return nullptr;
 }
@@ -266,6 +266,7 @@ bool WorldManager::IsSolidBlock(int x, int y, int z) { //coordinates are in worl
 void WorldManager::PlaceBlock(int x, int y, int z, BlockType type) { //coordinates are in world space
 	if (!IsSolidBlock(x, y, z)) {
 		getBlockAt(x, y, z)->setType(type);
+		getChunkAt(x / 16, z / 16)->UpdateMesh();
 	}
 }
 int WorldManager::getHeightValue(int x, int z) { //coordinates are in world space

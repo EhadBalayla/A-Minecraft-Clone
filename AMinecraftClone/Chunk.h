@@ -56,12 +56,15 @@ public:
 	WorldManager* owningWorld;
 	int ChunkX, ChunkZ;
 	bool RenderReady = false;
-	bool HasOpaque = true;
+
+	bool HasOpaque = false;
+	bool HasPlant = false;
 	bool HasWater = false;
 
 	void RenderOpaqueAndPlants();
 	void RenderWater();
 	void ChunkUpload(ChunkMeshUpload& meshData);
+	void UpdateMesh();
 
 	int DistanceFromChunk(Chunk* chunk);
 
@@ -73,20 +76,19 @@ private:
 
 struct SuperChunkMesh {
 	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
+	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
 };
 
 
 
 //LOD chunks stuff
 int GetLODSize(uint8_t LOD);
-struct SuperChunkVertex {
-	glm::u16vec3 pos;
-	uint8_t texIndex;
-	uint8_t extras;
-};
 struct SuperChunkMeshUpload {
-	std::vector<SuperChunkVertex> opaqueVerticies;
+	std::vector<Vertex> opaqueVerticies;
 	std::vector<uint32_t> opaqueIndicies;
+
+	std::vector<Vertex> waterVerticies;
+	std::vector<uint32_t> waterIndicies;
 };
 
 SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD);
@@ -98,7 +100,10 @@ public:
 
 	bool RenderReady = false;
 
+	bool HasWater = false;
+
 	void Render();
+	void RenderWater();
 
 	void ChunkUpload(SuperChunkMeshUpload& meshData);
 

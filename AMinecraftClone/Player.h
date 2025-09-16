@@ -5,6 +5,7 @@
 #include "PlayerInventory.h"
 #include "PauseMenu.h"
 #include "InventoryItem.h"
+#include "AABB.h"
 
 class Player : public Entity
 {
@@ -26,7 +27,7 @@ public:
 
 	glm::ivec2 GetCurrentChunkCoords();
 private:
-	const float cameraHeight = 0.62f; //the height difference between the player's position and the camera
+	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
 	glm::vec3 getCameraPosition(); //returns the camera position
 
 	float mouseSensitivity = 0.5f; //mouse sensitivity

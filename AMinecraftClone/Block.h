@@ -21,7 +21,7 @@ struct BlockData {
 	BlockVisiblity visibility = BlockVisiblity::Opaque;
 };
 
-enum BlockType { //block ids
+enum BlockType : uint8_t { //block ids
 	Air, 
 	Grass, 
 	Stone, 

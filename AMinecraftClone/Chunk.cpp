@@ -8,9 +8,6 @@ void AddFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& inde
 void AddPlantFace(glm::u8vec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 
-void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<SuperChunkVertex>& verticies, std::vector<uint32_t>& indicies);
-
-
 int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given chunk, only on a single axis tho, this is generally used for render distance
     int DistanceX = std::abs(std::abs(chunk->ChunkX) - std::abs(ChunkX));
     int DistanceZ = std::abs(std::abs(chunk->ChunkZ) - std::abs(ChunkZ));
@@ -225,10 +222,10 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         // Upload to GPU
         glBindVertexArray(meshes.m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, meshes.m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes.m_EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_DYNAMIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
@@ -237,8 +234,10 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+        HasOpaque = true;
         meshes.opaqueCount = meshData.opaqueIndicies.size();
     }
+    else HasOpaque = false;
 
 
 
@@ -248,10 +247,10 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         // Upload to GPU
         glBindVertexArray(meshes.m_VAO2);
         glBindBuffer(GL_ARRAY_BUFFER, meshes.m_VBO2);
-        glBufferData(GL_ARRAY_BUFFER, meshData.plantVerticies.size() * sizeof(Vertex), meshData.plantVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.plantVerticies.size() * sizeof(Vertex), meshData.plantVerticies.data(), GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes.m_EBO2);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.plantIndicies.size() * sizeof(uint32_t), meshData.plantIndicies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.plantIndicies.size() * sizeof(uint32_t), meshData.plantIndicies.data(), GL_DYNAMIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
@@ -260,8 +259,10 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+        HasPlant = true;
         meshes.plantCount = meshData.plantIndicies.size();
     }
+    else HasPlant = false;
 
 
 
@@ -269,10 +270,10 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
     if (meshData.waterVerticies.size() > 0) {
         glBindVertexArray(meshes.m_VAO3);
         glBindBuffer(GL_ARRAY_BUFFER, meshes.m_VBO3);
-        glBufferData(GL_ARRAY_BUFFER, meshData.waterVerticies.size() * sizeof(Vertex), meshData.waterVerticies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.waterVerticies.size() * sizeof(Vertex), meshData.waterVerticies.data(), GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes.m_EBO3);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.waterIndicies.size() * sizeof(uint32_t), meshData.waterIndicies.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.waterIndicies.size() * sizeof(uint32_t), meshData.waterIndicies.data(), GL_DYNAMIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
@@ -286,19 +287,23 @@ void Chunk::ChunkUpload(ChunkMeshUpload& meshData) {
     }
     else HasWater = false;
 }
+void Chunk::UpdateMesh() {
+    ChunkMeshUpload meshData = CreateChunkMeshData(*this);
 
+    ChunkUpload(meshData);
+}
 
 int GetLODSize(uint8_t LOD) {
     return 1 << LOD;
 }
 void SuperChunk::Render() {
-    Game::e_LODShader.use();
-    Game::e_LODShader.setMat4("view", Game::View);
-    Game::e_LODShader.setMat4("projection", Game::Proj);
+    Game::e_DefaultShader.use();
+    Game::e_DefaultShader.setMat4("view", Game::View);
+    Game::e_DefaultShader.setMat4("projection", Game::Proj);
     uint8_t LODFactor = GetLODSize(LOD);
     glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
     glm::vec3 scale = glm::vec3(LODFactor);
-    Game::e_LODShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
+    Game::e_DefaultShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
 
     //enable rendering features for opaque blocks
     glEnable(GL_CULL_FACE);
@@ -308,9 +313,25 @@ void SuperChunk::Render() {
     glBindVertexArray(mesh.m_VAO);
     glDrawElements(GL_TRIANGLES, mesh.opaqueCount, GL_UNSIGNED_INT, 0);
 }
+void SuperChunk::RenderWater() {
+    Game::e_WaterShader.use();
+    Game::e_WaterShader.setMat4("view", Game::View);
+    Game::e_WaterShader.setMat4("projection", Game::Proj);
+    uint8_t LODFactor = GetLODSize(LOD);
+    glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
+    glm::vec3 scale = glm::vec3(LODFactor);
+    Game::e_WaterShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
+    Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
+    glEnable(GL_CULL_FACE);
+    glDepthMask(GL_TRUE);
+
+    glBindVertexArray(mesh.m_VAO3);
+    glDrawElements(GL_TRIANGLES, mesh.waterCount, GL_UNSIGNED_INT, 0);
+}
 
 SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
     uint32_t index = 0;
+    uint32_t index2 = 0;
     uint8_t LODFactor = 1 << LOD;
 
     SuperChunkMeshUpload ret;
@@ -370,12 +391,12 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
 
                 switch (voxelData[IndexAt(x, y, z)].data.visibility) {
                 case BlockVisiblity::Opaque:
-                    if (isAir(0, 0, -1, Opaque)) AddLODFace(blockPos, Face::Back, voxelData[IndexAt(x, y, z)].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 0, 1, Opaque)) AddLODFace(blockPos, Face::Front, voxelData[IndexAt(x, y, z)].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(-1, 0, 0, Opaque)) AddLODFace(blockPos, Face::Left, voxelData[IndexAt(x, y, z)].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(1, 0, 0, Opaque)) AddLODFace(blockPos, Face::Right, voxelData[IndexAt(x, y, z)].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 1, 0, Opaque)) AddLODFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, -1, 0, Opaque)) AddLODFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, voxelData[IndexAt(x, y, z)].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, voxelData[IndexAt(x, y, z)].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, voxelData[IndexAt(x, y, z)].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, voxelData[IndexAt(x, y, z)].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
                 }
             }
@@ -389,19 +410,13 @@ void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData) {
         // Upload to GPU
         glBindVertexArray(mesh.m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(SuperChunkVertex), meshData.opaqueVerticies.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.m_EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 3, GL_UNSIGNED_SHORT, sizeof(SuperChunkVertex), (void*)0);
-
-        glEnableVertexAttribArray(1);
-        glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, sizeof(SuperChunkVertex), (void*)offsetof(SuperChunkVertex, texIndex));
-
-        glEnableVertexAttribArray(2);
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(SuperChunkVertex), (void*)offsetof(SuperChunkVertex, extras));
+        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -634,70 +649,6 @@ void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t
     verticies.push_back({ p1, faceIndexOffset, e1 });
     verticies.push_back({ p2, faceIndexOffset, e2 });
     verticies.push_back({ p3, faceIndexOffset, e3 });
-
-
-    //adds the 6 indicies for the 4 verticies
-    indicies.push_back(indexOffset + 0);
-    indicies.push_back(indexOffset + 1);
-    indicies.push_back(indexOffset + 2);
-
-    indicies.push_back(indexOffset + 2);
-    indicies.push_back(indexOffset + 3);
-    indicies.push_back(indexOffset + 0);
-
-    indexOffset += 4;
-}
-
-
-void AddLODFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<SuperChunkVertex>& verticies, std::vector<uint32_t>& indicies) {
-    uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
-
-    //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
-    switch (face) {
-    case Face::Top:
-        e0 = getExtras(0, 4);
-        e1 = getExtras(1, 5);
-        e2 = getExtras(2, 6);
-        e3 = getExtras(3, 7);
-        break;
-    case Face::Bottom:
-        e0 = getExtras(3, 0);
-        e1 = getExtras(2, 3);
-        e2 = getExtras(1, 2);
-        e3 = getExtras(0, 1);
-        break;
-    case Face::Left:
-        e0 = getExtras(3, 0);
-        e1 = getExtras(0, 4);
-        e2 = getExtras(1, 7);
-        e3 = getExtras(2, 3);
-        break;
-    case Face::Right:
-        e0 = getExtras(2, 1);
-        e1 = getExtras(3, 2);
-        e2 = getExtras(0, 6);
-        e3 = getExtras(1, 5);
-        break;
-    case Face::Front:
-        e0 = getExtras(3, 3);
-        e1 = getExtras(0, 7);
-        e2 = getExtras(1, 6);
-        e3 = getExtras(2, 2);
-        break;
-    case Face::Back:
-        e0 = getExtras(2, 0);
-        e1 = getExtras(3, 1);
-        e2 = getExtras(0, 5);
-        e3 = getExtras(1, 4);
-        break;
-    }
-
-
-    //adds the 4 verticies
-    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e0 });
-    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e1 });
-    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e2 });
-    verticies.push_back({ {pos.x, pos.y, pos.z}, faceIndexOffset, e3 });
 
 
     //adds the 6 indicies for the 4 verticies

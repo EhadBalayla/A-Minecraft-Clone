@@ -7,11 +7,6 @@
 class Entity
 {
 public:
-
-	AABB aabb;
-
-	Entity();
-
 	virtual void Update(float DeltaTime) = 0;
 
 	void SetPosition(float x, float y, float z);
@@ -20,27 +15,27 @@ public:
 	glm::dvec3 GetPosition();
 	glm::vec2 GetRotation();
 
-	glm::vec3 getForwardVector(); //returns the forward vector of the yaw rotation
-	glm::vec3 getRightVector(); //returns the right vector of the yaw rotation
-	glm::vec3 getLookVector(); //returns the look vector
+	glm::vec3 getForwardVector();
+	glm::vec3 getRightVector();
+	glm::vec3 getLookVector();
 
+	AABB& GetCollision();
 protected:
+	AABB aabb;
+	int entityHeight = 1;
 
-	//transform
-	glm::dvec3 position = glm::dvec3(0.0f); //position
-	float yaw = 0.0f, pitch = 0.0f; //rotation
+	glm::dvec3 position = glm::dvec3(0.0f);
+	float yaw = 0.0f, pitch = 0.0f;
 
-	//is what used for the velocity calculations
 	glm::vec3 velocity = glm::vec3(0.0f);
 
-	void Gravity(float DeltaTime);
 	void MoveAndCollide(float DeltaTime);
 
 	bool IsOnGround = false;
 
-	int entityHeight = 1; //used to determine how tall an entity is
-	float acceleration = 0.001f; //the acceleration of the entity's movement
-	float maxMovementSpeed = 0.1; //the max movement speed of the entity
-	float friction = 0.01;
+	float acceleration = 0.5f;
+	float maxMovementSpeed = 5.2f;
+	float friction = 0.8f;
+	float gravity = 15.0f;
 };
 

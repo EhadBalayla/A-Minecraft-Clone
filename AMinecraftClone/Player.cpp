@@ -4,8 +4,13 @@
 #include "PlayerInventory.h"
 
 Player::Player() {
-    aabb = { glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 1.0, 1.0) };
+    aabb = { glm::vec3(-0.3, 0.0, -0.3), glm::vec3(0.3, 1.8, 0.3) };
     entityHeight = 2; //player is two blocks tall
+
+    acceleration = 0.8f;
+    maxMovementSpeed = 5.2f;
+    friction = 0.5f;
+    gravity = 15.0f;
 }
 Player::~Player() {
 }
@@ -96,6 +101,9 @@ void Player::Update(float DeltaTime) {
                 velocity -= getRightVector() * DeltaTime * acceleration;
             if (IsMovingRight)
                 velocity += getRightVector() * DeltaTime * acceleration;
+            if (IsJumping && IsOnGround) {
+                velocity.y += 6.5f;
+            }
         }
         MoveAndCollide(DeltaTime);
     }
@@ -143,11 +151,6 @@ void Player::ProcessInput(SDL_Event& e) {
         }
         else if (e.key.keysym.sym == SDLK_b) { //for jumping
             ShouldUpdateChunks = !ShouldUpdateChunks;
-        }
-        else if (e.key.keysym.sym == SDLK_SPACE) { //for jumping
-            if (IsOnGround) {
-                velocity.y = 0.1f;
-            }
         }
         else if (e.key.keysym.sym == SDLK_ESCAPE) { 
             if (!m_PauseMenu) {
