@@ -100,10 +100,10 @@ public:
 
 	bool RenderReady = false;
 
+	bool HasOpaque = false;
 	bool HasWater = false;
 
 	void Render();
-	void RenderWater();
 
 	void ChunkUpload(SuperChunkMeshUpload& meshData);
 
@@ -111,5 +111,8 @@ public:
 	void DeleteMeshObjects();
 private:
 	SuperChunkMesh mesh; //only a single one
+
+	void RenderOpaque();
+	void RenderWater();
 };
 

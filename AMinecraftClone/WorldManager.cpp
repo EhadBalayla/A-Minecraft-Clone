@@ -43,11 +43,12 @@ WorldManager::~WorldManager() {
 	running = false;
 	cv.notify_all();
 	meshCV.notify_all();
-	superCV.notify_all();
-	superMeshCV.notify_all();
 
 	chunkThread.join();
 	chunkMeshesThread.join();
+
+	superCV.notify_all();
+	superMeshCV.notify_all();
 
 	for (int i = 0; i < 4; i++) {
 		superChunkMeshesThread[i].join();
@@ -132,7 +133,7 @@ void WorldManager::UpdateLODs(int CenterLODX, int CenterLODZ, uint8_t LOD) {
 				glm::ivec2 newPos(CenterLODX + dx, CenterLODZ + dz);
 				if (MAP.find(newPos) == MAP.end()) {
 					std::lock_guard<std::mutex> lock(superChunkMutex);
-					superChunkGenQueue.push({ newPos, LOD });
+					superChunkGenQueue.push({newPos, LOD});
 					superCV.notify_one();
 				}
 			}
@@ -421,7 +422,7 @@ void WorldManager::LODMeshThreadLoop() {
 		delete[] chunkPrep.voxelData;
 		{
 			std::lock_guard<std::mutex> lock(superFinalMutex);
-			superChunkMeshFinalQueue.push({ chunk, std::move(meshData)});
+			superChunkMeshFinalQueue.push({chunk, std::move(meshData)});
 		}
 	}
 }

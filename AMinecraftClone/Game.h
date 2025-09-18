@@ -10,6 +10,7 @@
 #include "UIManager.h"
 #include <unordered_map>
 #include "Item.h"
+#include "AudioManager.h"
 
 class Game
 {
@@ -17,6 +18,7 @@ public: //this public section is simply for the members
 	//just to clarify e_ is meant to represent the engine's members, because in the window class i already have an m_Window
 	static Window e_Window; 
 	static UIManager m_UIManager; // the manager of all UI in the game
+	static AudioManager m_AudioManager; //for playing audio
 
 	//the shaders
 	static Shader e_DefaultShader;

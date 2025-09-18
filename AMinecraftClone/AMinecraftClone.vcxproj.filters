@@ -145,6 +145,15 @@
     <ClCompile Include="WorldManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_vorbis.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextDisplayer.cpp">
+      <Filter>Source Files\UI\ActualWidgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -260,6 +269,15 @@
     </ClInclude>
     <ClInclude Include="WorldManager.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="miniaudio.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextDisplayer.h">
+      <Filter>Source Files\UI\ActualWidgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

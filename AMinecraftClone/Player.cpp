@@ -232,6 +232,7 @@ void Player::ProcessInput(SDL_Event& e) {
                 RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
                 if (rayInfo.HitBlock) {
                     rayInfo.HitBlock->BreakBlock();
+                    Game::m_AudioManager.StartSound("Sounds\\grass4.ogg");
                 }
             }
         }
@@ -241,6 +242,7 @@ void Player::ProcessInput(SDL_Event& e) {
                     switch (m_PlayerItems[selectedSlot - 1].m_Item.getData().type) {
                     case ItemUsageType::PlaceableBlock:
                         PlayerPlaceBlocks();
+                        Game::m_AudioManager.StartSound("Sounds\\wood3.ogg");
                         break;
                     }
                 }

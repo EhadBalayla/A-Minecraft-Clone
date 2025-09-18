@@ -21,6 +21,7 @@ std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
 std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
 bool Game::IsGameRunning = true;
 UIManager Game::m_UIManager;
+AudioManager Game::m_AudioManager;
 
 
 void Game::Init() {
@@ -39,6 +40,7 @@ void Game::Init() {
 	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 50000.0f);
 
 	m_UIManager.Init(); //initialize the UI manager
+	m_AudioManager.Init(); //initializes the sounder
 
 	//after finishing loading all engines and setting engine's default rendering parameters, cache in and register the necessary objects for the game
 	LoadAllModels();
@@ -139,6 +141,7 @@ void Game::Terminate() {
 
 	UnloadAllTextures();
 	UnloadAllModels();
+	m_AudioManager.Terminate();
 	e_Window.Termintate();
 }
 
@@ -196,6 +199,7 @@ void Game::LoadAllTextures() {// function is called at the start of the game to 
 	e_LoadedTextures.push_back(new Texture("GUI/icons.png"));
 	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
 	e_LoadedTextures.push_back(new Texture("SkyTextures/clouds.png")); //the texture atlas for the blocks
+	e_LoadedTextures.push_back(new Texture("DefaultFont.png")); //the font texture
 }
 
 void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out

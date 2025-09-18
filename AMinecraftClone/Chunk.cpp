@@ -297,36 +297,44 @@ int GetLODSize(uint8_t LOD) {
     return 1 << LOD;
 }
 void SuperChunk::Render() {
-    Game::e_DefaultShader.use();
-    Game::e_DefaultShader.setMat4("view", Game::View);
-    Game::e_DefaultShader.setMat4("projection", Game::Proj);
-    uint8_t LODFactor = GetLODSize(LOD);
-    glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
-    glm::vec3 scale = glm::vec3(LODFactor);
-    Game::e_DefaultShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
+    RenderOpaque();
+    RenderWater();
+}
+void SuperChunk::RenderOpaque() {
+    if (HasOpaque) {
+        Game::e_DefaultShader.use();
+        Game::e_DefaultShader.setMat4("view", Game::View);
+        Game::e_DefaultShader.setMat4("projection", Game::Proj);
+        uint8_t LODFactor = GetLODSize(LOD);
+        glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
+        glm::vec3 scale = glm::vec3(LODFactor);
+        Game::e_DefaultShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
 
-    //enable rendering features for opaque blocks
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK); // Cull back faces
-    glFrontFace(GL_CW); // Clockwise instead
+        //enable rendering features for opaque blocks
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK); // Cull back faces
+        glFrontFace(GL_CW); // Clockwise instead
 
-    glBindVertexArray(mesh.m_VAO);
-    glDrawElements(GL_TRIANGLES, mesh.opaqueCount, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(mesh.m_VAO);
+        glDrawElements(GL_TRIANGLES, mesh.opaqueCount, GL_UNSIGNED_INT, 0);
+    }
 }
 void SuperChunk::RenderWater() {
-    Game::e_WaterShader.use();
-    Game::e_WaterShader.setMat4("view", Game::View);
-    Game::e_WaterShader.setMat4("projection", Game::Proj);
-    uint8_t LODFactor = GetLODSize(LOD);
-    glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
-    glm::vec3 scale = glm::vec3(LODFactor);
-    Game::e_WaterShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
-    Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
-    glEnable(GL_CULL_FACE);
-    glDepthMask(GL_TRUE);
+    if (HasWater) {
+        Game::e_WaterShader.use();
+        Game::e_WaterShader.setMat4("view", Game::View);
+        Game::e_WaterShader.setMat4("projection", Game::Proj);
+        uint8_t LODFactor = GetLODSize(LOD);
+        glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
+        glm::vec3 scale = glm::vec3(LODFactor);
+        Game::e_WaterShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
+        Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
+        glEnable(GL_CULL_FACE);
+        glDepthMask(GL_TRUE);
 
-    glBindVertexArray(mesh.m_VAO3);
-    glDrawElements(GL_TRIANGLES, mesh.waterCount, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(mesh.m_VAO3);
+        glDrawElements(GL_TRIANGLES, mesh.waterCount, GL_UNSIGNED_INT, 0);
+    }
 }
 
 SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
@@ -388,6 +396,46 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
                     //if inside the chunk
                     return voxelData[IndexAt(nx, ny, nz)].getType() == BlockType::Air || voxelData[IndexAt(nx, ny, nz)].data.visibility != visibility;
                     };
+                auto isVis = [&](int dx, int dy, int dz, BlockVisiblity visibility)  -> bool {
+                    Block* block;
+                    int nx, ny, nz; //these are the full coords in chunk space not just the offset
+                    nx = x + dx, ny = y + dy * LODFactor, nz = z + dz;
+                    if (nx < 0) { //check if outside on the X on the negative
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
+                            return block->data.visibility == visibility;
+                        }*/
+                        return true;
+                    }
+                    else if (nx >= Chunk_Width) { //check if outside on the X on the positive
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
+                            return block->data.visibility == visibility;
+                        }*/
+                        return true;
+                    }
+                    else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
+                    {
+                        return true;
+                    }
+                    else if (nz < 0) { //check if outside on the Z on the negative
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
+                            return block->data.visibility == visibility;
+                        }*/
+                        return true;
+                    }
+                    else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
+                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
+                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
+                            return block->data.visibility == visibility;
+                        }*/
+                        return true;
+                    }
+
+                    //if inside the chunk
+                    return  voxelData[IndexAt(nx, ny, nz)].data.visibility == visibility;
+                    };
 
                 switch (voxelData[IndexAt(x, y, z)].data.visibility) {
                 case BlockVisiblity::Opaque:
@@ -398,6 +446,14 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
                     if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
+                case BlockVisiblity::Liquid:
+                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, voxelData[IndexAt(x, y, z)].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, voxelData[IndexAt(x, y, z)].data.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, voxelData[IndexAt(x, y, z)].data.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, voxelData[IndexAt(x, y, z)].data.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    break;
                 }
             }
         }
@@ -407,7 +463,6 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
 void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData) {
     if (meshData.opaqueVerticies.size() > 0)
     {
-        // Upload to GPU
         glBindVertexArray(mesh.m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.m_VBO);
         glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_STATIC_DRAW);
@@ -422,20 +477,49 @@ void SuperChunk::ChunkUpload(SuperChunkMeshUpload& meshData) {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+        HasOpaque = true;
         mesh.opaqueCount = meshData.opaqueIndicies.size();
     }
+    else HasOpaque = false;
+
+    if (meshData.waterVerticies.size() > 0) {
+        glBindVertexArray(mesh.m_VAO3);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.m_VBO3);
+        glBufferData(GL_ARRAY_BUFFER, meshData.waterVerticies.size() * sizeof(Vertex), meshData.waterVerticies.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.m_EBO3);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.waterIndicies.size() * sizeof(uint32_t), meshData.waterIndicies.data(), GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
+
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        HasWater = true;
+        mesh.waterCount = meshData.waterIndicies.size();
+    }
+    else HasWater = false;
 }
 
 void SuperChunk::CreateMeshObjects() {
     glGenVertexArrays(1, &mesh.m_VAO);
     glGenBuffers(1, &mesh.m_VBO);
     glGenBuffers(1, &mesh.m_EBO);
+
+    glGenVertexArrays(1, &mesh.m_VAO3);
+    glGenBuffers(1, &mesh.m_VBO3);
+    glGenBuffers(1, &mesh.m_EBO3);
 }
 void SuperChunk::DeleteMeshObjects() {
-    //delete buffer objects for opaque
     glDeleteVertexArrays(1, &mesh.m_VAO);
     glDeleteBuffers(1, &mesh.m_VBO);
     glDeleteBuffers(1, &mesh.m_EBO);
+
+    glDeleteVertexArrays(1, &mesh.m_VAO3);
+    glDeleteBuffers(1, &mesh.m_VBO3);
+    glDeleteBuffers(1, &mesh.m_EBO3);
 }
 
 

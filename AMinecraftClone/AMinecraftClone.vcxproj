@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -186,6 +187,8 @@
     <ClCompile Include="PlayerHUDScreen.cpp" />
     <ClCompile Include="PlayerInventory.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="stb_vorbis.c" />
+    <ClCompile Include="TextDisplayer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="UIScreen.cpp" />
@@ -196,6 +199,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
@@ -210,6 +214,7 @@
     <ClInclude Include="Level.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="MenuButtons.h" />
+    <ClInclude Include="miniaudio.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Noise.h" />
     <ClInclude Include="NoiseGeneratorOctave.h" />
@@ -226,6 +231,7 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stbi_image.h" />
+    <ClInclude Include="TextDisplayer.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="UIScreen.h" />
