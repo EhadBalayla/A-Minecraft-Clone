@@ -233,42 +233,49 @@ Chunk* WorldManager::getChunkAt(int ChunkX, int ChunkZ) { //these coords are in 
 	return nullptr;
 }
 AABB WorldManager::getBlockHitbox(int x, int y, int z) { //coordinates are in world space
-	return getBlockAt(x, y, z)->blockHitbox.MovedTo(glm::ivec3(x, y, z));
+	return Block::blockHitbox.MovedTo(glm::ivec3(x, y, z));
 }
-Block* WorldManager::getBlockAt(int x, int y, int z) { //coordinates are in world space
+BlockType WorldManager::getBlockAt(int x, int y, int z) { //coordinates are in world space
 	Chunk* chunk = getChunkAt(x / 16, z / 16);
 	if (chunk) {
-		return &chunk->m_Blocks[IndexAt(x % 16, y, z % 16)];
+		return chunk->m_Blocks[IndexAt(x % 16, y, z % 16)];
 	}
-	return nullptr;
+	return BlockType::Air;
 }
-Block* WorldManager::getBlockAtSafe(int x, int y, int z) {
-	if (y < 0 || y >= 128) return nullptr;
+BlockType WorldManager::getBlockAtSafe(int x, int y, int z) {
+	if (y < 0 || y >= 128) return BlockType::Air;
 	int chunkX = x / 16;
 	int chunkZ = z / 16;
-	if (!IsValidChunk(chunkX, chunkZ)) return nullptr;
+	if (!IsValidChunk(chunkX, chunkZ)) return BlockType::Air;
 	Chunk* chunk = getChunkAt(chunkX, chunkZ);
 	int localX = x & 15;
 	int localZ = z & 15;
-	return &chunk->m_Blocks[IndexAt(localX, y, localZ)];
+	return chunk->m_Blocks[IndexAt(localX, y, localZ)];
 }
 void WorldManager::setBlockAt(int x, int y, int z, BlockType type) {
-	Block* block = getBlockAt(x, y, z);
-	if (!block)
+	Chunk* chunk = getChunkAt(x / 16, z / 16);
+	if (!chunk)
 		return;
-	block->setType(type);
+	chunk->m_Blocks[IndexAt(x % 16, y, z % 16)] = type;
 }
 bool WorldManager::IsSolidBlock(int x, int y, int z) { //coordinates are in world space
-	Block* block = getBlockAt(x, y, z);
+	BlockType block = getBlockAt(x, y, z);
 	if (block)
-		return block->getType() != BlockType::Air && block->data.visibility == Opaque;
+		return block != BlockType::Air && Game::e_BlockRegistery[block].visibility == Opaque;
 	return false;
 }
 void WorldManager::PlaceBlock(int x, int y, int z, BlockType type) { //coordinates are in world space
 	if (!IsSolidBlock(x, y, z)) {
-		getBlockAt(x, y, z)->setType(type);
+		setBlockAt(x, y, z, type);
 		getChunkAt(x / 16, z / 16)->UpdateMesh();
 	}
+}
+void WorldManager::BreakBlock(int x, int y, int z) {
+	Chunk* chunk = getChunkAt(x / 16, z / 16);
+	if (!chunk)
+		return;
+	chunk->m_Blocks[IndexAt(x % 16, y, z % 16)] = BlockType::Air;
+	getChunkAt(x / 16, z / 16)->UpdateMesh();
 }
 int WorldManager::getHeightValue(int x, int z) { //coordinates are in world space
 	int chunkX = floor((float)x / 16.0f);
@@ -285,7 +292,7 @@ int WorldManager::getHeightValue(int x, int z) { //coordinates are in world spac
 	if (localZ < 0) localZ += 16;
 
 	for (int y = 127; y >= 1; y--) {
-		if (chunk->m_Blocks[IndexAt(localX, y, localZ)].getType() != BlockType::Air)
+		if (chunk->m_Blocks[IndexAt(localX, y, localZ)] != BlockType::Air)
 			return y;
 	}
 
@@ -300,14 +307,14 @@ Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningWorld = this;
 
-	chunkGenerator.GenerateChunk(chunk->m_Blocks, ChunkX, ChunkZ, LOD);
+	chunkGenerator.GenerateChunk2(chunk->m_Blocks, ChunkX, ChunkZ, LOD);
 
 	return chunk;
 }
 SuperChunkPrep WorldManager::PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
-	Block* voxelData = new Block[VOXEL_ARRAY_SIZE];
+	BlockType* voxelData = new BlockType[VOXEL_ARRAY_SIZE]{BlockType::Air};
 
-	chunkGenerator.GenerateChunk(voxelData, ChunkX, ChunkZ, LOD);
+	chunkGenerator.GenerateChunk2(voxelData, ChunkX, ChunkZ, LOD);
 
 	return { voxelData, glm::ivec2(ChunkX, ChunkZ), LOD };
 }

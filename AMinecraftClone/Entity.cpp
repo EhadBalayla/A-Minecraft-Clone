@@ -82,46 +82,50 @@ void Entity::MoveAndCollide(float DeltaTime) {
 
 	glm::dvec3 newPos = position;
 
-	Block* above = Game::overworld->GetWorld().getBlockAt(position.x, position.y + entityHeight, position.z);
-	Block* below = Game::overworld->GetWorld().getBlockAt(position.x, position.y - 1, position.z);
+	glm::ivec3 abovePos = glm::vec3(position.x, position.y + entityHeight, position.z);
+	glm::ivec3 belowPos = glm::vec3(position.x, position.y - 1, position.z);
+	BlockType above = Game::overworld->GetWorld().getBlockAt(position.x, position.y + entityHeight, position.z);
+	BlockType below = Game::overworld->GetWorld().getBlockAt(position.x, position.y - 1, position.z);
 
 	newPos.y += dy;
-	if (dy > 0 && above->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(above->getWorldPosition()), aabb.MovedTo(newPos))) {
-		newPos.y = Block::blockHitbox.MovedTo(above->getWorldPosition()).min.y - entityHeight;
+	if (dy > 0 && above != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(abovePos), aabb.MovedTo(newPos))) {
+		newPos.y = Block::blockHitbox.MovedTo(abovePos).min.y - entityHeight;
 		velocity.y = 0;
 	}
-	else if (dy < 0 && below->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(below->getWorldPosition()), aabb.MovedTo(newPos))) {
-		newPos.y = Block::blockHitbox.MovedTo(below->getWorldPosition()).max.y;
+	else if (dy < 0 && below != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(belowPos), aabb.MovedTo(newPos))) {
+		newPos.y = Block::blockHitbox.MovedTo(belowPos).max.y;
 		velocity.y = 0;
 		IsOnGround = true;
 	}
 	else IsOnGround = false;
 
-
-	Block* forward = Game::overworld->GetWorld().getBlockAt(position.x, position.y, position.z + 1);
-	Block* backward = Game::overworld->GetWorld().getBlockAt(position.x, position.y, position.z - 1);
+	glm::ivec3 forwardPos = glm::vec3(position.x, position.y, position.z + 1);
+	glm::ivec3 backwardPos = glm::vec3(position.x, position.y, position.z - 1);
+	BlockType forward = Game::overworld->GetWorld().getBlockAt(position.x, position.y, position.z + 1);
+	BlockType backward = Game::overworld->GetWorld().getBlockAt(position.x, position.y, position.z - 1);
 
 	newPos.z += dz;
-	if (dz > 0 && forward->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(forward->getWorldPosition()), aabb.MovedTo(newPos))) {
-		newPos.z = forward->getWorldPosition().z + aabb.min.z;
+	if (dz > 0 && forward != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(forwardPos), aabb.MovedTo(newPos))) {
+		newPos.z = forwardPos.z + aabb.min.z;
 		velocity.z = 0;
 	}
-	else if (dz < 0 && backward->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(backward->getWorldPosition()), aabb.MovedTo(newPos))) {
-		newPos.z = backward->getWorldPosition().z + 1 + aabb.max.z;
+	else if (dz < 0 && backward != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(backwardPos), aabb.MovedTo(newPos))) {
+		newPos.z = backwardPos.z + 1 + aabb.max.z;
 		velocity.z = 0;
 	}
 
-
-	Block* right = Game::overworld->GetWorld().getBlockAt(position.x + 1, position.y, position.z);
-	Block* left = Game::overworld->GetWorld().getBlockAt(position.x - 1, position.y, position.z);
+	glm::ivec3 rightPos = glm::vec3(position.x + 1, position.y, position.z);
+	glm::ivec3 leftPos = glm::vec3(position.x - 1, position.y, position.z);
+	BlockType right = Game::overworld->GetWorld().getBlockAt(position.x + 1, position.y, position.z);
+	BlockType left = Game::overworld->GetWorld().getBlockAt(position.x - 1, position.y, position.z);
 
 	newPos.x += dx;
-	if (dx > 0 && right->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(right->getWorldPosition()), aabb.MovedTo(newPos))) {
-		newPos.x = right->getWorldPosition().x + aabb.min.x;
+	if (dx > 0 && right != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(rightPos), aabb.MovedTo(newPos))) {
+		newPos.x = rightPos.x + aabb.min.x;
 		velocity.x = 0;
 	}
-	else if (dx < 0 && left->getType() != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(left->getWorldPosition()), aabb.MovedTo(newPos))) {
-		newPos.x = left->getWorldPosition().x + 1 + aabb.max.x;
+	else if (dx < 0 && left != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(leftPos), aabb.MovedTo(newPos))) {
+		newPos.x = leftPos.x + 1 + aabb.max.x;
 		velocity.x = 0;
 	}
 	

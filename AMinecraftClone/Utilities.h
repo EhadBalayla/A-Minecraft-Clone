@@ -3,12 +3,13 @@
 #include <vector>
 
 struct PositionedBlock { //a simple struct that returns the positions
-	Block* block;
+	BlockType block;
 	glm::ivec3 pos;
 };
 
 struct RayHitReturnParams {
-	Block* HitBlock;
+	BlockType HitBlock;
+	glm::ivec3 pos;
 	Face HitFace;
 };
 

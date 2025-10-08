@@ -1,5 +1,6 @@
 #include "PlayerHUDScreen.h"
 #include "Game.h"
+#include "TextDisplayer.h"
 
 PlayerHUDScreen::PlayerHUDScreen() {
 	// the hotbar
@@ -27,4 +28,11 @@ PlayerHUDScreen::PlayerHUDScreen() {
 	selection.get()->SetPosition(glm::vec2(420.2195, 689.7805));
 	selection.get()->SetScale(glm::vec2(60.439, 60.439));
 	AddWidget(std::move(selection));
+
+	//the "Minecraft Infdev" text
+	std::unique_ptr<TextDisplayer> text = std::make_unique<TextDisplayer>();
+	text.get()->setText("Minecraft Infdev");
+	text.get()->SetPosition(glm::vec2(15.0f, 20.0f));
+	text.get()->SetScale(glm::vec2(15.0f, 15.0f));
+	AddWidget(std::move(text));
 }

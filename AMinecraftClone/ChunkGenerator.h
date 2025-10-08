@@ -13,8 +13,8 @@ public:
 	ChunkGenerator();
 	~ChunkGenerator();
 
-	void GenerateChunk(Block* voxelData, int ChunkX, int ChunkZ, uint8_t LOD); //generates infdev 2010-02-27 terrain
-	void GenerateChunk2(Chunk& chunk); //generates infdev 2010-03-27 terrain
+	void GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD); //generates infdev 2010-02-27 terrain
+	void GenerateChunk2(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD); //generates infdev 2010-03-27 terrain
 
 	void Populate(int X, int Z);
 private:

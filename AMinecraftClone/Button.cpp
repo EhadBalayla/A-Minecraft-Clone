@@ -7,7 +7,7 @@ Button::Button(UIUVQuad offUV, UIUVQuad normalUV, UIUVQuad hoveredUV) : Widget(n
 	m_NormalUV = normalUV;
 	m_HoveredUV = hoveredUV;
 
-
+	UpdateButtonUVs(uvs);
 }
 
 void Button::UpdateWidget() {
@@ -33,10 +33,5 @@ void Button::UpdateWidget() {
 }
 
 void Button::UpdateButtonUVs(UIUVQuad uvs) {
-	verticies[0] = { glm::vec2(-0.5, -0.5), uvs.uv0 }; //bottom left
-	verticies[1] = { glm::vec2(0.5, -0.5), uvs.uv1 }; //bottom right
-	verticies[2] = { glm::vec2(0.5, 0.5), uvs.uv2 }; // top right
-	verticies[3] = { glm::vec2(-0.5, 0.5), uvs.uv3 };// top left
-
-	MakeData();
+	this->uvs = uvs;
 }

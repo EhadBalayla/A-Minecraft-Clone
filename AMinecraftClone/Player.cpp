@@ -231,7 +231,7 @@ void Player::ProcessInput(SDL_Event& e) {
                 Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
                 RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
                 if (rayInfo.HitBlock) {
-                    rayInfo.HitBlock->BreakBlock();
+                    Game::overworld->GetWorld().BreakBlock(rayInfo.pos.x, rayInfo.pos.y, rayInfo.pos.z);
                     Game::m_AudioManager.StartSound("Sounds\\grass4.ogg");
                 }
             }
@@ -303,7 +303,7 @@ void Player::PlayerPlaceBlocks() {
     Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
     RayHitReturnParams rayInfo = Utils::RayHitBlock(ray, 0.025);
     if (rayInfo.HitBlock) {
-        glm::ivec3 blockPos = rayInfo.HitBlock->getWorldPosition();
+        glm::ivec3 blockPos = rayInfo.pos;
         BlockType typeToPlace = m_PlayerItems[selectedSlot - 1].m_Item.getData().blockID;
         switch (rayInfo.HitFace) {
         case Face::Top:

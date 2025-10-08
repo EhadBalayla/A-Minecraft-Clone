@@ -20,7 +20,11 @@ public:
 	void AddScreen(std::unique_ptr<UIScreen> newScreen);
 	void RemoveScreen(UIScreen* screen);
 	UIScreen* GetScreen(int index);
+
+	void DrawQuad();
 private:
+	unsigned int m_VBO, m_VAO, m_EBO; //buffers for a 2D quad
+
 	std::vector<std::unique_ptr<UIScreen>> m_Screens;
 };
 

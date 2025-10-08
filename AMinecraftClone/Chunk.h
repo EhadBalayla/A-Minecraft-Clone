@@ -51,7 +51,7 @@ class WorldManager;
 class Chunk
 {
 public:
-	Block m_Blocks[VOXEL_ARRAY_SIZE];
+	BlockType m_Blocks[VOXEL_ARRAY_SIZE];
 
 	WorldManager* owningWorld;
 	int ChunkX, ChunkZ;
@@ -91,7 +91,7 @@ struct SuperChunkMeshUpload {
 	std::vector<uint32_t> waterIndicies;
 };
 
-SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD);
+SuperChunkMeshUpload CreateSuperChunkMeshData(BlockType* voxelData, uint8_t LOD);
 
 class SuperChunk {
 public:

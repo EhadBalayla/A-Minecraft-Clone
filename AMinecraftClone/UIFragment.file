@@ -2,10 +2,10 @@
 
 out vec4 FragColor;
 
-in vec2 TexCoords;
-
 uniform sampler2D UITexture;
 
+in vec2 transUV;
+
 void main() {
-	FragColor = texture(UITexture, TexCoords);
+	FragColor = texture(UITexture, transUV);
 }

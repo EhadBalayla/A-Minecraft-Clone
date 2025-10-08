@@ -16,7 +16,7 @@ ChunkGenerator::~ChunkGenerator() {
 }
 
 
-void ChunkGenerator::GenerateChunk(Block* voxelData, int ChunkX, int ChunkZ, uint8_t LOD) {
+void ChunkGenerator::GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD) {
     uint8_t LODFactor = 1 << LOD;
 
     int BaseX = ChunkX << 4;
@@ -44,29 +44,25 @@ void ChunkGenerator::GenerateChunk(Block* voxelData, int ChunkX, int ChunkZ, uin
             }
 
             for (int y = 0; y < Chunk_Height; y++) {
-                voxelData[IndexAt(x, y, z)].BlockX = x;
-                voxelData[IndexAt(x, y, z)].BlockY = y;
-                voxelData[IndexAt(x, y, z)].BlockZ = z;
-
                 double randomDouble = rand() / (RAND_MAX + 1.0);
 
                 if ((WorldX == 0 || WorldZ == 0) && y <= FinalHeight + 2) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::Obsidian); //the obsidian cross in x = 0 and z = 0
+                    voxelData[IndexAt(x, y, z)] = BlockType::Obsidian; //the obsidian cross in x = 0 and z = 0
                 }
                 else if (LOD <= 0 && y == FinalHeight + 1 && FinalHeight >= 64 && randomDouble < 0.02) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::YellowFlower);
+                    voxelData[IndexAt(x, y, z)] = BlockType::YellowFlower;
                 }
                 else if (y == FinalHeight && FinalHeight >= 64) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::Grass); //the grass layer
+                    voxelData[IndexAt(x, y, z)] = BlockType::Grass; //the grass layer
                 }
                 else if (y <= FinalHeight - 2) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::Stone); //the stone layers
+                    voxelData[IndexAt(x, y, z)] = BlockType::Stone; //the stone layers
                 }
                 else if (y <= FinalHeight) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::Dirt); //the dirt layers
+                    voxelData[IndexAt(x, y, z)] = BlockType::Dirt; //the dirt layers
                 }
                 else if (y <= 64) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::WaterStill); //places oceans
+                    voxelData[IndexAt(x, y, z)] = BlockType::WaterStill; //places oceans
                 }
 
 
@@ -97,27 +93,29 @@ void ChunkGenerator::GenerateChunk(Block* voxelData, int ChunkX, int ChunkZ, uin
                     var12 = FinalHeight;
                 }
 
-                if (y <= var12 && (voxelData[IndexAt(x, y, z)].getType() == BlockType::Air || voxelData[IndexAt(x, y, z)].getType() == BlockType::WaterStill)) {
-                    voxelData[IndexAt(x, y, z)].setType(BlockType::Bricks);
+                if (y <= var12 && (voxelData[IndexAt(x, y, z)] == BlockType::Air || voxelData[IndexAt(x, y, z)] == BlockType::WaterStill)) {
+                    voxelData[IndexAt(x, y, z)] = BlockType::Bricks;
                 }
             }
         }
     }
 }
-void ChunkGenerator::GenerateChunk2(Chunk& chunk) {
-    Rand.setSeed((long)chunk.ChunkX * 341873128712L + (long)chunk.ChunkZ * 132897987541L);
+void ChunkGenerator::GenerateChunk2(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD) {
+    uint8_t LODFactor = 1 << LOD;
+
+    Rand.setSeed((long)ChunkX * 341873128712L + (long)ChunkZ * 132897987541L);
 
     for (int cx = 0; cx < 4; ++cx) {
         for (int cz = 0; cz < 4; ++cz) {
             double noise[33][4];
-            int worldX = (chunk.ChunkX << 2) + cx;
-            int worldZ = (chunk.ChunkZ << 2) + cz;
+            int worldX = (ChunkX << 2) + cx * LODFactor;
+            int worldZ = (ChunkZ << 2) + cz * LODFactor;
 
             for (int y = 0; y <= 32; ++y) {
                 noise[y][0] = initializeNoiseField(worldX, y, worldZ, noiseGen1_2, noiseGen2_2, noiseGen3_2);
-                noise[y][1] = initializeNoiseField(worldX, y, worldZ + 1, noiseGen1_2, noiseGen2_2, noiseGen3_2);
-                noise[y][2] = initializeNoiseField(worldX + 1, y, worldZ, noiseGen1_2, noiseGen2_2, noiseGen3_2);
-                noise[y][3] = initializeNoiseField(worldX + 1, y, worldZ + 1, noiseGen1_2, noiseGen2_2, noiseGen3_2);
+                noise[y][1] = initializeNoiseField(worldX, y, worldZ + LODFactor, noiseGen1_2, noiseGen2_2, noiseGen3_2);
+                noise[y][2] = initializeNoiseField(worldX + LODFactor, y, worldZ, noiseGen1_2, noiseGen2_2, noiseGen3_2);
+                noise[y][3] = initializeNoiseField(worldX + LODFactor, y, worldZ + LODFactor, noiseGen1_2, noiseGen2_2, noiseGen3_2);
             }
 
             for (int y = 0; y < 32; ++y) {
@@ -152,7 +150,7 @@ void ChunkGenerator::GenerateChunk2(Chunk& chunk) {
                             if (finalNoise > 0.0)
                                 newType = BlockType::Stone;
 
-                            chunk.m_Blocks[IndexAt(blockX, blockY, blockZ)].setType(newType);
+                            voxelData[IndexAt(blockX, blockY, blockZ)] = newType;
                         }
                     }
                 }
@@ -161,27 +159,23 @@ void ChunkGenerator::GenerateChunk2(Chunk& chunk) {
     }
 
     // Pass 2: replace topmost Stone with Grass or Dirt
-    for (int x = 0; x < 16; ++x) {
-        for (int z = 0; z < 16; ++z) {
+    for (int x = 0; x < Chunk_Width; ++x) {
+        for (int z = 0; z < Chunk_Length; ++z) {
             int dirtDepth = -1;
-            for (int y = 127; y >= 0; --y) {
-                chunk.m_Blocks[IndexAt(x, y, z)].owningChunk = &chunk;
-                chunk.m_Blocks[IndexAt(x, y, z)].BlockX = x;
-                chunk.m_Blocks[IndexAt(x, y, z)].BlockY = y;
-                chunk.m_Blocks[IndexAt(x, y, z)].BlockZ = z;
+            for (int y = Chunk_Height - 1; y >= 0; --y) {
 
-                BlockType type = chunk.m_Blocks[IndexAt(x, y, z)].getType();
+                BlockType type = voxelData[IndexAt(x, y, z)];
                 if (type == BlockType::Air) {
                     dirtDepth = -1;
                 }
                 else if (type == BlockType::Stone) {
                     if (dirtDepth == -1) {
                         dirtDepth = 3;
-                        chunk.m_Blocks[IndexAt(x, y, z)].setType((y >= 63) ? BlockType::Grass : BlockType::Dirt);
+                        voxelData[IndexAt(x, y, z)] = (y >= 63) ? BlockType::Grass : BlockType::Dirt;
                     }
                     else if (dirtDepth > 0) {
                         --dirtDepth;
-                        chunk.m_Blocks[IndexAt(x, y, z)].setType(BlockType::Dirt);
+                        voxelData[IndexAt(x, y, z)] = BlockType::Dirt;
                     }
                 }
             }
@@ -189,10 +183,10 @@ void ChunkGenerator::GenerateChunk2(Chunk& chunk) {
     }
 }
 
-void ChunkGenerator::Populate(int X, int Z) {
-    Rand.setSeed((long)X * 318279123L + (long)Z * 919871212);
-    int baseX = X << 4; // Chunk base X in world coords
-    int baseZ = Z << 4; // Chunk base Z in world coords
+void ChunkGenerator::Populate(int ChunkX, int ChunkZ) {
+    Rand.setSeed((long)ChunkX * 318279123L + (long)ChunkZ * 919871212);
+    int baseX = ChunkX << 4; // Chunk base X in world coords
+    int baseZ = ChunkZ << 4; // Chunk base Z in world coords
 
     for (int i = 0; i < 20; ++i) { //coal ore
         int x = baseX + Rand.nextInt(16);
@@ -221,7 +215,7 @@ void ChunkGenerator::Populate(int X, int Z) {
         int z = baseZ + Rand.nextInt(16);
         GenerateOre(x, y, z, BlockType::DiamondOre);
     }
-    
+    /*
 
 
     int treeCount = static_cast<int>(mobSpawnerNoise_2.noiseGenerator(baseX * 0.25, baseZ * 0.25)) << 3;
@@ -234,7 +228,7 @@ void ChunkGenerator::Populate(int X, int Z) {
         if (y <= 0) continue;
 
         GenerateTree(x, y, z);
-    }
+    }*/
 }
 
 
@@ -279,9 +273,9 @@ void ChunkGenerator::GenerateOre(int X, int Y, int Z, BlockType type) {
                     double dy = (y + 0.5 - yPos) / (yRadius / 2.0);
                     double dz = (z + 0.5 - zPos) / (xzRadius / 2.0);
                     if (dx * dx + dy * dy + dz * dz < 1.0) {
-                        Block* block = owningWorld->getBlockAt(x, y, z);
-                        if (block && block->getType() == BlockType::Stone) {
-                            block->setType(type);
+                        BlockType block = owningWorld->getBlockAt(x, y, z);
+                        if (block == BlockType::Stone) {
+                            owningWorld->setBlockAt(x, y, z, type);
                         }
                     }
                 }
@@ -305,8 +299,8 @@ void ChunkGenerator::GenerateTree(int x, int y, int z) {
         for (int xx = x - radius; xx <= x + radius && canGrow; ++xx) {
             for (int zz = z - radius; zz <= z + radius && canGrow; ++zz) {
                 if (yy >= 0 && yy < 128) {
-                    Block* block = owningWorld->getBlockAt(xx, yy, zz);
-                    if (block && block->getType() == BlockType::Air) {
+                    BlockType block = owningWorld->getBlockAt(xx, yy, zz);
+                    if (block && block == BlockType::Air) {
                         canGrow = true;
                     }
                 }
@@ -319,12 +313,12 @@ void ChunkGenerator::GenerateTree(int x, int y, int z) {
     if (!canGrow) return;
 
     // Soil check
-    Block* soil = owningWorld->getBlockAt(x, y - 1, z);
-    if (!soil || (soil->getType() != BlockType::Grass && soil->getType() != BlockType::Dirt))
+    BlockType soil = owningWorld->getBlockAt(x, y - 1, z);
+    if (!soil || (soil != BlockType::Grass && soil != BlockType::Dirt))
         return;
 
     // Replace soil with dirt
-    soil->setType(BlockType::Dirt);
+    soil = BlockType::Dirt;
 
     // Leaves (top canopy)
     for (int yy = y - 3 + height; yy <= y + height; ++yy) {
@@ -336,11 +330,11 @@ void ChunkGenerator::GenerateTree(int x, int y, int z) {
             for (int zz = z - radius; zz <= z + radius; ++zz) {
                 int dz = zz - z;
 
-                Block* block = owningWorld->getBlockAt(xx, yy, zz);
+                BlockType block = owningWorld->getBlockAt(xx, yy, zz);
                 if (!block) continue;
 
                 if ((std::abs(dx) != radius || std::abs(dz) != radius || Rand.nextInt(2) == 0)) {
-                    block->setType(BlockType::Obsidian);
+                    block = BlockType::Obsidian;
                 }
             }
         }
@@ -348,9 +342,9 @@ void ChunkGenerator::GenerateTree(int x, int y, int z) {
 
     // Trunk
     for (int yy = 0; yy < height; ++yy) {
-        Block* block = owningWorld->getBlockAt(x, y + yy, z);
-        if (block && block->getType() == BlockType::Air) {
-            block->setType(BlockType::Wood);
+        BlockType block = owningWorld->getBlockAt(x, y + yy, z);
+        if (block && block == BlockType::Air) {
+            block = BlockType::Wood;
         }
     }
 }

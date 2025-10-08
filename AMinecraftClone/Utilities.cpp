@@ -32,7 +32,7 @@ RayHitReturnParams Utils::RayHitBlock(Ray& ray, float steps) {
 		glm::vec3 currentPos = ray.RayOrigin + ray.RayDirection * t;
 		glm::ivec3 blockPos = glm::floor(currentPos);
 		if (Game::overworld->GetWorld().IsSolidBlock(blockPos.x, blockPos.y, blockPos.z)) {
-			Block* blockPoint = Game::overworld->GetWorld().getBlockAt(blockPos.x, blockPos.y, blockPos.z);
+			BlockType blockPoint = Game::overworld->GetWorld().getBlockAt(blockPos.x, blockPos.y, blockPos.z);
 			
 			//x y and z relative to the block itself, so we can check which face based on which is closer, however accuracy depends on the ste
 			float relX = currentPos.x - blockPos.x;
@@ -40,27 +40,27 @@ RayHitReturnParams Utils::RayHitBlock(Ray& ray, float steps) {
 			float relZ = currentPos.z - blockPos.z;
 			if (relY > relX && relY > relZ) //the up face
 			{
-				return { blockPoint, Face::Top };
+				return { blockPoint, blockPos, Face::Top };
 			}
 			else if (relY < relX && relY < relZ) //the down face
 			{
-				return { blockPoint, Face::Bottom };
+				return { blockPoint, blockPos, Face::Bottom };
 			}
 			else if (relX > relY && relX > relZ) // the right face
 			{
-				return { blockPoint, Face::Back };
+				return { blockPoint, blockPos, Face::Back };
 			}
 			else if (relX < relY && relX < relZ) // the left face
 			{
-				return { blockPoint, Face::Front };
+				return { blockPoint, blockPos, Face::Front };
 			}
 			else if (relZ > relX && relZ > relY) // the forward face
 			{
-				return { blockPoint, Face::Left };
+				return { blockPoint, blockPos, Face::Left };
 			}
 			else if (relZ < relX && relZ < relY) // the backward face
 			{
-				return { blockPoint, Face::Right };
+				return { blockPoint, blockPos, Face::Right };
 			}
 		}
 	}

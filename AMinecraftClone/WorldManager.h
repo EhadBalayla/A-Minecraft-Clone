@@ -15,7 +15,7 @@ struct SuperChunkStart {
 	uint8_t LOD;
 };
 struct SuperChunkPrep {
-	Block* voxelData;
+	BlockType* voxelData;
 	glm::ivec2 pos;
 	uint8_t LOD;
 };
@@ -61,11 +61,12 @@ public:
 	Chunk* getChunkAt(int ChunkX, int ChunkZ);
 
 	//block helpers
-	Block* getBlockAt(int x, int y, int z);
-	Block* getBlockAtSafe(int x, int y, int z);
+	BlockType getBlockAt(int x, int y, int z);
+	BlockType getBlockAtSafe(int x, int y, int z);
 	void setBlockAt(int x, int y, int z, BlockType type);
 	bool IsSolidBlock(int x, int y, int z);
 	void PlaceBlock(int x, int y, int z, BlockType type);
+	void BreakBlock(int x, int y, int z);
 	
 	//other helpers
 	int getHeightValue(int x, int z);

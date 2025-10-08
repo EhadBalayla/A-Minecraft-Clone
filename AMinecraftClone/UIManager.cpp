@@ -3,6 +3,28 @@
 
 void UIManager::Init() {
 	WidgetShader.loadShader("UIVertex.file", "UIFragment.file");
+
+	float QuadVerts[] = {
+		-0.5, -0.5,
+		0.5, -0.5,
+		0.5, 0.5,
+		-0.5, 0.5
+	};
+	unsigned int indicies[6] = { 0, 1, 2, 2, 3, 0 };
+
+	glGenVertexArrays(1, &m_VAO);
+	glGenBuffers(1, &m_VBO);
+	glGenBuffers(1, &m_EBO);
+
+	glBindVertexArray(m_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), QuadVerts, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0); // position
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
 }
 
 void UIManager::Update() {
@@ -23,7 +45,9 @@ void UIManager::Render() {
 }
 
 void UIManager::Terminate() {
-
+	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_VBO);
+	glDeleteBuffers(1, &m_EBO);
 }
 
 
@@ -37,4 +61,10 @@ void UIManager::RemoveScreen(UIScreen* screen) {
 
 UIScreen* UIManager::GetScreen(int index) {
 	return m_Screens[index].get();
+}
+
+
+void UIManager::DrawQuad() {
+	glBindVertexArray(m_VAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

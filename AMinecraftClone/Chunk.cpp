@@ -101,8 +101,7 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
     for (int x = 0; x < Chunk_Width; x++) {
         for (int y = 0; y < Chunk_Height; y++) {
             for (int z = 0; z < Chunk_Length; z++) {
-                chunk.m_Blocks[IndexAt(x, y, z)].owningChunk = &chunk;
-                BlockType type = chunk.m_Blocks[IndexAt(x, y, z)].m_Type;
+                BlockType type = chunk.m_Blocks[IndexAt(x, y, z)];
                 if (type == BlockType::Air)
                     continue;
 
@@ -146,7 +145,7 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     }
 
                     //if inside the chunk
-                    return chunk.m_Blocks[IndexAt(nx, ny, nz)].getType() == BlockType::Air || chunk.m_Blocks[IndexAt(nx, ny, nz)].data.visibility != visibility;
+                    return chunk.m_Blocks[IndexAt(nx, ny, nz)] == BlockType::Air || Game::e_BlockRegistery[chunk.m_Blocks[IndexAt(nx, ny, nz)]].visibility != visibility;
                     };
                 auto isVis = [&](int dx, int dy, int dz, BlockVisiblity visibility)  -> bool {
                     Block* block;
@@ -186,28 +185,29 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     }
 
                     //if inside the chunk
-                    return  chunk.m_Blocks[IndexAt(nx, ny, nz)].data.visibility == visibility;
+                    return  Game::e_BlockRegistery[chunk.m_Blocks[IndexAt(nx, ny, nz)]].visibility == visibility;
                     };
-
-                switch (chunk.m_Blocks[IndexAt(x, y, z)].data.visibility) {
+                
+                BlockData bd = Game::e_BlockRegistery[chunk.m_Blocks[IndexAt(x, y, z)]];
+                switch (Game::e_BlockRegistery[chunk.m_Blocks[IndexAt(x, y, z)]].visibility) {
                 case BlockVisiblity::Opaque:
-                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, bd.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, bd.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, bd.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, bd.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, bd.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, bd.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
                 case BlockVisiblity::Plant:
-                    AddPlantFace(blockPos, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
+                    AddPlantFace(blockPos, bd.uv.Back, index1, ret.plantVerticies, ret.plantIndicies);
                     break;
                 case BlockVisiblity::Liquid:
-                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, chunk.m_Blocks[IndexAt(x, y, z)].data.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, bd.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, bd.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, bd.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, bd.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, bd.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, bd.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
                     break;
                 }
             }
@@ -337,7 +337,7 @@ void SuperChunk::RenderWater() {
     }
 }
 
-SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
+SuperChunkMeshUpload CreateSuperChunkMeshData(BlockType* voxelData, uint8_t LOD) {
     uint32_t index = 0;
     uint32_t index2 = 0;
     uint8_t LODFactor = 1 << LOD;
@@ -350,7 +350,7 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
     for (int x = 0; x < Chunk_Width; x++) {
         for (int y = 0; y < Chunk_Height; y += 2) {
             for (int z = 0; z < Chunk_Length; z++) {
-                BlockType type = voxelData[IndexAt(x, y, z)].m_Type;
+                BlockType type = voxelData[IndexAt(x, y, z)];
                 if (type == BlockType::Air)
                     continue;
 
@@ -394,7 +394,7 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
                     }
 
                     //if inside the chunk
-                    return voxelData[IndexAt(nx, ny, nz)].getType() == BlockType::Air || voxelData[IndexAt(nx, ny, nz)].data.visibility != visibility;
+                    return voxelData[IndexAt(nx, ny, nz)] == BlockType::Air || Game::e_BlockRegistery[voxelData[IndexAt(nx, ny, nz)]].visibility != visibility;
                     };
                 auto isVis = [&](int dx, int dy, int dz, BlockVisiblity visibility)  -> bool {
                     Block* block;
@@ -434,25 +434,26 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(Block* voxelData, uint8_t LOD) {
                     }
 
                     //if inside the chunk
-                    return  voxelData[IndexAt(nx, ny, nz)].data.visibility == visibility;
+                    return  Game::e_BlockRegistery[voxelData[IndexAt(nx, ny, nz)]].visibility == visibility;
                     };
 
-                switch (voxelData[IndexAt(x, y, z)].data.visibility) {
+                BlockData bd = Game::e_BlockRegistery[voxelData[IndexAt(x, y, z)]];
+                switch (bd.visibility) {
                 case BlockVisiblity::Opaque:
-                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, voxelData[IndexAt(x, y, z)].data.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, voxelData[IndexAt(x, y, z)].data.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, voxelData[IndexAt(x, y, z)].data.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, voxelData[IndexAt(x, y, z)].data.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
-                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, bd.uv.Back, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, bd.uv.Front, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, bd.uv.Left, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, bd.uv.Right, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, bd.uv.Top, index, ret.opaqueVerticies, ret.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, bd.uv.Bottom, index, ret.opaqueVerticies, ret.opaqueIndicies);
                     break;
                 case BlockVisiblity::Liquid:
-                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, voxelData[IndexAt(x, y, z)].data.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, voxelData[IndexAt(x, y, z)].data.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, voxelData[IndexAt(x, y, z)].data.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, voxelData[IndexAt(x, y, z)].data.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, voxelData[IndexAt(x, y, z)].data.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
-                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, voxelData[IndexAt(x, y, z)].data.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, bd.uv.Back, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, bd.uv.Front, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, bd.uv.Left, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, bd.uv.Right, index2, isVis(0, 1, 0, Liquid), ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, bd.uv.Top, index2, false, ret.waterVerticies, ret.waterIndicies);
+                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, bd.uv.Bottom, index2, false, ret.waterVerticies, ret.waterIndicies);
                     break;
                 }
             }
