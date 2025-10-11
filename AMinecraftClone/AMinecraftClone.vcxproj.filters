@@ -32,6 +32,9 @@
     <Filter Include="Source Files\AlphaInfdevNoise">
       <UniqueIdentifier>{5c1abc9c-1e22-4579-8a81-f174777d8d13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\TerrainGenerators">
+      <UniqueIdentifier>{5a5835fb-d7ee-4f03-a12b-59ae8812bb14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -115,9 +118,6 @@
     <ClCompile Include="PauseMenu.cpp">
       <Filter>Source Files\UI\ActualScreens</Filter>
     </ClCompile>
-    <ClCompile Include="NoiseGeneratorOne.cpp">
-      <Filter>Source Files\EarlyInfdevNoise</Filter>
-    </ClCompile>
     <ClCompile Include="NoiseGeneratorPerlin.cpp">
       <Filter>Source Files\EarlyInfdevNoise</Filter>
     </ClCompile>
@@ -162,6 +162,15 @@
     </ClCompile>
     <ClCompile Include="NoiseGeneratorOctave3.cpp">
       <Filter>Source Files\AlphaInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainGen_1.cpp">
+      <Filter>Source Files\TerrainGenerators</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainGen_2.cpp">
+      <Filter>Source Files\TerrainGenerators</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainGen_3.cpp">
+      <Filter>Source Files\TerrainGenerators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -243,9 +252,6 @@
     <ClInclude Include="PauseMenu.h">
       <Filter>Source Files\UI\ActualScreens</Filter>
     </ClInclude>
-    <ClInclude Include="NoiseGeneratorOne.h">
-      <Filter>Source Files\EarlyInfdevNoise</Filter>
-    </ClInclude>
     <ClInclude Include="NoiseGeneratorPerlin.h">
       <Filter>Source Files\EarlyInfdevNoise</Filter>
     </ClInclude>
@@ -293,6 +299,15 @@
     </ClInclude>
     <ClInclude Include="NoiseGeneratorOctave3.h">
       <Filter>Source Files\AlphaInfdevNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainGen_1.h">
+      <Filter>Source Files\TerrainGenerators</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainGen_2.h">
+      <Filter>Source Files\TerrainGenerators</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainGen_3.h">
+      <Filter>Source Files\TerrainGenerators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

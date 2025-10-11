@@ -27,7 +27,7 @@ float squaredDistance(const glm::vec2& p1, const glm::vec2& p2) {
 }
 
 
-WorldManager::WorldManager() {
+WorldManager::WorldManager() : chunkGenerator(this) {
 	chunkGenerator.owningWorld = this;
 
 	running = true;
@@ -60,10 +60,10 @@ void WorldManager::ChunksStart(int CenterX, int CenterZ) {
 	//generate new chunks that aren't in render distance.
 	UpdateChunks(CenterX, CenterZ);
 
-	UpdateLODs(CenterX, CenterZ, 1);
-	UpdateLODs(CenterX, CenterZ, 2);
-	UpdateLODs(CenterX, CenterZ, 3);
-	UpdateLODs(CenterX, CenterZ, 4);
+	//UpdateLODs(CenterX, CenterZ, 1);
+	//UpdateLODs(CenterX, CenterZ, 2);
+	//UpdateLODs(CenterX, CenterZ, 3);
+	//UpdateLODs(CenterX, CenterZ, 4);
 }
 void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
 	for (auto it = chunks.begin(); it != chunks.end(); ) {
@@ -340,7 +340,7 @@ SuperChunk* WorldManager::LoadNewLODChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 SuperChunkPrep WorldManager::PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD, SuperChunk* chunk) {
 	BlockType* voxelData = new BlockType[VOXEL_ARRAY_SIZE]{BlockType::Air};
 
-	chunkGenerator.GenerateChunk(voxelData, ChunkX, ChunkZ, LOD);
+	chunkGenerator.Gen1.GenerateChunk(voxelData, ChunkX, ChunkZ, LOD);
 
 	return { voxelData, chunk };
 }
@@ -376,7 +376,7 @@ void WorldManager::ChunkThreadLoop() {
 		}
 		
 		Chunk* chunk = LoadNewChunk(coords.x, coords.y);
-		chunkGenerator.GenerateChunk(chunk->m_Blocks, chunk->ChunkX, chunk->ChunkZ, 0);
+		chunkGenerator.Gen3.GenerateChunk(chunk->m_Blocks, chunk->ChunkX, chunk->ChunkZ, 0);
 
 		{
 			std::lock_guard<std::mutex> lock(meshMutex);

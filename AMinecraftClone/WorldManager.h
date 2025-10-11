@@ -45,6 +45,7 @@ class Level;
 class WorldManager
 {
 public:
+	bool IsSnowWorld = false;
 	Level* owningLevel;
 
 	WorldManager();

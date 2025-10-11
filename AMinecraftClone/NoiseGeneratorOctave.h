@@ -1,6 +1,7 @@
 #pragma once
 #include "NoiseGeneratorPerlin.h"
-class NoiseGeneratorOctave : public NoiseGeneratorOne
+
+class NoiseGeneratorOctave
 {
 public:
 	NoiseGeneratorOctave(int var1);

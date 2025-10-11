@@ -1,8 +1,7 @@
 #pragma once
-#include "NoiseGeneratorOne.h"
 #include "Random.h"
 
-class NoiseGeneratorPerlin : public NoiseGeneratorOne
+class NoiseGeneratorPerlin
 {
 public:
 

@@ -3,10 +3,10 @@
 
 NoiseGeneratorOctave2::NoiseGeneratorOctave2(Random& var1, int var2) {
 	octaves = var2;
-	generatorCollection = new NoiseGeneratorPerlin[var2];
+	generatorCollection = new NoiseGeneratorPerlin2[var2];
 
 	for (int var3 = 0; var3 < var2; ++var3) {
-		generatorCollection[var3] = NoiseGeneratorPerlin(var1);
+		generatorCollection[var3] = NoiseGeneratorPerlin2(var1);
 	}
 }
 

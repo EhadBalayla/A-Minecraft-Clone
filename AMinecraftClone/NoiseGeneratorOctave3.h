@@ -6,11 +6,9 @@ class NoiseGeneratorOctave3
 {
 public:
 	NoiseGeneratorOctave3(Random& var1, int var2);
-	~NoiseGeneratorOctave3();
 
-	double noiseGenerator(double var1, double var3);
-	double generateNoiseOctaves(double var1, double var3, double var5);
-	double* generateNoiseOctaves(double** var1, int* var1_Len, int var2, int var3, int var4, int var5, int var6, int var7, double var8, double var10, double var12);
+	double generateNoiseOctaves(double var1, double var3);
+	double* generateNoiseOctaves(double* var1, double var2, double var4, double var6, int var8, int var9, int var10, double var11, double var13, double var15);
 private:
 	NoiseGeneratorPerlin3* generatorCollection;
 	int octaves;

@@ -178,7 +178,6 @@
     <ClCompile Include="NoiseGeneratorOctave.cpp" />
     <ClCompile Include="NoiseGeneratorOctave2.cpp" />
     <ClCompile Include="NoiseGeneratorOctave3.cpp" />
-    <ClCompile Include="NoiseGeneratorOne.cpp" />
     <ClCompile Include="NoiseGeneratorPerlin.cpp" />
     <ClCompile Include="NoiseGeneratorPerlin2.cpp" />
     <ClCompile Include="NoiseGeneratorPerlin3.cpp" />
@@ -190,6 +189,9 @@
     <ClCompile Include="PlayerInventory.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stb_vorbis.c" />
+    <ClCompile Include="TerrainGen_1.cpp" />
+    <ClCompile Include="TerrainGen_2.cpp" />
+    <ClCompile Include="TerrainGen_3.cpp" />
     <ClCompile Include="TextDisplayer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -222,7 +224,6 @@
     <ClInclude Include="NoiseGeneratorOctave.h" />
     <ClInclude Include="NoiseGeneratorOctave2.h" />
     <ClInclude Include="NoiseGeneratorOctave3.h" />
-    <ClInclude Include="NoiseGeneratorOne.h" />
     <ClInclude Include="NoiseGeneratorPerlin.h" />
     <ClInclude Include="NoiseGeneratorPerlin2.h" />
     <ClInclude Include="NoiseGeneratorPerlin3.h" />
@@ -235,6 +236,9 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stbi_image.h" />
+    <ClInclude Include="TerrainGen_1.h" />
+    <ClInclude Include="TerrainGen_2.h" />
+    <ClInclude Include="TerrainGen_3.h" />
     <ClInclude Include="TextDisplayer.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="UIManager.h" />
