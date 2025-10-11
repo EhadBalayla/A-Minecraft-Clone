@@ -27,11 +27,14 @@ enum BlockType : uint8_t { //block ids
 	Stone, 
 	Dirt, 
 	Sand,
+	Gravel,
 	Cobblestone,
+	MossyCobblestone,
 	WoodenPlanks,
 	Wood,
 	Bedrock,
 	Bricks,
+	TNT,
 	CoalOre,
 	IronOre,
 	GoldOre,
@@ -40,6 +43,8 @@ enum BlockType : uint8_t { //block ids
 	Obsidian,
 	YellowFlower,
 	RedFlower,
+	BrownMushroom,
+	RedMushroom,
 	WaterStill, //for water source blocks
 	WaterFlowNorth, //for water that flows to the north
 	WaterFlowEast, //for water that flows to the east

@@ -4,9 +4,9 @@
 #include "MathHelper.h"
 #include "Game.h"
 
-void AddFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
-void AddPlantFace(glm::u8vec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
-void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
+void AddFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
+void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
+void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 
 int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given chunk, only on a single axis tho, this is generally used for render distance
     int DistanceX = std::abs(std::abs(chunk->ChunkX) - std::abs(ChunkX));
@@ -56,7 +56,7 @@ void Chunk::RenderOpaqueAndPlants() {
     Game::e_DefaultShader.use();
     Game::e_DefaultShader.setMat4("view", Game::View);
     Game::e_DefaultShader.setMat4("projection", Game::Proj);
-    glm::vec3 relativePos = glm::dvec3(ChunkX * 16, 0, ChunkZ * 16) - Game::player.GetPosition();
+    glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width, 0, ChunkZ * Chunk_Length) - Game::player.GetPosition();
     Game::e_DefaultShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
 
     //enable rendering features for opaque blocks
@@ -80,7 +80,7 @@ void Chunk::RenderWater() {
     Game::e_WaterShader.use();
     Game::e_WaterShader.setMat4("view", Game::View);
     Game::e_WaterShader.setMat4("projection", Game::Proj);
-    glm::vec3 relativePos = glm::dvec3(ChunkX * 16, 0, ChunkZ * 16) - Game::player.GetPosition();
+    glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width, 0, ChunkZ * Chunk_Length) - Game::player.GetPosition();
     Game::e_WaterShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
     Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
     glEnable(GL_CULL_FACE);
@@ -306,7 +306,7 @@ void SuperChunk::RenderOpaque() {
         Game::e_DefaultShader.setMat4("view", Game::View);
         Game::e_DefaultShader.setMat4("projection", Game::Proj);
         uint8_t LODFactor = GetLODSize(LOD);
-        glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
+        glm::vec3 relativePos = glm::dvec3(Pos.x * Chunk_Width * LODFactor, 0, Pos.y * Chunk_Length * LODFactor) - Game::player.GetPosition();
         glm::vec3 scale = glm::vec3(LODFactor);
         Game::e_DefaultShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
 
@@ -325,7 +325,7 @@ void SuperChunk::RenderWater() {
         Game::e_WaterShader.setMat4("view", Game::View);
         Game::e_WaterShader.setMat4("projection", Game::Proj);
         uint8_t LODFactor = GetLODSize(LOD);
-        glm::vec3 relativePos = glm::dvec3(Pos.x * 16 * LODFactor, 0, Pos.y * 16 * LODFactor) - Game::player.GetPosition();
+        glm::vec3 relativePos = glm::dvec3(Pos.x * Chunk_Width * LODFactor, 0, Pos.y * Chunk_Length * LODFactor) - Game::player.GetPosition();
         glm::vec3 scale = glm::vec3(LODFactor);
         Game::e_WaterShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
         Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
@@ -344,9 +344,6 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(BlockType* voxelData, uint8_t LOD)
 
     SuperChunkMeshUpload ret;
 
-    ret.opaqueVerticies.reserve(98304);
-    ret.opaqueIndicies.reserve(147456);
-
     for (int x = 0; x < Chunk_Width; x++) {
         for (int y = 0; y < Chunk_Height; y += 2) {
             for (int z = 0; z < Chunk_Length; z++) {
@@ -354,7 +351,7 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(BlockType* voxelData, uint8_t LOD)
                 if (type == BlockType::Air)
                     continue;
 
-                glm::u8vec3 blockPos(x, y / LODFactor, z);
+                glm::uvec3 blockPos(x, y / LODFactor, z);
 
                 auto isAir = [&](int dx, int dy, int dz, BlockVisiblity visibility) -> bool { //for opaque blocks
                     Block* block;
@@ -527,7 +524,7 @@ void SuperChunk::DeleteMeshObjects() {
 
 
 //helper functions
-uint16_t convertPos(glm::u8vec3 pos) {
+uint16_t convertPos(glm::uvec3 pos) {
     uint16_t ret = pos.y << 8;
     ret |= pos.z << 4;
     ret |= pos.x;
@@ -544,7 +541,7 @@ void waterFlag(uint16_t& pos, uint8_t& extras, uint16_t flag /*from 1 - 10*/) {
 }
 
 //adds face for an opaque block
-void AddFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
+void AddFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
     uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
 
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
@@ -607,7 +604,7 @@ void AddFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& inde
     indexOffset += 4;
 }
 //adds face for a plant block
-void AddPlantFace(glm::u8vec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
+void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
     uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
 
 
@@ -654,7 +651,7 @@ void AddPlantFace(glm::u8vec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffse
     indexOffset += 4;
 }
 //adds face for a liquid block
-void AddLiquidFace(glm::u8vec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
+void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
     uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
     uint16_t p0 = convertPos(pos), p1 = convertPos(pos), p2 = convertPos(pos), p3 = convertPos(pos);
 

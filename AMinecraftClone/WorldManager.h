@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
 #include <vector>
 
@@ -16,8 +17,7 @@ struct SuperChunkStart {
 };
 struct SuperChunkPrep {
 	BlockType* voxelData;
-	glm::ivec2 pos;
-	uint8_t LOD;
+	SuperChunk* chunk;
 };
 struct SuperChunkReady {
 	SuperChunk* chunk;
@@ -77,8 +77,9 @@ private:
 	ChunkGenerator chunkGenerator; //the world generator itself
 
 	//helper functions
-	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates a new chunk
-	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates temporary chunks to prep a super chunk
+	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
+	SuperChunk* LoadNewLODChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates a new LOD chunk
+	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD, SuperChunk* chunk); //creates temporary chunks to prep a super chunk
 	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ);
 
 	//the multithreading stuff
@@ -99,6 +100,7 @@ private:
 	std::condition_variable superCV;
 	std::condition_variable superMeshCV;
 
+	std::mutex chunkMapMutex;
 	std::unordered_map<glm::ivec2, Chunk*> chunks;
 	std::unordered_map<glm::ivec2, SuperChunk*> LOD1;
 	std::unordered_map<glm::ivec2, SuperChunk*> LOD2;
@@ -106,11 +108,16 @@ private:
 	std::unordered_map<glm::ivec2, SuperChunk*> LOD4;
 
 	//chunks thread queues
+	std::unordered_set<glm::ivec2> queuedChunks;
 	std::queue<glm::ivec2> chunkGenQueue;
 	std::queue<Chunk*> chunkMeshGenQueue;
 	std::queue<ChunkReady> chunkMeshFinalQueue;
 
 	//super chunks thread queues
+	std::unordered_set<glm::ivec2> LOD1QueuedChunks;
+	std::unordered_set<glm::ivec2> LOD2QueuedChunks;
+	std::unordered_set<glm::ivec2> LOD3QueuedChunks;
+	std::unordered_set<glm::ivec2> LOD4QueuedChunks;
 	std::queue<SuperChunkStart> superChunkGenQueue;
 	std::queue<SuperChunkPrep> superChunkMeshGenQueue;
 	std::queue<SuperChunkReady> superChunkMeshFinalQueue;

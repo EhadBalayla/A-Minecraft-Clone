@@ -29,6 +29,9 @@
     <Filter Include="Source Files\MidInfdevNoise">
       <UniqueIdentifier>{975523eb-10ed-4475-829a-62d981da98f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AlphaInfdevNoise">
+      <UniqueIdentifier>{5c1abc9c-1e22-4579-8a81-f174777d8d13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -154,6 +157,12 @@
     <ClCompile Include="TextDisplayer.cpp">
       <Filter>Source Files\UI\ActualWidgets</Filter>
     </ClCompile>
+    <ClCompile Include="NoiseGeneratorPerlin3.cpp">
+      <Filter>Source Files\AlphaInfdevNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseGeneratorOctave3.cpp">
+      <Filter>Source Files\AlphaInfdevNoise</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -278,6 +287,12 @@
     </ClInclude>
     <ClInclude Include="TextDisplayer.h">
       <Filter>Source Files\UI\ActualWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorPerlin3.h">
+      <Filter>Source Files\AlphaInfdevNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGeneratorOctave3.h">
+      <Filter>Source Files\AlphaInfdevNoise</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

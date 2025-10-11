@@ -177,9 +177,11 @@
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="NoiseGeneratorOctave.cpp" />
     <ClCompile Include="NoiseGeneratorOctave2.cpp" />
+    <ClCompile Include="NoiseGeneratorOctave3.cpp" />
     <ClCompile Include="NoiseGeneratorOne.cpp" />
     <ClCompile Include="NoiseGeneratorPerlin.cpp" />
     <ClCompile Include="NoiseGeneratorPerlin2.cpp" />
+    <ClCompile Include="NoiseGeneratorPerlin3.cpp" />
     <ClCompile Include="OctaveNoise.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
@@ -219,9 +221,11 @@
     <ClInclude Include="Noise.h" />
     <ClInclude Include="NoiseGeneratorOctave.h" />
     <ClInclude Include="NoiseGeneratorOctave2.h" />
+    <ClInclude Include="NoiseGeneratorOctave3.h" />
     <ClInclude Include="NoiseGeneratorOne.h" />
     <ClInclude Include="NoiseGeneratorPerlin.h" />
     <ClInclude Include="NoiseGeneratorPerlin2.h" />
+    <ClInclude Include="NoiseGeneratorPerlin3.h" />
     <ClInclude Include="OctaveNoise.h" />
     <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="PerlinNoise.h" />

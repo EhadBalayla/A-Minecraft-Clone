@@ -151,19 +151,24 @@ void Game::RegisterAllBlocks() { //register all block types in the hash map so t
 	e_BlockRegistery[Stone] = { { 1, 1, 1, 1, 1, 1 }, BlockVisiblity::Opaque }; //register the stone block
 	e_BlockRegistery[Dirt] = { { 2, 2, 2, 2, 2, 2 }, BlockVisiblity::Opaque }; //register the dirt block
 	e_BlockRegistery[Sand] = { { 18, 18, 18, 18, 18, 18 }, BlockVisiblity::Opaque }; //register the sand block
+	e_BlockRegistery[Gravel] = { { 19, 19, 19, 19, 19, 19 }, BlockVisiblity::Opaque }; //register the gravel block
 	e_BlockRegistery[Cobblestone] = { { 16, 16, 16, 16, 16, 16 }, BlockVisiblity::Opaque }; //register the cobblestone block
+	e_BlockRegistery[MossyCobblestone] = { { 36, 36, 36, 36, 36, 36 }, BlockVisiblity::Opaque }; //register the mossy cobblestone block
 	e_BlockRegistery[WoodenPlanks] = { { 4, 4, 4, 4, 4, 4 }, BlockVisiblity::Opaque }; //register the wooden planks block
 	e_BlockRegistery[Wood] = { { 21, 21, 20, 20, 20, 20 }, BlockVisiblity::Opaque }; //register the wood block
 	e_BlockRegistery[Bedrock] = { { 17, 17, 17, 17, 17, 17 }, BlockVisiblity::Opaque }; //register the bedrock block
 	e_BlockRegistery[Bricks] = { { 7, 7, 7, 7, 7, 7 }, BlockVisiblity::Opaque }; //register the bricks block
+	e_BlockRegistery[TNT] = { { 9, 10, 8, 8, 8, 8 }, BlockVisiblity::Opaque };//register the TNT block
 	e_BlockRegistery[CoalOre] = { { 34, 34, 34, 34, 34, 34 }, BlockVisiblity::Opaque }; //register the coal ore block
 	e_BlockRegistery[IronOre] = { { 33, 33, 33, 33, 33, 33 }, BlockVisiblity::Opaque }; //register the iron ore block
 	e_BlockRegistery[GoldOre] = { { 32, 32, 32, 32, 32, 32 }, BlockVisiblity::Opaque }; //register the gold ore block
 	e_BlockRegistery[DiamondOre] = { { 50, 50, 50, 50, 50, 50 }, BlockVisiblity::Opaque }; //register the diamond ore block
 	e_BlockRegistery[Glass] = { { 49, 49, 49, 49, 49, 49 }, BlockVisiblity::Opaque }; //register the glass block
 	e_BlockRegistery[Obsidian] = { { 37, 37, 37, 37, 37, 37 }, BlockVisiblity::Opaque }; //register the obsidian block
-	e_BlockRegistery[YellowFlower] = { { 13, 13, 13, 13, 13, 13 }, BlockVisiblity::Plant }; //register the red flower block
+	e_BlockRegistery[YellowFlower] = { { 13, 13, 13, 13, 13, 13 }, BlockVisiblity::Plant }; //register the yellow flower block
 	e_BlockRegistery[RedFlower] = { { 12, 12, 12, 12, 12, 12 }, BlockVisiblity::Plant }; //register the red flower block
+	e_BlockRegistery[BrownMushroom] = { { 29, 29, 29, 29, 29, 29 }, BlockVisiblity::Plant }; //register the brown mushroom block
+	e_BlockRegistery[RedMushroom] = { { 28, 28, 28, 28, 28, 28 }, BlockVisiblity::Plant }; //register the red flower block
 	e_BlockRegistery[WaterStill] = { { 205, 205, 205, 205, 205, 205 }, BlockVisiblity::Liquid }; //register the still water block
 }
 

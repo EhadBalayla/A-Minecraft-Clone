@@ -95,7 +95,7 @@ SuperChunkMeshUpload CreateSuperChunkMeshData(BlockType* voxelData, uint8_t LOD)
 
 class SuperChunk {
 public:
-	glm::ivec2 Pos; //stays consistent upon the SuperChunk's creation
+	glm::ivec2 Pos;
 	uint8_t LOD = 1; //from 1 - 4
 
 	bool RenderReady = false;
