@@ -6,14 +6,21 @@ class WorldManager;
 class TerrainGen_3
 {
 public:
-	TerrainGen_3(Random& random, WorldManager* world);
+	TerrainGen_3(long seed, WorldManager* world);
 	~TerrainGen_3();
 
 	//generates Alpha terrain
 	void GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD);
+	void populate(int ChunkX, int ChunkZ);
 private:
 	WorldManager* owningWorld = nullptr;
-	Random& Rand;
+	long randomSeed;
+	Random Rand;
+
+	//specifically for the cave generation
+	Random CavesRand;
+	int cavesRange = 8;
+
 
 	//all noise maps for Alpha terrain
 	NoiseGeneratorOctave3 noiseGen1;
@@ -36,9 +43,24 @@ private:
 	double* gravelNoise = nullptr;
 	double* stoneNoise = nullptr;
 
+	//terrain gen
 	void generateTerrain(int var1, int var2, BlockType* voxelData);
 	void replaceSurfaceBlocks(int var1, int var2, BlockType* voxelData);
+	void GenerateCaves(int var3, int var4, BlockType* var5);
 
+	//population gen
+	void GenerateOre(int numberOfBlocks, BlockType type, Random& var2, int var3, int var4, int var5);
+	void GenerateClay(int numberOfBlocks, Random& var2, int var3, int var4, int var5);
+	void GenerateDungeon(Random& var2, int var3, int var4, int var5);
+	void GenerateFlowers(BlockType flowerType, Random& var2, int var3, int var4, int var5);
+	void GenerateReed(Random& var2, int var3, int var4, int var5);
+	void GenerateCactus(Random& var2, int var3, int var4, int var5);
+	void GenerateLiquids(BlockType type, Random& var2, int var3, int var4, int var5);
+	
+	//generation AND population helpers
 	double* initializeNoiseField(double* var1, int var2, int var3, int var4, int var5, int var6, int var7);
+	void recursiveGenerate(int var2, int var3, int var4, int var5, BlockType* var6);
+	void generateLargeCaveNode(int var1, int var2, BlockType* var3, double var4, double var6, double var8);
+	void generateCaveNode(int var1, int var2, BlockType* var3, double var4, double var6, double var8, float var10, float var11, float var12, int var13, int var14, double var15);
 };
 

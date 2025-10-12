@@ -57,5 +57,10 @@ public:
     inline bool nextBoolean() {
         return next(1) != 0;
     }
+    inline int64_t nextLong() {
+        int64_t high = static_cast<int64_t>(next(32)) << 32;
+        int64_t low = static_cast<int64_t>(next(32)) & 0xFFFFFFFFLL;
+        return high | low;
+    }
 };
 

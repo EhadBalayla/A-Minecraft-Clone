@@ -1,6 +1,6 @@
 #include "NoiseGeneratorPerlin3.h"
 
-NoiseGeneratorPerlin3::NoiseGeneratorPerlin3(Random var1) {
+NoiseGeneratorPerlin3::NoiseGeneratorPerlin3(Random& var1) {
 	xCoord = var1.nextDouble() * 256.0;
 	yCoord = var1.nextDouble() * 256.0;
 	zCoord = var1.nextDouble() * 256.0;

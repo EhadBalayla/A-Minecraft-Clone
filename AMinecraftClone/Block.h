@@ -40,6 +40,7 @@ enum BlockType : uint8_t { //block ids
 	GoldOre,
 	DiamondOre,
 	Glass,
+	MobSpawner,
 	Obsidian,
 	YellowFlower,
 	RedFlower,

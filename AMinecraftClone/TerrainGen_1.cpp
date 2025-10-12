@@ -1,6 +1,6 @@
 #include "TerrainGen_1.h"
 
-TerrainGen_1::TerrainGen_1(Random& random) : Rand(random), 
+TerrainGen_1::TerrainGen_1(long seed) : Rand(Random(seed)),
 noiseGen1(16), noiseGen2(16), noiseGen3(8), noiseGen4(4), noiseGen5(4), noiseGen6(5) {
 
 }

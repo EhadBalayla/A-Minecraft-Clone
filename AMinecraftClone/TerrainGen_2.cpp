@@ -5,7 +5,7 @@
 double initializeNoiseField(double var1, double var3, double var5, NoiseGeneratorOctave2& noiseGen1, NoiseGeneratorOctave2& noiseGen2, NoiseGeneratorOctave2& noiseGen3);
 
 
-TerrainGen_2::TerrainGen_2(Random& random, WorldManager* world) : Rand(random), owningWorld(world), 
+TerrainGen_2::TerrainGen_2(long seed, WorldManager* world) : Rand(Random(seed)), randomSeed(seed), owningWorld(world), 
 noiseGen1(Rand, 16), noiseGen2(Rand, 16), noiseGen3(Rand, 8), mobSpawnerNoise(Rand, 5) {
 
 }

@@ -55,7 +55,9 @@ public:
 
 	WorldManager* owningWorld;
 	int ChunkX, ChunkZ;
+
 	bool RenderReady = false;
+	bool IsPopulated = false;
 
 	bool HasOpaque = false;
 	bool HasPlant = false;

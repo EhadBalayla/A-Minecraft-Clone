@@ -245,7 +245,6 @@ void WorldManager::RenderWorld() {
 
 
 bool WorldManager::IsValidChunk(int ChunkX, int ChunkZ) { //coordinates are in chunk space
-	std::lock_guard<std::mutex> lock(chunkMapMutex);
 	return chunks.find(glm::ivec2(ChunkX, ChunkZ)) != chunks.end(); //basically return true if this chunk is loaded (keyword: LOADED!!!)
 }
 Chunk* WorldManager::getChunkAt(int ChunkX, int ChunkZ) { //these coords are in chunk space
@@ -320,6 +319,30 @@ int WorldManager::getHeightValue(int x, int z) { //coordinates are in world spac
 	return 0;
 }
 
+bool WorldManager::QueriedChunkExists(int ChunkX, int ChunkZ) {
+	std::lock_guard<std::mutex> lock(queriedChunksMutex);
+	return queriedChunks.find(glm::ivec2(ChunkX, ChunkZ)) != queriedChunks.end();
+}
+BlockType WorldManager::QueriedGetBlockAt(int x, int y, int z) {
+	if (QueriedChunkExists(x / 16, z / 16))
+		return queriedChunks[glm::ivec2(x / 16, z / 16)]->m_Blocks[IndexAt(x % 16, y, z % 16)];
+	return BlockType::Air;
+}
+Chunk* WorldManager::QueriedGetChunk(int ChunkX, int ChunkZ) {
+	if (!QueriedChunkExists(ChunkX, ChunkZ)) return nullptr;
+	return queriedChunks[glm::ivec2(ChunkX, ChunkZ)];
+}
+void WorldManager::QueriedSetBlockAt(int x, int y, int z, BlockType type) {
+	if (!QueriedChunkExists(x / 16, z / 16)) return;
+	
+	queriedChunks[glm::ivec2(x / 16, z / 16)]->m_Blocks[IndexAt(x % 16, y, z % 16)] = type;
+}
+void WorldManager::AddToQueried(int ChunkX, int ChunkZ, Chunk* c) {
+	if (!QueriedChunkExists(ChunkX, ChunkZ)) queriedChunks[glm::ivec2(ChunkX, ChunkZ)] = c;
+}
+void WorldManager::RemoveFromQueried(int ChunkX, int ChunkZ) {
+	if (QueriedChunkExists(ChunkX, ChunkZ)) queriedChunks.erase(glm::ivec2(ChunkX, ChunkZ));
+}
 
 
 Chunk* WorldManager::LoadNewChunk(int ChunkX, int ChunkZ) {

@@ -69,11 +69,18 @@ public:
 	void PlaceBlock(int x, int y, int z, BlockType type);
 	void BreakBlock(int x, int y, int z);
 	
+
+	//queried chunk helpers
+	bool QueriedChunkExists(int ChunkX, int ChunkZ);
+	Chunk* QueriedGetChunk(int ChunkX, int ChunkZ);
+	BlockType QueriedGetBlockAt(int x, int y, int z);
+	void QueriedSetBlockAt(int x, int y, int z, BlockType type);
+	void AddToQueried(int ChunkX, int ChunkZ, Chunk* c);
+	void RemoveFromQueried(int ChunkX, int ChunkZ);
+
 	//other helpers
 	int getHeightValue(int x, int z);
 	AABB getBlockHitbox(int x, int y, int z);
-
-	//coords converters
 private:
 	ChunkGenerator chunkGenerator; //the world generator itself
 
@@ -85,12 +92,17 @@ private:
 
 	//the multithreading stuff
 	bool running;
+	std::unordered_map<glm::ivec2, Chunk*> queriedChunks;
+	std::mutex queriedChunksMutex;
 	std::thread chunkThread;
+	//std::thread chunkPopThread;
 	std::thread chunkMeshesThread;
 	std::mutex chunkMutex;
+	//std::mutex popMutex;
 	std::mutex meshMutex;
 	std::mutex finalMutex;
 	std::condition_variable cv;
+	//std::condition_variable popCV;
 	std::condition_variable meshCV;
 
 	std::thread superChunkThread[4];
@@ -101,7 +113,6 @@ private:
 	std::condition_variable superCV;
 	std::condition_variable superMeshCV;
 
-	std::mutex chunkMapMutex;
 	std::unordered_map<glm::ivec2, Chunk*> chunks;
 	std::unordered_map<glm::ivec2, SuperChunk*> LOD1;
 	std::unordered_map<glm::ivec2, SuperChunk*> LOD2;
@@ -111,6 +122,7 @@ private:
 	//chunks thread queues
 	std::unordered_set<glm::ivec2> queuedChunks;
 	std::queue<glm::ivec2> chunkGenQueue;
+	std::queue<Chunk*> chunkPopQueue;
 	std::queue<Chunk*> chunkMeshGenQueue;
 	std::queue<ChunkReady> chunkMeshFinalQueue;
 
@@ -125,6 +137,7 @@ private:
 
 	//threads functions
 	void ChunkThreadLoop();
+	void ChunkPopThreadLoop();
 	void ChunkMeshesThreadLoop();
 	void LODThreadLoop();
 	void LODMeshThreadLoop();

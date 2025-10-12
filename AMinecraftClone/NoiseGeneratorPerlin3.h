@@ -5,7 +5,7 @@ class NoiseGeneratorPerlin3
 {
 public:
 	NoiseGeneratorPerlin3() = default;
-	NoiseGeneratorPerlin3(Random Rand);
+	NoiseGeneratorPerlin3(Random& Rand);
 
 	double xCoord;
 	double yCoord;
