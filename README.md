@@ -1,6 +1,9 @@
 # AMinecraftClone
 a block game voxel engine i am making in C++ that is a Minecraft clone, i am trying to replicate Minecraft Java 1 to 1 but with extra QoL features like a Distant Horizon inspired LOD system and also heavily multithreaded
 
+example videos:
+https://youtu.be/KjVXoL0f9AY
+
 ## IMPORTANT NOTES
 - at this point i am still working on the voxel engine stuff AKA the chunks systems, and while i made huge progress it is not done, particularly the wall i am facing is decorating the world...
 - also as of the last commit the LODs were temporarily disabled cause i am working on implementing the Minecraft Alpha terrain which while i implemented the heightmap, the population isn't finished AND i still need to LODify it for the LODS to work with
