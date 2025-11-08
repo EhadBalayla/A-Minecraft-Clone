@@ -56,6 +56,8 @@ private:
 	void GenerateReed(Random& var2, int var3, int var4, int var5);
 	void GenerateCactus(Random& var2, int var3, int var4, int var5);
 	void GenerateLiquids(BlockType type, Random& var2, int var3, int var4, int var5);
+	void GenerateTree(Random& var2, int var3, int var4, int var5);
+	void GenerateBigTree(Random& var2, int var3, int var4, int var5);
 	
 	//generation AND population helpers
 	double* initializeNoiseField(double* var1, int var2, int var3, int var4, int var5, int var6, int var7);

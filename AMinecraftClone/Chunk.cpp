@@ -8,14 +8,6 @@ void AddFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& index
 void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 
-int Chunk::DistanceFromChunk(Chunk* chunk) { //returns the distance from a given chunk, only on a single axis tho, this is generally used for render distance
-    int DistanceX = std::abs(std::abs(chunk->ChunkX) - std::abs(ChunkX));
-    int DistanceZ = std::abs(std::abs(chunk->ChunkZ) - std::abs(ChunkZ));
-    if (DistanceX > DistanceZ)
-        return DistanceX;
-    return DistanceZ;
-}
-
 
 void Chunk::CreateMeshObjects() {
     //generate buffer objects for opaque
@@ -50,7 +42,29 @@ void Chunk::DeleteMeshObjects() {
     glDeleteBuffers(1, &meshes.m_EBO3);
 }
 
+void Chunk::GenerateHeightMap() {
+    int var1 = 127;
 
+    for (int var2 = 0; var2 < Chunk_Width; ++var2) {
+        for (int var3 = 0; var3 < Chunk_Length; ++var3) {
+            int var4 = 127;
+
+            for (int var5 = var2 << 11 | var3 << 7; var4 > 0 /* && Block.lightOpacity[this.blocks[var5 + var4 - 1]] == 0*/; --var4) {
+            }
+
+            HeightMap[var3 << 4 | var2] = var4;
+            if (var4 < var1) {
+                var1 = var4;
+            }
+        }
+    }
+
+    //height = var1;
+    IsModified = true;
+}
+int Chunk::GetHeightValue(int var1, int var2) {
+    return HeightMap[var2 << 4 | var1] & 255;
+}
 
 void Chunk::RenderOpaqueAndPlants() {
     Game::e_DefaultShader.use();
@@ -112,36 +126,28 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
                     nx = x + dx, ny = y + dy, nz = z + dz;
                     if (nx < 0) { //check if outside on the X on the negative
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
-                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX - 1, chunk.ChunkZ);
+                        BlockType type = c->m_Blocks[IndexAt(15, ny, nz)];
+                        return type == BlockType::Air || Game::e_BlockRegistery[type].visibility != visibility;
                     }
                     else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
-                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX + 1, chunk.ChunkZ);
+                        BlockType type = c->m_Blocks[IndexAt(0, ny, nz)];
+                        return type == BlockType::Air || Game::e_BlockRegistery[type].visibility != visibility;
                     }
                     else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
                     {
                         return true;
                     }
                     else if (nz < 0) { //check if outside on the Z on the negative
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
-                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX, chunk.ChunkZ - 1);
+                        BlockType type = c->m_Blocks[IndexAt(nx, ny, 15)];
+                        return type == BlockType::Air || Game::e_BlockRegistery[type].visibility != visibility;
                     }
                     else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
-                            return block->getType() == BlockType::Air || block->data.visibility != visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX, chunk.ChunkZ + 1);
+                        BlockType type = c->m_Blocks[IndexAt(nx, ny, 0)];
+                        return type == BlockType::Air || Game::e_BlockRegistery[type].visibility != visibility;
                     }
 
                     //if inside the chunk
@@ -152,36 +158,28 @@ ChunkMeshUpload CreateChunkMeshData(Chunk& chunk) {
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
                     nx = x + dx, ny = y + dy, nz = z + dz;
                     if (nx < 0) { //check if outside on the X on the negative
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX - 1, chunk.ChunkZ)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX - 1, chunk.ChunkZ)->m_Blocks[15][ny][nz];
-                            return block->data.visibility == visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX - 1, chunk.ChunkZ);
+                        BlockType type = c->m_Blocks[IndexAt(15, ny, nz)];
+                        return Game::e_BlockRegistery[type].visibility == visibility;
                     }
                     else if (nx >= Chunk_Width) { //check if outside on the X on the positive
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX + 1, chunk.ChunkZ)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX + 1, chunk.ChunkZ)->m_Blocks[0][ny][nz];
-                            return block->data.visibility == visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX + 1, chunk.ChunkZ);
+                        BlockType type = c->m_Blocks[IndexAt(0, ny, nz)];
+                        return Game::e_BlockRegistery[type].visibility == visibility;
                     }
                     else if (ny < 0 || ny >= Chunk_Height) //check if outside on the Y axis
                     {
                         return true;
                     }
                     else if (nz < 0) { //check if outside on the Z on the negative
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ - 1)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ - 1)->m_Blocks[nx][ny][15];
-                            return block->data.visibility == visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX, chunk.ChunkZ - 1);
+                        BlockType type = c->m_Blocks[IndexAt(nx, ny, 15)];
+                        return Game::e_BlockRegistery[type].visibility == visibility;
                     }
                     else if (nz >= Chunk_Length) { //check if outside on the Z on the positive
-                        /*if (chunk.owningWorld->IsValidChunk(chunk.ChunkX, chunk.ChunkZ + 1)) {
-                            block = &chunk.owningWorld->getChunkAt(chunk.ChunkX, chunk.ChunkZ + 1)->m_Blocks[nx][ny][0];
-                            return block->data.visibility == visibility;
-                        }*/
-                        return true;
+                        Chunk* c = chunk.owningWorld->GetChunkProvider().ProvideChunk(chunk.ChunkX, chunk.ChunkZ + 1);
+                        BlockType type = c->m_Blocks[IndexAt(nx, ny, 0)];
+                        return Game::e_BlockRegistery[type].visibility == visibility;
                     }
 
                     //if inside the chunk

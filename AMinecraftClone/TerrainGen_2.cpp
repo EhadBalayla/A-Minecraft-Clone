@@ -132,7 +132,7 @@ void TerrainGen_2::Populate(int ChunkX, int ChunkZ) {
     for (int i = 0; i < treeCount; ++i) {
         int x = baseX + Rand.nextInt(16);
         int z = baseZ + Rand.nextInt(16);
-        int y = owningWorld->getHeightValue(x, z);
+        int y = 0;//owningWorld->getHeightValue(x, z);
 
         if (y <= 0) continue;
 

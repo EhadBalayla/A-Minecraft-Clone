@@ -8,9 +8,13 @@ constexpr int Chunk_Height = 128;
 constexpr int Chunk_Length = 16;
 
 constexpr int VOXEL_ARRAY_SIZE = Chunk_Width * Chunk_Height * Chunk_Length;
+constexpr int HEIGHT_MAP_SIZE = Chunk_Width * Chunk_Length;
 
 inline int IndexAt(int x, int y, int z) {
 	return x + z * Chunk_Width + y * Chunk_Width * Chunk_Length;
+}
+inline int HeightIndexAt(int x, int z) {
+	return x + z * Chunk_Width;
 }
 
 struct Vertex {
@@ -47,18 +51,21 @@ enum Face {
 };
 
 class WorldManager;
-
 class Chunk
 {
 public:
 	BlockType m_Blocks[VOXEL_ARRAY_SIZE];
+	int HeightMap[HEIGHT_MAP_SIZE] = {};
 
 	WorldManager* owningWorld;
 	int ChunkX, ChunkZ;
 
-	bool RenderReady = false;
+	//flags
 	bool IsPopulated = false;
+	bool IsModified = false;
+	bool IsRenderReady = false;
 
+	//meshes flags
 	bool HasOpaque = false;
 	bool HasPlant = false;
 	bool HasWater = false;
@@ -68,10 +75,11 @@ public:
 	void ChunkUpload(ChunkMeshUpload& meshData);
 	void UpdateMesh();
 
-	int DistanceFromChunk(Chunk* chunk);
-
 	void CreateMeshObjects();
 	void DeleteMeshObjects();
+
+	void GenerateHeightMap();
+	int GetHeightValue(int var1, int var2);
 private:
 	ChunkMesh meshes; //meshes for each LOD
 };

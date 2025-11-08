@@ -10,15 +10,11 @@ class WorldManager;
 class ChunkGenerator
 {
 public:
-	WorldManager* owningWorld;
-
 	ChunkGenerator(WorldManager* world);
 	~ChunkGenerator();
 	
 	TerrainGen_1 Gen1;
 	TerrainGen_2 Gen2;
 	TerrainGen_3 Gen3;
-private:
-	Random Rand;
 };
 

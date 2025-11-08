@@ -172,6 +172,9 @@
     <ClCompile Include="TerrainGen_3.cpp">
       <Filter>Source Files\TerrainGenerators</Filter>
     </ClCompile>
+    <ClCompile Include="ChunkProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -308,6 +311,9 @@
     </ClInclude>
     <ClInclude Include="TerrainGen_3.h">
       <Filter>Source Files\TerrainGenerators</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkProvider.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

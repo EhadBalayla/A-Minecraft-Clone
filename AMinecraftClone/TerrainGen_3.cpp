@@ -36,19 +36,19 @@ void TerrainGen_3::populate(int var2, int var3) {
 	int var13;
 	int var14;
 	int var15;
-	for (var12 = 0; var12 < 8; ++var12) {
+	/*for (var12 = 0; var12 < 8; ++var12) {
 		var13 = var4 + Rand.nextInt(16) + 8;
 		var14 = Rand.nextInt(128);
 		var15 = var5 + Rand.nextInt(16) + 8;
 		GenerateDungeon(Rand, var13, var14, var15);
-	}
+	}*/
 
-	for (var12 = 0; var12 < 10; ++var12) {
+	/*for (var12 = 0; var12 < 10; ++var12) {
 		var13 = var4 + Rand.nextInt(16);
 		var14 = Rand.nextInt(128);
 		var15 = var5 + Rand.nextInt(16);
 		GenerateClay(32, Rand, var13, var14, var15);
-	}
+	}*/
 
 	for (var12 = 0; var12 < 20; ++var12) {
 		var13 = var4 + Rand.nextInt(16);
@@ -118,8 +118,12 @@ void TerrainGen_3::populate(int var2, int var3) {
 	for (var14 = 0; var14 < var12; ++var14) {
 		var15 = var4 + Rand.nextInt(16) + 8;
 		var16 = var5 + Rand.nextInt(16) + 8;
-		//((WorldGenerator)var18).setScale(1.0, 1.0, 1.0);
-		//((WorldGenerator)var18).generate(this.worldObj, this.rand, var15, this.worldObj.getHeightValue(var15, var16), var16);
+		if(BigTrees) {
+			GenerateBigTree(Rand, var15, 65, var16);
+		}
+		else { 
+			GenerateTree(Rand, var15, 65, var16); 
+		}
 	}
 
 	int var17;
@@ -473,8 +477,8 @@ void TerrainGen_3::GenerateOre(int numberOfBlocks, BlockType type, Random& var2,
 					double var35 = ((double)var32 + 0.5 - var20) / (var28 / 2.0);
 					double var37 = ((double)var33 + 0.5 - var22) / (var30 / 2.0);
 					double var39 = ((double)var34 + 0.5 - var24) / (var28 / 2.0);
-					if (var35 * var35 + var37 * var37 + var39 * var39 < 1.0 && owningWorld->QueriedGetBlockAt(var32, var33, var34) == BlockType::Stone) {
-						owningWorld->QueriedSetBlockAt(var32, var33, var34, type);
+					if (var35 * var35 + var37 * var37 + var39 * var39 < 1.0 && owningWorld->getBlockAt(var32, var33, var34) == BlockType::Stone) {
+						owningWorld->setBlockAt(var32, var33, var34, type);
 					}
 				}
 			}
@@ -482,7 +486,7 @@ void TerrainGen_3::GenerateOre(int numberOfBlocks, BlockType type, Random& var2,
 	}
 }
 void TerrainGen_3::GenerateClay(int numberOfBlocks, Random& var2, int var3, int var4, int var5) {
-	if (Game::e_BlockRegistery[owningWorld->QueriedGetBlockAt(var3, var4, var5)].visibility != BlockVisiblity::Liquid) {
+	if (Game::e_BlockRegistery[owningWorld->getBlockAt(var3, var4, var5)].visibility != BlockVisiblity::Liquid) {
 		return;
 	}
 	else {
@@ -509,9 +513,9 @@ void TerrainGen_3::GenerateClay(int numberOfBlocks, Random& var2, int var3, int 
 						double var37 = ((double)var33 + 0.5 - var22) / (var30 / 2.0);
 						double var39 = ((double)var34 + 0.5 - var24) / (var28 / 2.0);
 						if (var35 * var35 + var37 * var37 + var39 * var39 < 1.0) {
-							BlockType var41 = owningWorld->QueriedGetBlockAt(var32, var33, var34);
+							BlockType var41 = owningWorld->getBlockAt(var32, var33, var34);
 							if (var41 == BlockType::Sand) {
-								owningWorld->QueriedSetBlockAt(var32, var33, var34, BlockType::Obsidian); //remember to switch to Clay later
+								owningWorld->setBlockAt(var32, var33, var34, BlockType::Obsidian); //remember to switch to Clay later
 							}
 						}
 					}
@@ -534,7 +538,7 @@ void TerrainGen_3::GenerateDungeon(Random& var2, int var3, int var4, int var5) {
 	for (var10 = var3 - var7 - 1; var10 <= var3 + var7 + 1; ++var10) {
 		for (var11 = var4 - 1; var11 <= var4 + var6 + 1; ++var11) {
 			for (var12 = var5 - var8 - 1; var12 <= var5 + var8 + 1; ++var12) {
-				BlockVisiblity var13 = Game::e_BlockRegistery[owningWorld->QueriedGetBlockAt(var10, var11, var12)].visibility;
+				BlockVisiblity var13 = Game::e_BlockRegistery[owningWorld->getBlockAt(var10, var11, var12)].visibility;
 				if (var11 == var4 - 1 && var13 != BlockVisiblity::Opaque) {
 					return;
 				}
@@ -543,7 +547,7 @@ void TerrainGen_3::GenerateDungeon(Random& var2, int var3, int var4, int var5) {
 					return;
 				}
 
-				if ((var10 == var3 - var7 - 1 || var10 == var3 + var7 + 1 || var12 == var5 - var8 - 1 || var12 == var5 + var8 + 1) && var11 == var4 && owningWorld->QueriedGetBlockAt(var10, var11, var12) == BlockType::Air && owningWorld->QueriedGetBlockAt(var10, var11 + 1, var12) == BlockType::Air) {
+				if ((var10 == var3 - var7 - 1 || var10 == var3 + var7 + 1 || var12 == var5 - var8 - 1 || var12 == var5 + var8 + 1) && var11 == var4 && owningWorld->getBlockAt(var10, var11, var12) == BlockType::Air && owningWorld->getBlockAt(var10, var11 + 1, var12) == BlockType::Air) {
 					++var9;
 				}
 			}
@@ -555,17 +559,17 @@ void TerrainGen_3::GenerateDungeon(Random& var2, int var3, int var4, int var5) {
 			for (var11 = var4 + var6; var11 >= var4 - 1; --var11) {
 				for (var12 = var5 - var8 - 1; var12 <= var5 + var8 + 1; ++var12) {
 					if (var10 != var3 - var7 - 1 && var11 != var4 - 1 && var12 != var5 - var8 - 1 && var10 != var3 + var7 + 1 && var11 != var4 + var6 + 1 && var12 != var5 + var8 + 1) {
-						owningWorld->QueriedSetBlockAt(var10, var11, var12, BlockType::Air);
+						owningWorld->setBlockAt(var10, var11, var12, BlockType::Air);
 					}
-					else if (var11 >= 0 && Game::e_BlockRegistery[owningWorld->QueriedGetBlockAt(var10, var11 - 1, var12)].visibility != BlockVisiblity::Opaque) {
-						owningWorld->QueriedSetBlockAt(var10, var11, var12, BlockType::Air);
+					else if (var11 >= 0 && Game::e_BlockRegistery[owningWorld->getBlockAt(var10, var11 - 1, var12)].visibility != BlockVisiblity::Opaque) {
+						owningWorld->setBlockAt(var10, var11, var12, BlockType::Air);
 					}
-					else if (Game::e_BlockRegistery[owningWorld->QueriedGetBlockAt(var10, var11, var12)].visibility == BlockVisiblity::Opaque) {
+					else if (Game::e_BlockRegistery[owningWorld->getBlockAt(var10, var11, var12)].visibility == BlockVisiblity::Opaque) {
 						if (var11 == var4 - 1 && var2.nextInt(4) != 0) {
-							owningWorld->QueriedSetBlockAt(var10, var11, var12, BlockType::MossyCobblestone);
+							owningWorld->setBlockAt(var10, var11, var12, BlockType::MossyCobblestone);
 						}
 						else {
-							owningWorld->QueriedSetBlockAt(var10, var11, var12, BlockType::Cobblestone);
+							owningWorld->setBlockAt(var10, var11, var12, BlockType::Cobblestone);
 						}
 					}
 				}
@@ -617,7 +621,7 @@ void TerrainGen_3::GenerateDungeon(Random& var2, int var3, int var4, int var5) {
 			}
 		}*/
 
-		owningWorld->QueriedSetBlockAt(var3, var4, var5, BlockType::MobSpawner);
+		owningWorld->setBlockAt(var3, var4, var5, BlockType::MobSpawner);
 		//TileEntityMobSpawner var19 = (TileEntityMobSpawner)var1.getBlockTileEntity(var3, var4, var5);
 		//var19.mobID = this.pickMobSpawner(var2);
 		return;
@@ -637,6 +641,104 @@ void TerrainGen_3::GenerateCactus(Random& var2, int var3, int var4, int var5) {
 }
 void TerrainGen_3::GenerateLiquids(BlockType type, Random& var2, int var3, int var4, int var5) {
 
+}
+void TerrainGen_3::GenerateTree(Random& var2, int var3, int var4, int var5) {
+	int var6 = var2.nextInt(3) + 4;
+	bool var7 = true;
+	if (var4 >= 1 && var4 + var6 + 1 <= 128) {
+		int var8;
+		int var10;
+		int var11;
+		int var12;
+		for (var8 = var4; var8 <= var4 + 1 + var6; ++var8) {
+			uint8_t var9 = 1;
+			if (var8 == var4) {
+				var9 = 0;
+			}
+
+			if (var8 >= var4 + 1 + var6 - 2) {
+				var9 = 2;
+			}
+
+			for (var10 = var3 - var9; var10 <= var3 + var9 && var7; ++var10) {
+				for (var11 = var5 - var9; var11 <= var5 + var9 && var7; ++var11) {
+					if (var8 >= 0 && var8 < 128) {
+						var12 = owningWorld->getBlockAt(var10, var8, var11);
+						if (var12 != 0 && var12 != BlockType::Bricks) {
+							var7 = false;
+						}
+					}
+					else {
+						var7 = false;
+					}
+				}
+			}
+		}
+
+		if (!var7) {
+			return;
+		}
+		else {
+			var8 = owningWorld->getBlockAt(var3, var4 - 1, var5);
+			if ((var8 == BlockType::Grass || var8 == BlockType::Dirt) && var4 < 128 - var6 - 1) {
+				owningWorld->setBlockAt(var3, var4 - 1, var5, BlockType::Dirt);
+
+				int var16;
+				for (var16 = var4 - 3 + var6; var16 <= var4 + var6; ++var16) {
+					var10 = var16 - (var4 + var6);
+					var11 = 1 - var10 / 2;
+
+					for (var12 = var3 - var11; var12 <= var3 + var11; ++var12) {
+						int var13 = var12 - var3;
+
+						for (int var14 = var5 - var11; var14 <= var5 + var11; ++var14) {
+							int var15 = var14 - var5;
+							if ((std::abs(var13) != var11 || std::abs(var15) != var11 || var2.nextInt(2) != 0 && var10 != 0) && Game::e_BlockRegistery[owningWorld->getBlockAt(var12, var16, var14)].visibility == BlockVisiblity::Opaque) {
+								owningWorld->setBlockAt(var12, var16, var14, BlockType::Bricks);
+							}
+						}
+					}
+				}
+
+				for (var16 = 0; var16 < var6; ++var16) {
+					var10 = owningWorld->getBlockAt(var3, var4 + var16, var5);
+					if (var10 == 0 || var10 == BlockType::Bricks) {
+						owningWorld->setBlockAt(var3, var4 + var16, var5, BlockType::Wood);
+					}
+				}
+
+				return;
+			}
+			else {
+				return;
+			}
+		}
+	}
+	else {
+		return;
+	}
+}
+void TerrainGen_3::GenerateBigTree(Random& var2, int var3, int var4, int var5) {
+	/*this.worldObj = var1;
+	long var6 = var2.nextLong();
+	this.rand.setSeed(var6);
+	this.basePos[0] = var3;
+	this.basePos[1] = var4;
+	this.basePos[2] = var5;
+	if (this.heightLimit == 0) {
+		this.heightLimit = 5 + this.rand.nextInt(this.heightLimitLimit);
+	}
+
+	if (!this.validTreeLocation()) {
+		return false;
+	}
+	else {
+		this.generateLeafNodeList();
+		this.generateLeaves();
+		this.generateTrunk();
+		this.generateLeafNodeBases();
+		return true;
+	}*/
 }
 
 

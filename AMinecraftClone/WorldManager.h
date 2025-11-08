@@ -1,45 +1,7 @@
 #pragma once
-#include <unordered_map>
-#include <unordered_set>
-#include <queue>
-#include <vector>
 
 #include "ChunkGenerator.h"
-
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-
-
-struct SuperChunkStart {
-	glm::ivec2 pos;
-	uint8_t LOD;
-};
-struct SuperChunkPrep {
-	BlockType* voxelData;
-	SuperChunk* chunk;
-};
-struct SuperChunkReady {
-	SuperChunk* chunk;
-	SuperChunkMeshUpload meshData;
-};
-
-
-struct ChunkReady {
-	Chunk* chunkPos;
-	ChunkMeshUpload meshData;
-};
-
-namespace std {
-	template<>
-	struct hash<glm::ivec2> {
-		std::size_t operator()(const glm::ivec2& v) const {
-			std::size_t h1 = std::hash<int>()(v.x);
-			std::size_t h2 = std::hash<int>()(v.y);
-			return h1 ^ (h2 << 1); // combine hashes
-		}
-	};
-}
+#include "ChunkProvider.h"
 
 class Level;
 class WorldManager
@@ -57,88 +19,17 @@ public:
 	void WorldUpdate(float DeltaTime);
 	void RenderWorld();
 
-	//chunk helpers
-	bool IsValidChunk(int ChunkX, int ChunkZ);
-	Chunk* getChunkAt(int ChunkX, int ChunkZ);
-
 	//block helpers
 	BlockType getBlockAt(int x, int y, int z);
-	BlockType getBlockAtSafe(int x, int y, int z);
 	void setBlockAt(int x, int y, int z, BlockType type);
+	int getHeightValue(int x, int z);
 	bool IsSolidBlock(int x, int y, int z);
 	void PlaceBlock(int x, int y, int z, BlockType type);
 	void BreakBlock(int x, int y, int z);
-	
 
-	//queried chunk helpers
-	bool QueriedChunkExists(int ChunkX, int ChunkZ);
-	Chunk* QueriedGetChunk(int ChunkX, int ChunkZ);
-	BlockType QueriedGetBlockAt(int x, int y, int z);
-	void QueriedSetBlockAt(int x, int y, int z, BlockType type);
-	void AddToQueried(int ChunkX, int ChunkZ, Chunk* c);
-	void RemoveFromQueried(int ChunkX, int ChunkZ);
-
-	//other helpers
-	int getHeightValue(int x, int z);
-	AABB getBlockHitbox(int x, int y, int z);
+	ChunkGenerator& GetChunkGenerator();
+	ChunkProvider& GetChunkProvider();
 private:
 	ChunkGenerator chunkGenerator; //the world generator itself
-
-	//helper functions
-	Chunk* LoadNewChunk(int ChunkX, int ChunkZ); //creates a new chunk
-	SuperChunk* LoadNewLODChunk(int ChunkX, int ChunkZ, uint8_t LOD); //creates a new LOD chunk
-	SuperChunkPrep PrepSuperChunk(int ChunkX, int ChunkZ, uint8_t LOD, SuperChunk* chunk); //creates temporary chunks to prep a super chunk
-	bool IsChunkNeighboorsGood(int ChunkX, int ChunkZ);
-
-	//the multithreading stuff
-	bool running;
-	std::unordered_map<glm::ivec2, Chunk*> queriedChunks;
-	std::mutex queriedChunksMutex;
-	std::thread chunkThread;
-	//std::thread chunkPopThread;
-	std::thread chunkMeshesThread;
-	std::mutex chunkMutex;
-	//std::mutex popMutex;
-	std::mutex meshMutex;
-	std::mutex finalMutex;
-	std::condition_variable cv;
-	//std::condition_variable popCV;
-	std::condition_variable meshCV;
-
-	std::thread superChunkThread[4];
-	std::thread superChunkMeshesThread[4];
-	std::mutex superChunkMutex;
-	std::mutex superMeshMutex;
-	std::mutex superFinalMutex;
-	std::condition_variable superCV;
-	std::condition_variable superMeshCV;
-
-	std::unordered_map<glm::ivec2, Chunk*> chunks;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD1;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD2;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD3;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD4;
-
-	//chunks thread queues
-	std::unordered_set<glm::ivec2> queuedChunks;
-	std::queue<glm::ivec2> chunkGenQueue;
-	std::queue<Chunk*> chunkPopQueue;
-	std::queue<Chunk*> chunkMeshGenQueue;
-	std::queue<ChunkReady> chunkMeshFinalQueue;
-
-	//super chunks thread queues
-	std::unordered_set<glm::ivec2> LOD1QueuedChunks;
-	std::unordered_set<glm::ivec2> LOD2QueuedChunks;
-	std::unordered_set<glm::ivec2> LOD3QueuedChunks;
-	std::unordered_set<glm::ivec2> LOD4QueuedChunks;
-	std::queue<SuperChunkStart> superChunkGenQueue;
-	std::queue<SuperChunkPrep> superChunkMeshGenQueue;
-	std::queue<SuperChunkReady> superChunkMeshFinalQueue;
-
-	//threads functions
-	void ChunkThreadLoop();
-	void ChunkPopThreadLoop();
-	void ChunkMeshesThreadLoop();
-	void LODThreadLoop();
-	void LODMeshThreadLoop();
+	ChunkProvider chunkProvider; //the actual chunks cacher that owns the chunks
 };
