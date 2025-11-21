@@ -11,6 +11,7 @@ Window Game::e_Window;
 Shader Game::e_DefaultShader;
 Shader Game::e_WaterShader;
 Shader Game::e_CloudShader;
+Shader Game::e_ChunkBorderShader;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
@@ -22,6 +23,7 @@ std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
 bool Game::IsGameRunning = true;
 UIManager Game::m_UIManager;
 AudioManager Game::m_AudioManager;
+bool Game::ShowChunkBorder = true;
 
 
 void Game::Init() {
@@ -35,6 +37,7 @@ void Game::Init() {
 	e_DefaultShader.loadShader("defaultVertex.file", "defaultFragment.file");
 	e_WaterShader.loadShader("waterVertex.file", "waterFragment.file");
 	e_CloudShader.loadShader("cloudsVertex.file", "cloudsFragment.file");
+	e_ChunkBorderShader.loadShader("ChunkBorder_vert.glsl", "ChunkBorder_frag.glsl");
 
 	Proj = glm::mat4(1.0f);
 	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 50000.0f);
@@ -115,11 +118,23 @@ void Game::GameLoop() {
 
 		glEnable(GL_CULL_FACE);
 
-
 		//literally just render the entire world... lol
 		e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
 		overworld->RenderLevel();
 		e_LoadedTextures[0]->unbind();
+
+		if (ShowChunkBorder) {
+			e_ChunkBorderShader.use();
+			e_ChunkBorderShader.setMat4("view", View);
+			e_ChunkBorderShader.setMat4("projection", Proj);
+			glm::ivec2 chunkCoords = player.GetCurrentChunkCoords();
+			glm::dvec3 relativePos = glm::dvec3(chunkCoords.x * 16, 0.0f, chunkCoords.y * 16) - player.GetPosition();
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(relativePos.x, -player.GetPosition().y, relativePos.z));
+			e_ChunkBorderShader.setMat4("model", transform);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glLineWidth(5.0f);
+			glDrawArrays(GL_LINES, 0, 24);
+		}
 
 
 		//render all the current UI stuff

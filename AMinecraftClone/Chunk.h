@@ -23,7 +23,7 @@ struct Vertex {
 	uint8_t extras; //2 bits for which corner on the image in the atlas it is, 3 bits for which corner of a block it is
 };
 
-struct ChunkMeshUpload {
+struct ChunkMeshData {
 	std::vector<Vertex> opaqueVerticies;
 	std::vector<uint32_t> opaqueIndicies;
 
@@ -33,7 +33,6 @@ struct ChunkMeshUpload {
 	std::vector<Vertex> waterVerticies;
 	std::vector<uint32_t> waterIndicies;
 };
-ChunkMeshUpload CreateChunkMeshData(Chunk& chunk);
 
 struct ChunkMesh {
 	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
@@ -61,9 +60,11 @@ public:
 	int ChunkX, ChunkZ;
 
 	//flags
+	bool IsGenerated = false;
 	bool IsPopulated = false;
 	bool IsModified = false;
 	bool IsRenderReady = false;
+	bool IsMeshed = false;
 
 	//meshes flags
 	bool HasOpaque = false;
@@ -72,8 +73,8 @@ public:
 
 	void RenderOpaqueAndPlants();
 	void RenderWater();
-	void ChunkUpload(ChunkMeshUpload& meshData);
-	void UpdateMesh();
+	void CreateChunkMeshData();
+	void ChunkUpload();
 
 	void CreateMeshObjects();
 	void DeleteMeshObjects();
@@ -81,46 +82,60 @@ public:
 	void GenerateHeightMap();
 	int GetHeightValue(int var1, int var2);
 private:
+	ChunkMeshData meshData;
 	ChunkMesh meshes; //meshes for each LOD
 };
 
-struct SuperChunkMesh {
-	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
-	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
-};
+
+
+
 
 
 
 //LOD chunks stuff
 int GetLODSize(uint8_t LOD);
-struct SuperChunkMeshUpload {
+struct SuperChunkMeshData {
 	std::vector<Vertex> opaqueVerticies;
 	std::vector<uint32_t> opaqueIndicies;
 
 	std::vector<Vertex> waterVerticies;
 	std::vector<uint32_t> waterIndicies;
 };
-
-SuperChunkMeshUpload CreateSuperChunkMeshData(BlockType* voxelData, uint8_t LOD);
+struct SuperChunkMesh {
+	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
+	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
+};
 
 class SuperChunk {
 public:
-	glm::ivec2 Pos;
 	uint8_t LOD = 1; //from 1 - 4
+	BlockType m_Blocks[VOXEL_ARRAY_SIZE];
 
-	bool RenderReady = false;
+	WorldManager* owningWorld;
+	int ChunkX, ChunkZ;
 
+	//flags
+	bool IsGenerated = false;
+	bool IsPopulated = false;
+	bool IsModified = false;
+	bool IsRenderReady = false;
+	bool IsMeshed = false;
+
+	//meshes flags
 	bool HasOpaque = false;
 	bool HasWater = false;
 
 	void Render();
+	void CreateSuperChunkMeshData();
+	void ChunkUpload();
 
-	void ChunkUpload(SuperChunkMeshUpload& meshData);
+	void ChunkUpload(SuperChunkMeshData& meshData);
 
 	void CreateMeshObjects();
 	void DeleteMeshObjects();
 private:
-	SuperChunkMesh mesh; //only a single one
+	SuperChunkMeshData meshData;
+	SuperChunkMesh mesh;
 
 	void RenderOpaque();
 	void RenderWater();

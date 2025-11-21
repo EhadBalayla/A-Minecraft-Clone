@@ -79,7 +79,7 @@ void Player::UpdateChunksAroundPlayer() {
             int newLodChunkZ = newChunkZ / LODSize;
 
             if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
-                //Game::overworld->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
+                Game::overworld->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
 
                 currentLODChunkX[i - 1] = newLodChunkX;
                 currentLODChunkZ[i - 1] = newLodChunkZ;
@@ -137,7 +137,7 @@ void Player::ProcessInput(SDL_Event& e) {
             std::cout << std::endl;
             std::cout << "Type Y: ";
             int y;
-            std::cin >> y;                                                     
+            std::cin >> y;
             std::cout << std::endl;
             std::cout << "Type Z: ";
             int z;
@@ -152,7 +152,7 @@ void Player::ProcessInput(SDL_Event& e) {
         else if (e.key.keysym.sym == SDLK_b) { //for jumping
             ShouldUpdateChunks = !ShouldUpdateChunks;
         }
-        else if (e.key.keysym.sym == SDLK_ESCAPE) { 
+        else if (e.key.keysym.sym == SDLK_ESCAPE) {
             if (!m_PauseMenu) {
                 auto ptr = std::make_unique<PauseMenu>();
                 m_PauseMenu = ptr.get();
@@ -182,32 +182,39 @@ void Player::ProcessInput(SDL_Event& e) {
                 SDL_SetRelativeMouseMode(SDL_TRUE);
             }
         }
-        else if (e.key.keysym.sym == SDLK_1) { 
+        else if (e.key.keysym.sym == SDLK_1) {
             setSelectedSlot(1);
         }
-        else if (e.key.keysym.sym == SDLK_2) { 
+        else if (e.key.keysym.sym == SDLK_2) {
             setSelectedSlot(2);
         }
-        else if (e.key.keysym.sym == SDLK_3) { 
+        else if (e.key.keysym.sym == SDLK_3) {
             setSelectedSlot(3);
         }
-        else if (e.key.keysym.sym == SDLK_4) { 
+        else if (e.key.keysym.sym == SDLK_4) {
             setSelectedSlot(4);
         }
         else if (e.key.keysym.sym == SDLK_5) {
             setSelectedSlot(5);
         }
-        else if (e.key.keysym.sym == SDLK_6) { 
+        else if (e.key.keysym.sym == SDLK_6) {
             setSelectedSlot(6);
         }
-        else if (e.key.keysym.sym == SDLK_7) { 
+        else if (e.key.keysym.sym == SDLK_7) {
             setSelectedSlot(7);
         }
         else if (e.key.keysym.sym == SDLK_8) {
             setSelectedSlot(8);
         }
-        else if (e.key.keysym.sym == SDLK_9) { 
+        else if (e.key.keysym.sym == SDLK_9) {
             setSelectedSlot(9);
+        }
+
+
+
+
+        else if (e.key.keysym.sym == SDLK_f) {
+            Game::ShowChunkBorder = !Game::ShowChunkBorder;
         }
     }
     else if (e.type == SDL_MOUSEMOTION) { //for mouse movements
@@ -232,7 +239,7 @@ void Player::ProcessInput(SDL_Event& e) {
                 RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
                 if (rayInfo.HitBlock) {
                     Game::overworld->GetWorld().BreakBlock(rayInfo.pos.x, rayInfo.pos.y, rayInfo.pos.z);
-                    Game::m_AudioManager.StartSound("Sounds\\grass4.ogg");
+                    Game::m_AudioManager.StartSound("Sounds\\grass4.wav");
                 }
             }
         }
@@ -242,7 +249,7 @@ void Player::ProcessInput(SDL_Event& e) {
                     switch (m_PlayerItems[selectedSlot - 1].m_Item.getData().type) {
                     case ItemUsageType::PlaceableBlock:
                         PlayerPlaceBlocks();
-                        Game::m_AudioManager.StartSound("Sounds\\wood3.ogg");
+                        Game::m_AudioManager.StartSound("Sounds\\stone4.wav");
                         break;
                     }
                 }

@@ -18,7 +18,7 @@ void Block::setType(BlockType newType) {
 
 void Block::BreakBlock() {
 	setType(BlockType::Air);
-	owningChunk->UpdateMesh();
+	owningChunk->IsModified = true;
 	if (BlockX == 0) //if at the X edge of the chunk
 	{
 		int ChunksX = owningChunk->ChunkX;

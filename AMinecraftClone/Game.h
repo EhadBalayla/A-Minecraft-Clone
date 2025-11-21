@@ -24,6 +24,9 @@ public: //this public section is simply for the members
 	static Shader e_DefaultShader;
 	static Shader e_WaterShader;
 	static Shader e_CloudShader;
+	static Shader e_ChunkBorderShader;
+
+	static bool ShowChunkBorder;
 	
 	//object caching
 	static std::vector<Model*> e_LoadedModels; //for entities and such, like player, zombie, or creeper for example
@@ -62,7 +65,7 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void CloseGame();
 	static void CreatePlayerHud();
 
-	const static uint8_t RenderDistance = 8;
+	const static uint8_t RenderDistance = 16;
 
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
 };
