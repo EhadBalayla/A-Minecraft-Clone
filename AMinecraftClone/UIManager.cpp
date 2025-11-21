@@ -63,6 +63,10 @@ UIScreen* UIManager::GetScreen(int index) {
 	return m_Screens[index].get();
 }
 
+void UIManager::ClearScreens() {
+	m_Screens.clear();
+}
+
 
 void UIManager::DrawQuad() {
 	glBindVertexArray(m_VAO);

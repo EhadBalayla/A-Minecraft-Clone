@@ -1,5 +1,8 @@
 #include "Button.h"
 #include "SDL.h"
+
+#include "Game.h"
+
 #include <iostream>
 
 Button::Button(UIUVQuad offUV, UIUVQuad normalUV, UIUVQuad hoveredUV) : Widget(normalUV){
@@ -15,13 +18,22 @@ void Button::UpdateWidget() {
 	int MouseY = 0;
 	auto mouseState = SDL_GetMouseState(&MouseX, &MouseY);
 
-	//std::cout << "MouseX: " << MouseX << ", MouseY: " << MouseY << std::endl;
-
 	if ((MouseX > (int)GetPosition().x - ((int)GetScale().x / 2) && MouseX < (int)GetPosition().x + ((int)GetScale().x) / 2) && //check if the mouseX is in bounds of the button widget
 		(MouseY > (int)GetPosition().y - ((int)GetScale().y / 2) && MouseY < (int)GetPosition().y + ((int)GetScale().y) / 2)) { //check if the MouseY is in bounds of the button
 		if (!IsHovered) { //if wasn't hovered already then make hovered
 			IsHovered = true;
 			UpdateButtonUVs(m_HoveredUV);
+		}
+
+		if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+			if (!FirstClick) {
+				FirstClick = true;
+				Callback();
+			}
+		}
+		else {
+			if (FirstClick)
+				FirstClick = false;
 		}
 	}
 	else {

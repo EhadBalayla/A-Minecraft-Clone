@@ -175,6 +175,9 @@
     <ClCompile Include="ChunkProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MainMenuScreen.cpp">
+      <Filter>Source Files\UI\ActualScreens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -314,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="ChunkProvider.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainMenuScreen.h">
+      <Filter>Source Files\UI\ActualScreens</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

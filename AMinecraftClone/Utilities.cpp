@@ -3,22 +3,22 @@
 
 std::vector<PositionedBlock> Utils::GetNearbySolidBlocks(glm::ivec3 pos, int tallness) { //basically gathers the surroning blocks around a position
 	std::vector<PositionedBlock> returnal;
-	if (Game::overworld->GetWorld().IsSolidBlock(pos.x, pos.y - 1, pos.z))
-		returnal.push_back({ Game::overworld->GetWorld().getBlockAt(pos.x, pos.y - 1, pos.z), glm::ivec3(pos.x, pos.y - 1, pos.z) });
+	if (Game::level->GetWorld().IsSolidBlock(pos.x, pos.y - 1, pos.z))
+		returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x, pos.y - 1, pos.z), glm::ivec3(pos.x, pos.y - 1, pos.z) });
 
 	for (int i = 0; i < tallness; i++) {
-		if (Game::overworld->GetWorld().IsSolidBlock(pos.x + 1, pos.y + i, pos.z))
-			returnal.push_back({ Game::overworld->GetWorld().getBlockAt(pos.x + 1, pos.y + i, pos.z), glm::ivec3(pos.x + 1, pos.y + i, pos.z) });
-		if (Game::overworld->GetWorld().IsSolidBlock(pos.x - 1, pos.y + i, pos.z))
-			returnal.push_back({ Game::overworld->GetWorld().getBlockAt(pos.x - 1, pos.y + i, pos.z), glm::ivec3(pos.x - 1, pos.y + i, pos.z) });
-		if (Game::overworld->GetWorld().IsSolidBlock(pos.x, pos.y + i, pos.z + 1))
-			returnal.push_back({ Game::overworld->GetWorld().getBlockAt(pos.x, pos.y + i, pos.z + 1), glm::ivec3(pos.x, pos.y + i, pos.z + 1) });
-		if (Game::overworld->GetWorld().IsSolidBlock(pos.x, pos.y + i, pos.z - 1))
-			returnal.push_back({ Game::overworld->GetWorld().getBlockAt(pos.x, pos.y + i, pos.z - 1), glm::ivec3(pos.x, pos.y + i, pos.z - 1) });
+		if (Game::level->GetWorld().IsSolidBlock(pos.x + 1, pos.y + i, pos.z))
+			returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x + 1, pos.y + i, pos.z), glm::ivec3(pos.x + 1, pos.y + i, pos.z) });
+		if (Game::level->GetWorld().IsSolidBlock(pos.x - 1, pos.y + i, pos.z))
+			returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x - 1, pos.y + i, pos.z), glm::ivec3(pos.x - 1, pos.y + i, pos.z) });
+		if (Game::level->GetWorld().IsSolidBlock(pos.x, pos.y + i, pos.z + 1))
+			returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x, pos.y + i, pos.z + 1), glm::ivec3(pos.x, pos.y + i, pos.z + 1) });
+		if (Game::level->GetWorld().IsSolidBlock(pos.x, pos.y + i, pos.z - 1))
+			returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x, pos.y + i, pos.z - 1), glm::ivec3(pos.x, pos.y + i, pos.z - 1) });
 	}
 
-	if (Game::overworld->GetWorld().IsSolidBlock(pos.x, pos.y + tallness, pos.z))
-		returnal.push_back({ Game::overworld->GetWorld().getBlockAt(pos.x, pos.y + tallness, pos.z), glm::ivec3(pos.x, pos.y + tallness, pos.z) });
+	if (Game::level->GetWorld().IsSolidBlock(pos.x, pos.y + tallness, pos.z))
+		returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x, pos.y + tallness, pos.z), glm::ivec3(pos.x, pos.y + tallness, pos.z) });
 
 	return returnal;
 }
@@ -31,8 +31,8 @@ RayHitReturnParams Utils::RayHitBlock(Ray& ray, float steps) {
 	for (float t = 0; t < ray.RayDistance; t += steps) {
 		glm::vec3 currentPos = ray.RayOrigin + ray.RayDirection * t;
 		glm::ivec3 blockPos = glm::floor(currentPos);
-		if (Game::overworld->GetWorld().IsSolidBlock(blockPos.x, blockPos.y, blockPos.z)) {
-			BlockType blockPoint = Game::overworld->GetWorld().getBlockAt(blockPos.x, blockPos.y, blockPos.z);
+		if (Game::level->GetWorld().IsSolidBlock(blockPos.x, blockPos.y, blockPos.z)) {
+			BlockType blockPoint = Game::level->GetWorld().getBlockAt(blockPos.x, blockPos.y, blockPos.z);
 			
 			//x y and z relative to the block itself, so we can check which face based on which is closer, however accuracy depends on the ste
 			float relX = currentPos.x - blockPos.x;

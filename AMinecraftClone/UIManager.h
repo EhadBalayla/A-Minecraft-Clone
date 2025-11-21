@@ -20,6 +20,8 @@ public:
 	void AddScreen(std::unique_ptr<UIScreen> newScreen);
 	void RemoveScreen(UIScreen* screen);
 	UIScreen* GetScreen(int index);
+	void ClearScreens();
+
 
 	void DrawQuad();
 private:

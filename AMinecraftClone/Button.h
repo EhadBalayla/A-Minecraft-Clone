@@ -7,6 +7,8 @@ public:
 
 	void UpdateWidget() override;
 
+	void(*Callback)();
+
 protected:
 
 	//the uvs for the different buttons wether they are pressed or not
@@ -20,5 +22,6 @@ private:
 
 
 	bool IsHovered = false;
+	bool FirstClick = false;
 };
 

@@ -160,6 +160,8 @@ void ChunkProvider::ChunkGen() {
 			std::unique_lock<std::mutex> lock(ChunkGenMutex);
 			ChunkGenCV.wait(lock, [this] {return !ChunkGenQueue.empty() || !ThreadsRunning; });
 
+			if (!ThreadsRunning) break;
+
 			c = ChunkGenQueue.front();
 			ChunkGenQueue.pop();
 		}
@@ -175,6 +177,8 @@ void ChunkProvider::ChunkPop() {
 			std::unique_lock<std::mutex> lock(ChunkPopMutex);
 			ChunkPopCV.wait(lock, [this] {return !ChunkPopQueue.empty() || !ThreadsRunning; });
 
+			if (!ThreadsRunning) break;
+
 			c = ChunkPopQueue.front();
 			ChunkPopQueue.pop();
 		}
@@ -188,6 +192,8 @@ void ChunkProvider::ChunkMesh() {
 		{
 			std::unique_lock<std::mutex> lock(ChunkMeshMutex);
 			ChunkMeshCV.wait(lock, [this] {return !ChunkMeshQueue.empty() || !ThreadsRunning; });
+
+			if (!ThreadsRunning) break;
 
 			c = ChunkMeshQueue.front();
 			ChunkMeshQueue.pop();
@@ -205,6 +211,8 @@ void ChunkProvider::LODGen() {
 			std::unique_lock<std::mutex> lock(LODGenMutex);
 			LODGenCV.wait(lock, [this] {return !LODGenQueue.empty() || !ThreadsRunning; });
 
+			if (!ThreadsRunning) break;
+
 			c = LODGenQueue.front();
 			LODGenQueue.pop();
 		}
@@ -220,6 +228,8 @@ void ChunkProvider::LODMesh() {
 		{
 			std::unique_lock<std::mutex> lock(LODMeshMutex);
 			LODMeshCV.wait(lock, [this] {return !LODMeshQueue.empty() || !ThreadsRunning; });
+
+			if (!ThreadsRunning) break;
 
 			c = LODMeshQueue.front();
 			LODMeshQueue.pop();

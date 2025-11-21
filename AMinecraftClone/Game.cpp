@@ -6,6 +6,7 @@
 
 // the screens for adding em
 #include "PlayerHUDScreen.h"
+#include "MainMenuScreen.h"
 
 Window Game::e_Window;
 Shader Game::e_DefaultShader;
@@ -17,13 +18,15 @@ glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
 std::vector<Texture*> Game::e_LoadedTextures;
 Player Game::player;
-Level* Game::overworld;
+Level* Game::level;
 std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
 std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
 bool Game::IsGameRunning = true;
 UIManager Game::m_UIManager;
 AudioManager Game::m_AudioManager;
 bool Game::ShowChunkBorder = true;
+GameState Game::state = GameState::MainMenu;
+GameState Game::lastState = GameState::MainMenu;
 
 
 void Game::Init() {
@@ -50,92 +53,101 @@ void Game::Init() {
 	LoadAllTextures();
 	RegisterAllBlocks();
 	RegisterAllItems();
-
-	//start the game loop
-	GameLoop();
 }
 void Game::GameLoop() {
 
-	SDL_ShowCursor(0);
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_ShowCursor(SDL_ENABLE);
+	SDL_SetRelativeMouseMode(SDL_FALSE);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	overworld = new Level();
-	overworld->GetWorld().ChunksStart(0, 0);
-	player.SetPosition(10, 100, 10);
-	player.AddStarterItems();
-	CreatePlayerHud();
 
 	//stuff for deltatime calculations
 	Uint64 now = SDL_GetPerformanceCounter();
 	Uint64 last = 0;
 	float deltaTime = 0.0;
 
-	//for having the game run and for events
 	SDL_Event event;
+
+	LoadState();
+
 	//the actualy game loop
 	while (IsGameRunning) { //the game loop
+		if (lastState != state) {
+			UnloadState();
+			state = lastState;
+			LoadState();
+		}
+
 		//these 3 lines are for updating DeltaTime
 		last = now;
 		now = SDL_GetPerformanceCounter();
 		deltaTime = ((now - last) * 1000) / SDL_GetPerformanceFrequency();
 
-		while (SDL_PollEvent(&event)) {
-			player.ProcessInput(event);
-			if (event.type == SDL_QUIT) {
-				CloseGame(); //quit
-			}
-		}
-		player.Update(deltaTime);
-		overworld->LevelUpdate(deltaTime);
-
-		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
-
-
 		//simply put set the clear color
-		glClearColor(0.0, 0.0, 1.0, 1.0);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
 
-		//set the view matrix to the current camera's view
-		View = player.getViewMatrix();
+		switch (state) {
+		case GameState::MainMenu:
+			while (SDL_PollEvent(&event)) {
+				if (event.type == SDL_QUIT) {
+					CloseGame(); //quit
+				}
+			}
+			break;
+		case GameState::InGame:
+			while (SDL_PollEvent(&event)) {
+				player.ProcessInput(event);
+				if (event.type == SDL_QUIT) {
+					CloseGame(); //quit
+				}
+			}
 
-		glDisable(GL_CULL_FACE);
-		e_CloudShader.use();
-		e_CloudShader.setMat4("view", View);
-		e_CloudShader.setMat4("projection", Proj);
-		glm::dvec3 cloudPos = glm::dvec3(0.0f, 128.0f, 0.0f);
-		glm::vec3 relativePos = cloudPos - player.GetPosition();
-		glm::mat4 cloudsMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, relativePos.y, 0.0f));
-		cloudsMatrix = glm::scale(cloudsMatrix, glm::vec3(1024.0f, 1.0f, 1024.0f));
-		e_CloudShader.setMat4("model", cloudsMatrix);
-		e_CloudShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
-		e_CloudShader.setVec3("playerWorldPos", player.GetPosition());
-		e_LoadedTextures[4]->bind();
-		e_LoadedModels[1]->DrawModel();
+			player.Update(deltaTime);
+			level->LevelUpdate(deltaTime);
 
-		glEnable(GL_CULL_FACE);
+			glEnable(GL_DEPTH_TEST);
 
-		//literally just render the entire world... lol
-		e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
-		overworld->RenderLevel();
-		e_LoadedTextures[0]->unbind();
+			//set the view matrix to the current camera's view
+			View = player.getViewMatrix();
 
-		if (ShowChunkBorder) {
-			e_ChunkBorderShader.use();
-			e_ChunkBorderShader.setMat4("view", View);
-			e_ChunkBorderShader.setMat4("projection", Proj);
-			glm::ivec2 chunkCoords = player.GetCurrentChunkCoords();
-			glm::dvec3 relativePos = glm::dvec3(chunkCoords.x * 16, 0.0f, chunkCoords.y * 16) - player.GetPosition();
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(relativePos.x, -player.GetPosition().y, relativePos.z));
-			e_ChunkBorderShader.setMat4("model", transform);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glLineWidth(5.0f);
-			glDrawArrays(GL_LINES, 0, 24);
+			glDisable(GL_CULL_FACE);
+			e_CloudShader.use();
+			e_CloudShader.setMat4("view", View);
+			e_CloudShader.setMat4("projection", Proj);
+			glm::dvec3 cloudPos = glm::dvec3(0.0f, 128.0f, 0.0f);
+			glm::vec3 relativePos = cloudPos - player.GetPosition();
+			glm::mat4 cloudsMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, relativePos.y, 0.0f));
+			cloudsMatrix = glm::scale(cloudsMatrix, glm::vec3(1024.0f, 1.0f, 1024.0f));
+			e_CloudShader.setMat4("model", cloudsMatrix);
+			e_CloudShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
+			e_CloudShader.setVec3("playerWorldPos", player.GetPosition());
+			e_LoadedTextures[4]->bind();
+			e_LoadedModels[1]->DrawModel();
+
+			glEnable(GL_CULL_FACE);
+
+			//literally just render the entire world... lol
+			e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
+			level->RenderLevel();
+			e_LoadedTextures[0]->unbind();
+
+			if (ShowChunkBorder) {
+				e_ChunkBorderShader.use();
+				e_ChunkBorderShader.setMat4("view", View);
+				e_ChunkBorderShader.setMat4("projection", Proj);
+				glm::ivec2 chunkCoords = player.GetCurrentChunkCoords();
+				glm::dvec3 relativePos = glm::dvec3(chunkCoords.x * 16, 0.0f, chunkCoords.y * 16) - player.GetPosition();
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(relativePos.x, -player.GetPosition().y, relativePos.z));
+				e_ChunkBorderShader.setMat4("model", transform);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glLineWidth(5.0f);
+				glDrawArrays(GL_LINES, 0, 24);
+			}
+			break;
 		}
-
+		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
 
 		//render all the current UI stuff
 		m_UIManager.Render();
@@ -145,10 +157,7 @@ void Game::GameLoop() {
 		SDL_GL_SwapWindow(e_Window.m_Window);
 	}
 
-	delete overworld;
-
-	//once the game stops terminate the game
-	Terminate();
+	UnloadState();
 }
 // terminates all engines for the game when the game closes and unloads every cached object
 void Game::Terminate() {
@@ -221,6 +230,7 @@ void Game::LoadAllTextures() {// function is called at the start of the game to 
 	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
 	e_LoadedTextures.push_back(new Texture("SkyTextures/clouds.png")); //the texture atlas for the blocks
 	e_LoadedTextures.push_back(new Texture("DefaultFont.png")); //the font texture
+	e_LoadedTextures.push_back(new Texture("GUI/logo.png"));
 }
 
 void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out
@@ -234,6 +244,58 @@ void Game::CloseGame() {
 	IsGameRunning = false;
 }
 
-void Game::CreatePlayerHud() {
+
+void Game::ChangeState(GameState newState) {
+	lastState = newState;
+}
+void Game::UnloadState() {
+	switch (state) {
+	case GameState::MainMenu:
+		UnloadMainMenuState();
+		break;
+	case GameState::InGame:
+		UnloadGameState();
+		break;
+	}
+}
+void Game::LoadState() {
+	switch (state) {
+	case GameState::MainMenu:
+		LoadMainMenuState();
+		break;
+	case GameState::InGame:
+		LoadGameState();
+		break;
+	}
+}
+
+
+
+void Game::LoadMainMenuState() {
+	SDL_ShowCursor(SDL_ENABLE);
+	SDL_SetRelativeMouseMode(SDL_FALSE);
+	auto ptr = std::make_unique<MainMenuScreen>();
+	m_UIManager.AddScreen(std::move(ptr));
+}
+void Game::UnloadMainMenuState() {
+	m_UIManager.ClearScreens();
+}
+
+
+void Game::LoadGameState() {
+	SDL_ShowCursor(SDL_DISABLE);
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+
+	level = new Level();
+	level->GetWorld().ChunksStart(0, 0);
+	player.SetPosition(10, 100, 10);
+	player.AddStarterItems();
 	m_UIManager.AddScreen(std::make_unique<PlayerHUDScreen>());
+}
+void Game::UnloadGameState() {
+	SDL_ShowCursor(SDL_ENABLE);
+	SDL_SetRelativeMouseMode(SDL_FALSE);
+
+	delete level;
+	m_UIManager.ClearScreens();
 }

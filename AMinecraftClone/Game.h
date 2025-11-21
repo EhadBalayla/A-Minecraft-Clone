@@ -12,15 +12,20 @@
 #include "Item.h"
 #include "AudioManager.h"
 
+enum class GameState {
+	MainMenu,
+	InGame
+};
+
+class MainMenuScreen;
 class Game
 {
-public: //this public section is simply for the members
-	//just to clarify e_ is meant to represent the engine's members, because in the window class i already have an m_Window
+public:
 	static Window e_Window; 
-	static UIManager m_UIManager; // the manager of all UI in the game
-	static AudioManager m_AudioManager; //for playing audio
+	static UIManager m_UIManager;
+	static AudioManager m_AudioManager;
 
-	//the shaders
+	
 	static Shader e_DefaultShader;
 	static Shader e_WaterShader;
 	static Shader e_CloudShader;
@@ -28,45 +33,56 @@ public: //this public section is simply for the members
 
 	static bool ShowChunkBorder;
 	
-	//object caching
-	static std::vector<Model*> e_LoadedModels; //for entities and such, like player, zombie, or creeper for example
-	static std::vector<Texture*> e_LoadedTextures; //for stuff like texture atlases
+	
+	static std::vector<Model*> e_LoadedModels;
+	static std::vector<Texture*> e_LoadedTextures;
 
-	//the basic camera for movement
+
 	static Player player;
 
-	static glm::mat4 Proj; //The Projection Matrix
-	static glm::mat4 View; //The View Matrix;
+	static glm::mat4 Proj;
+	static glm::mat4 View;
 
 	//the map... later on i will add THE NETHER [insert THE NETHER in jack black voice]
-	static Level* overworld;
+	static Level* level;
 
-	//where we register the blocks, basically we call a function to register the blocks in this hashmap at the very start of the game
+	
 	static std::unordered_map<BlockType, BlockData> e_BlockRegistery;
 	static std::unordered_map<ItemType, ItemData> e_ItemRegistery;
 
-	void Init(); //initialize the engine
-private: //this private section is for basic engine functions and initializations
+	void Init();
+	void GameLoop();
+	void Terminate();
+private:
 
-	void GameLoop(); //the game loop
-	void Terminate(); //ends the game when needed
+	void RegisterAllBlocks();
+	void RegisterAllItems();
 
-	void RegisterAllBlocks(); //registers all the blocks into the game
-	void RegisterAllItems(); //registers all items into the game
+	void LoadAllModels();
+	void UnloadAllModels();
 
-	void LoadAllModels(); //loads the models into memory
-	void UnloadAllModels(); //Unloads the models from memory
-
-	void LoadAllTextures(); //Loads all textures into memory
-	void UnloadAllTextures(); //Unload all textures from memory
+	void LoadAllTextures();
+	void UnloadAllTextures();
 
 	static bool IsGameRunning;
 public: //this "public" section is for gameplay functions such as closing game or creating a specific new UI screen and more
 	static void CloseGame();
-	static void CreatePlayerHud();
+
 
 	const static uint8_t RenderDistance = 16;
 
+	static void ChangeState(GameState newState);
+
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
+	static GameState lastState;
+	static GameState state;
+	static void UnloadState(); //unloads the current state
+	static void LoadState(); //loads the current state
+	
+	static void LoadMainMenuState();
+	static void UnloadMainMenuState();
+
+	static void LoadGameState();
+	static void UnloadGameState();
 };
 

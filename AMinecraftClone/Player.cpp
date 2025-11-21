@@ -66,7 +66,7 @@ void Player::UpdateChunksAroundPlayer() {
         int newChunkZ = static_cast<int>(std::floor(position.z / 16.0));
 
         if (newChunkX != currentChunkX || newChunkZ != currentChunkZ) {
-            Game::overworld->GetWorld().UpdateChunks(newChunkX, newChunkZ);
+            Game::level->GetWorld().UpdateChunks(newChunkX, newChunkZ);
 
             currentChunkX = newChunkX;
             currentChunkZ = newChunkZ;
@@ -79,7 +79,7 @@ void Player::UpdateChunksAroundPlayer() {
             int newLodChunkZ = newChunkZ / LODSize;
 
             if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
-                Game::overworld->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
+                Game::level->GetWorld().UpdateLODs(newLodChunkX, newLodChunkZ, i);
 
                 currentLODChunkX[i - 1] = newLodChunkX;
                 currentLODChunkZ[i - 1] = newLodChunkZ;
@@ -238,7 +238,7 @@ void Player::ProcessInput(SDL_Event& e) {
                 Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
                 RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
                 if (rayInfo.HitBlock) {
-                    Game::overworld->GetWorld().BreakBlock(rayInfo.pos.x, rayInfo.pos.y, rayInfo.pos.z);
+                    Game::level->GetWorld().BreakBlock(rayInfo.pos.x, rayInfo.pos.y, rayInfo.pos.z);
                     Game::m_AudioManager.StartSound("Sounds\\grass4.wav");
                 }
             }
@@ -314,22 +314,22 @@ void Player::PlayerPlaceBlocks() {
         BlockType typeToPlace = m_PlayerItems[selectedSlot - 1].m_Item.getData().blockID;
         switch (rayInfo.HitFace) {
         case Face::Top:
-            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, typeToPlace);
             break;
         case Face::Bottom:
-            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, typeToPlace);
             break;
         case Face::Right:
-            Game::overworld->GetWorld().PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, typeToPlace);
             break;
         case Face::Left:
-            Game::overworld->GetWorld().PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, typeToPlace);
             break;
         case Face::Front:
-            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, typeToPlace);
             break;
         case Face::Back:
-            Game::overworld->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, typeToPlace);
             break;
         }
     }
