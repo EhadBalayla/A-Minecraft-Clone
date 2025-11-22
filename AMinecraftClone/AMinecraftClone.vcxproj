@@ -71,20 +71,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\user\Desktop\Github\GLM;C:\Users\user\Desktop\Github\GLAD\include;C:\Users\user\Desktop\Github\SDL2-2.32.6\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)Compiled</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\user\Desktop\Github\GLM;C:\Users\user\Desktop\Github\GLAD\include;C:\Users\user\Desktop\Github\SDL2-2.32.6\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)Compiled</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\user\Desktop\Github\GLM;C:\Users\user\Desktop\Github\GLAD\include;C:\Users\user\Desktop\Github\SDL2-2.32.6\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)Compiled</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\user\Desktop\Github\GLM;C:\Users\user\Desktop\Github\GLAD\include;C:\Users\user\Desktop\Github\SDL2-2.32.6\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)Compiled</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,12 +97,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -110,6 +115,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,7 +123,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -127,12 +133,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -144,6 +151,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,118 +159,107 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\user\Desktop\Github\SDL2-2.32.6\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AABB.cpp" />
-    <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="Block.cpp" />
-    <ClCompile Include="Button.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Chunk.cpp" />
-    <ClCompile Include="ChunkGenerator.cpp" />
-    <ClCompile Include="ChunkProvider.cpp" />
-    <ClCompile Include="CombinedNoise.cpp" />
-    <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="glad.c" />
-    <ClCompile Include="InventoryItem.cpp" />
-    <ClCompile Include="Item.cpp" />
-    <ClCompile Include="ItemDisplayer.cpp" />
-    <ClCompile Include="Level.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="MainMenuScreen.cpp" />
-    <ClCompile Include="MathHelper.cpp" />
-    <ClCompile Include="MenuButtons.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Noise.cpp" />
-    <ClCompile Include="NoiseGeneratorOctave.cpp" />
-    <ClCompile Include="NoiseGeneratorOctave2.cpp" />
-    <ClCompile Include="NoiseGeneratorOctave3.cpp" />
-    <ClCompile Include="NoiseGeneratorPerlin.cpp" />
-    <ClCompile Include="NoiseGeneratorPerlin2.cpp" />
-    <ClCompile Include="NoiseGeneratorPerlin3.cpp" />
-    <ClCompile Include="OctaveNoise.cpp" />
-    <ClCompile Include="PauseMenu.cpp" />
-    <ClCompile Include="PerlinNoise.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="PlayerHUDScreen.cpp" />
-    <ClCompile Include="PlayerInventory.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="SkyManager.cpp" />
-    <ClCompile Include="stb_vorbis.c" />
-    <ClCompile Include="TerrainGen_1.cpp" />
-    <ClCompile Include="TerrainGen_2.cpp" />
-    <ClCompile Include="TerrainGen_3.cpp" />
-    <ClCompile Include="TextDisplayer.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UIManager.cpp" />
-    <ClCompile Include="UIScreen.cpp" />
-    <ClCompile Include="Utilities.cpp" />
-    <ClCompile Include="Widget.cpp" />
-    <ClCompile Include="Window.cpp" />
-    <ClCompile Include="WorldManager.cpp" />
+    <ClCompile Include="Src\AABB.cpp" />
+    <ClCompile Include="Src\AudioManager.cpp" />
+    <ClCompile Include="Src\Block.cpp" />
+    <ClCompile Include="Src\Button.cpp" />
+    <ClCompile Include="Src\Camera.cpp" />
+    <ClCompile Include="Src\Chunk.cpp" />
+    <ClCompile Include="Src\ChunkGenerator.cpp" />
+    <ClCompile Include="Src\ChunkProvider.cpp" />
+    <ClCompile Include="Src\CombinedNoise.cpp" />
+    <ClCompile Include="Src\DebugRenderer.cpp" />
+    <ClCompile Include="Src\Entity.cpp" />
+    <ClCompile Include="Src\Game.cpp" />
+    <ClCompile Include="Src\glad.c" />
+    <ClCompile Include="Src\InventoryItem.cpp" />
+    <ClCompile Include="Src\Item.cpp" />
+    <ClCompile Include="Src\ItemDisplayer.cpp" />
+    <ClCompile Include="Src\Level.cpp" />
+    <ClCompile Include="Src\Main.cpp" />
+    <ClCompile Include="Src\MainMenuScreen.cpp" />
+    <ClCompile Include="Src\MathHelper.cpp" />
+    <ClCompile Include="Src\MenuButtons.cpp" />
+    <ClCompile Include="Src\Model.cpp" />
+    <ClCompile Include="Src\Noise.cpp" />
+    <ClCompile Include="Src\NoiseGeneratorOctave.cpp" />
+    <ClCompile Include="Src\NoiseGeneratorOctave2.cpp" />
+    <ClCompile Include="Src\NoiseGeneratorOctave3.cpp" />
+    <ClCompile Include="Src\NoiseGeneratorPerlin.cpp" />
+    <ClCompile Include="Src\NoiseGeneratorPerlin2.cpp" />
+    <ClCompile Include="Src\NoiseGeneratorPerlin3.cpp" />
+    <ClCompile Include="Src\OctaveNoise.cpp" />
+    <ClCompile Include="Src\PauseMenu.cpp" />
+    <ClCompile Include="Src\PerlinNoise.cpp" />
+    <ClCompile Include="Src\Player.cpp" />
+    <ClCompile Include="Src\PlayerHUDScreen.cpp" />
+    <ClCompile Include="Src\PlayerInventory.cpp" />
+    <ClCompile Include="Src\Shader.cpp" />
+    <ClCompile Include="Src\SkyManager.cpp" />
+    <ClCompile Include="Src\TerrainGen_1.cpp" />
+    <ClCompile Include="Src\TerrainGen_2.cpp" />
+    <ClCompile Include="Src\TerrainGen_3.cpp" />
+    <ClCompile Include="Src\TextDisplayer.cpp" />
+    <ClCompile Include="Src\Texture.cpp" />
+    <ClCompile Include="Src\UIManager.cpp" />
+    <ClCompile Include="Src\UIScreen.cpp" />
+    <ClCompile Include="Src\Utilities.cpp" />
+    <ClCompile Include="Src\Widget.cpp" />
+    <ClCompile Include="Src\Window.cpp" />
+    <ClCompile Include="Src\WorldManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AABB.h" />
-    <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="Block.h" />
-    <ClInclude Include="Button.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Chunk.h" />
-    <ClInclude Include="ChunkGenerator.h" />
-    <ClInclude Include="ChunkProvider.h" />
-    <ClInclude Include="CombinedNoise.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="InventoryItem.h" />
-    <ClInclude Include="Item.h" />
-    <ClInclude Include="ItemDisplayer.h" />
-    <ClInclude Include="Level.h" />
-    <ClInclude Include="MainMenuScreen.h" />
-    <ClInclude Include="MathHelper.h" />
-    <ClInclude Include="MenuButtons.h" />
-    <ClInclude Include="miniaudio.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="Noise.h" />
-    <ClInclude Include="NoiseGeneratorOctave.h" />
-    <ClInclude Include="NoiseGeneratorOctave2.h" />
-    <ClInclude Include="NoiseGeneratorOctave3.h" />
-    <ClInclude Include="NoiseGeneratorPerlin.h" />
-    <ClInclude Include="NoiseGeneratorPerlin2.h" />
-    <ClInclude Include="NoiseGeneratorPerlin3.h" />
-    <ClInclude Include="OctaveNoise.h" />
-    <ClInclude Include="PauseMenu.h" />
-    <ClInclude Include="PerlinNoise.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="PlayerHUDScreen.h" />
-    <ClInclude Include="PlayerInventory.h" />
-    <ClInclude Include="Random.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="SkyManager.h" />
-    <ClInclude Include="stbi_image.h" />
-    <ClInclude Include="TerrainGen_1.h" />
-    <ClInclude Include="TerrainGen_2.h" />
-    <ClInclude Include="TerrainGen_3.h" />
-    <ClInclude Include="TextDisplayer.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="UIManager.h" />
-    <ClInclude Include="UIScreen.h" />
-    <ClInclude Include="Utilities.h" />
-    <ClInclude Include="Widget.h" />
-    <ClInclude Include="Window.h" />
-    <ClInclude Include="WorldManager.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cloudsFragment.file" />
-    <None Include="cloudsVertex.file" />
-    <None Include="defaultFragment.file" />
-    <None Include="defaultVertex.file" />
-    <None Include="UIFragment.file" />
-    <None Include="UIVertex.file" />
-    <None Include="waterFragment.file" />
-    <None Include="waterVertex.file" />
+    <ClInclude Include="Headers\AABB.h" />
+    <ClInclude Include="Headers\AudioManager.h" />
+    <ClInclude Include="Headers\Block.h" />
+    <ClInclude Include="Headers\Button.h" />
+    <ClInclude Include="Headers\Camera.h" />
+    <ClInclude Include="Headers\Chunk.h" />
+    <ClInclude Include="Headers\ChunkGenerator.h" />
+    <ClInclude Include="Headers\ChunkProvider.h" />
+    <ClInclude Include="Headers\CombinedNoise.h" />
+    <ClInclude Include="Headers\DebugRenderer.h" />
+    <ClInclude Include="Headers\Entity.h" />
+    <ClInclude Include="Headers\Game.h" />
+    <ClInclude Include="Headers\InventoryItem.h" />
+    <ClInclude Include="Headers\Item.h" />
+    <ClInclude Include="Headers\ItemDisplayer.h" />
+    <ClInclude Include="Headers\Level.h" />
+    <ClInclude Include="Headers\MainMenuScreen.h" />
+    <ClInclude Include="Headers\MathHelper.h" />
+    <ClInclude Include="Headers\MenuButtons.h" />
+    <ClInclude Include="Headers\miniaudio.h" />
+    <ClInclude Include="Headers\Model.h" />
+    <ClInclude Include="Headers\Noise.h" />
+    <ClInclude Include="Headers\NoiseGeneratorOctave.h" />
+    <ClInclude Include="Headers\NoiseGeneratorOctave2.h" />
+    <ClInclude Include="Headers\NoiseGeneratorOctave3.h" />
+    <ClInclude Include="Headers\NoiseGeneratorPerlin.h" />
+    <ClInclude Include="Headers\NoiseGeneratorPerlin2.h" />
+    <ClInclude Include="Headers\NoiseGeneratorPerlin3.h" />
+    <ClInclude Include="Headers\OctaveNoise.h" />
+    <ClInclude Include="Headers\PauseMenu.h" />
+    <ClInclude Include="Headers\PerlinNoise.h" />
+    <ClInclude Include="Headers\Player.h" />
+    <ClInclude Include="Headers\PlayerHUDScreen.h" />
+    <ClInclude Include="Headers\PlayerInventory.h" />
+    <ClInclude Include="Headers\Shader.h" />
+    <ClInclude Include="Headers\SkyManager.h" />
+    <ClInclude Include="Headers\TerrainGen_1.h" />
+    <ClInclude Include="Headers\TerrainGen_2.h" />
+    <ClInclude Include="Headers\TerrainGen_3.h" />
+    <ClInclude Include="Headers\TextDisplayer.h" />
+    <ClInclude Include="Headers\Texture.h" />
+    <ClInclude Include="Headers\UIManager.h" />
+    <ClInclude Include="Headers\UIScreen.h" />
+    <ClInclude Include="Headers\Utilities.h" />
+    <ClInclude Include="Headers\Widget.h" />
+    <ClInclude Include="Headers\Window.h" />
+    <ClInclude Include="Headers\WorldManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
