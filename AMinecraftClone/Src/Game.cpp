@@ -182,12 +182,12 @@ void Game::RegisterAllItems() { //register all item types in the hash map so the
 
 void Game::LoadAllTextures() {// function is called at the start of the game to load everything in
 	e_LoadedTextures.push_back(new Texture("TextureAtlas.png")); //the texture atlas for the blocks
-	e_LoadedTextures.push_back(new Texture("GUI/gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
-	e_LoadedTextures.push_back(new Texture("GUI/icons.png"));
-	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
-	e_LoadedTextures.push_back(new Texture("SkyTextures/clouds.png")); //the texture atlas for the blocks
+	e_LoadedTextures.push_back(new Texture("GUI\\gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
+	e_LoadedTextures.push_back(new Texture("GUI\\icons.png"));
+	e_LoadedTextures.push_back(new Texture("GUI\\inventory.png")); //the texture for the inventory
+	e_LoadedTextures.push_back(new Texture("SkyTextures\\clouds.png")); //the texture atlas for the blocks
 	e_LoadedTextures.push_back(new Texture("DefaultFont.png")); //the font texture
-	e_LoadedTextures.push_back(new Texture("GUI/logo.png"));
+	e_LoadedTextures.push_back(new Texture("GUI\\logo.png"));
 }
 
 void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out
