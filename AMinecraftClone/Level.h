@@ -1,5 +1,6 @@
 #pragma once
 #include "WorldManager.h"
+#include "SkyManager.h"
 
 
 class Level
@@ -13,7 +14,9 @@ public:
 
 	//getters
 	WorldManager& GetWorld();
+	SkyManager& GetSky();
 private:
 	WorldManager worldManager;
+	SkyManager skyManager;
 };
 

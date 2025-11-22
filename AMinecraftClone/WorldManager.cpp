@@ -126,11 +126,14 @@ bool IsLODInRenderDistance(SuperChunk* c) {
 	return false;
 }
 void WorldManager::RenderWorld() {
+	Game::e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
+
 	for (auto& pair : chunkProvider.GetAllChunks()) {
 		Chunk* c = pair.second;
 		if (IsChunkInRenderDistance(c)) {
 			if (c->IsRenderReady) {
-				c->RenderOpaqueAndPlants();
+				c->RenderOpaque();
+				c->RenderPlants();
 				c->RenderWater();
 			}
 		}

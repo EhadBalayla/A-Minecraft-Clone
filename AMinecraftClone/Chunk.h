@@ -71,7 +71,8 @@ public:
 	bool HasPlant = false;
 	bool HasWater = false;
 
-	void RenderOpaqueAndPlants();
+	void RenderOpaque();
+	void RenderPlants();
 	void RenderWater();
 	void CreateChunkMeshData();
 	void ChunkUpload();

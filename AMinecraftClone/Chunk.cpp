@@ -66,39 +66,54 @@ int Chunk::GetHeightValue(int var1, int var2) {
     return HeightMap[var2 << 4 | var1] & 255;
 }
 
-void Chunk::RenderOpaqueAndPlants() {
-    Game::e_DefaultShader.use();
-    Game::e_DefaultShader.setMat4("view", Game::View);
-    Game::e_DefaultShader.setMat4("projection", Game::Proj);
-    glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width, 0, ChunkZ * Chunk_Length) - Game::player.GetPosition();
-    Game::e_DefaultShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
-
+void Chunk::RenderOpaque() {
     //enable rendering features for opaque blocks
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK); // Cull back faces
-    glFrontFace(GL_CW); // Clockwise instead
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+
+    
+    Game::e_OpaqueShader.use();
+    Game::e_OpaqueShader.setMat4("view", Game::View);
+    Game::e_OpaqueShader.setMat4("projection", Game::Proj);
+    glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width, 0, ChunkZ * Chunk_Length) - Game::player.GetPosition();
+    Game::e_OpaqueShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
+
 
     glBindVertexArray(meshes.m_VAO);
     glDrawElements(GL_TRIANGLES, meshes.opaqueCount, GL_UNSIGNED_INT, 0);
-
-    //disable rendering features for plants
+}
+void Chunk::RenderPlants() {
+    glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    glDepthMask(GL_FALSE);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+
+    Game::e_PlantsShader.use();
+    Game::e_PlantsShader.setMat4("view", Game::View);
+    Game::e_PlantsShader.setMat4("projection", Game::Proj);
+    glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width, 0, ChunkZ * Chunk_Length) - Game::player.GetPosition();
+    Game::e_PlantsShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
 
     glBindVertexArray(meshes.m_VAO2);
     glDrawElements(GL_TRIANGLES, meshes.plantCount, GL_UNSIGNED_INT, 0);
-
-    glDepthMask(GL_TRUE);
 }
 void Chunk::RenderWater() {
+    glEnable(GL_CULL_FACE);
+    glDepthMask(GL_TRUE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     Game::e_WaterShader.use();
     Game::e_WaterShader.setMat4("view", Game::View);
     Game::e_WaterShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width, 0, ChunkZ * Chunk_Length) - Game::player.GetPosition();
     Game::e_WaterShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
     Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
-    glEnable(GL_CULL_FACE);
-    glDepthMask(GL_TRUE);
+
 
     glBindVertexArray(meshes.m_VAO3);
     glDrawElements(GL_TRIANGLES, meshes.waterCount, GL_UNSIGNED_INT, 0);
@@ -314,13 +329,13 @@ void SuperChunk::Render() {
 }
 void SuperChunk::RenderOpaque() {
     if (HasOpaque) {
-        Game::e_DefaultShader.use();
-        Game::e_DefaultShader.setMat4("view", Game::View);
-        Game::e_DefaultShader.setMat4("projection", Game::Proj);
+        Game::e_OpaqueShader.use();
+        Game::e_OpaqueShader.setMat4("view", Game::View);
+        Game::e_OpaqueShader.setMat4("projection", Game::Proj);
         uint8_t LODFactor = GetLODSize(LOD);
         glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width * LODFactor, 0, ChunkZ * Chunk_Length * LODFactor) - Game::player.GetPosition();
         glm::vec3 scale = glm::vec3(LODFactor);
-        Game::e_DefaultShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
+        Game::e_OpaqueShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), scale));
 
         //enable rendering features for opaque blocks
         glEnable(GL_CULL_FACE);

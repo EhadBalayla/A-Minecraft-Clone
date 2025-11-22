@@ -12,6 +12,11 @@ Level::~Level() {
 
 
 void Level::RenderLevel() {
+	//render sky
+	skyManager.RenderSky();
+	skyManager.RenderClouds();
+
+	//render the map
 	worldManager.RenderWorld();
 }
 void Level::LevelUpdate(float DeltaTime) {
@@ -22,4 +27,7 @@ void Level::LevelUpdate(float DeltaTime) {
 
 WorldManager& Level::GetWorld() {
 	return worldManager;
+}
+SkyManager& Level::GetSky() {
+	return skyManager;
 }

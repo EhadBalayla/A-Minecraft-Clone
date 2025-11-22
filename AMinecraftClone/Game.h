@@ -26,10 +26,13 @@ public:
 	static AudioManager m_AudioManager;
 
 	
-	static Shader e_DefaultShader;
+	static Shader e_OpaqueShader;
+	static Shader e_PlantsShader;
 	static Shader e_WaterShader;
 	static Shader e_CloudShader;
+	static Shader e_SkyColorShader;
 	static Shader e_ChunkBorderShader;
+	static unsigned int tempVAO; //temporary vao for stuff that have hardcoded shaders
 
 	static bool ShowChunkBorder;
 	
@@ -57,9 +60,6 @@ private:
 
 	void RegisterAllBlocks();
 	void RegisterAllItems();
-
-	void LoadAllModels();
-	void UnloadAllModels();
 
 	void LoadAllTextures();
 	void UnloadAllTextures();

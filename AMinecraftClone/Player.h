@@ -20,6 +20,7 @@ public:
 	void Update(float DeltaTime) override;
 
 	glm::mat4 getViewMatrix(); //returns the view matrix of the player for the rendering
+	glm::mat4 getViewOnlyMatrix(); //returns the view matrix but without rotations
 
 	void ProcessInput(SDL_Event& e);
 	

@@ -190,6 +190,7 @@
     <ClCompile Include="PlayerHUDScreen.cpp" />
     <ClCompile Include="PlayerInventory.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SkyManager.cpp" />
     <ClCompile Include="stb_vorbis.c" />
     <ClCompile Include="TerrainGen_1.cpp" />
     <ClCompile Include="TerrainGen_2.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="PlayerInventory.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SkyManager.h" />
     <ClInclude Include="stbi_image.h" />
     <ClInclude Include="TerrainGen_1.h" />
     <ClInclude Include="TerrainGen_2.h" />

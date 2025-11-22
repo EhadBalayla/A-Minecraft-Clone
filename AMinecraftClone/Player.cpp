@@ -29,6 +29,16 @@ glm::mat4 Player::getViewMatrix() {
                         //this is where the position        //also here is position
     return glm::lookAt(glm::vec3(0.0, cameraHeight, 0.0), glm::vec3(0.0, cameraHeight, 0.0) + glm::normalize(front), {0, 1, 0});
 }
+glm::mat4 Player::getViewOnlyMatrix() {
+    glm::vec3 front = {
+        cos(glm::radians(pitch)) * cos(glm::radians(yaw)),
+        sin(glm::radians(pitch)),
+        cos(glm::radians(pitch)) * sin(glm::radians(yaw))
+    };
+
+    //this is where the position        //also here is position
+    return glm::lookAt(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0) + glm::normalize(front), { 0, 1, 0 });
+}
 
 void Player::AddStarterItems() {
     Item i;

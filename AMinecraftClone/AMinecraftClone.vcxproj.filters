@@ -178,6 +178,9 @@
     <ClCompile Include="MainMenuScreen.cpp">
       <Filter>Source Files\UI\ActualScreens</Filter>
     </ClCompile>
+    <ClCompile Include="SkyManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -320,6 +323,9 @@
     </ClInclude>
     <ClInclude Include="MainMenuScreen.h">
       <Filter>Source Files\UI\ActualScreens</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyManager.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

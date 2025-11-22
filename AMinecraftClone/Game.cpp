@@ -9,10 +9,12 @@
 #include "MainMenuScreen.h"
 
 Window Game::e_Window;
-Shader Game::e_DefaultShader;
+Shader Game::e_OpaqueShader;
+Shader Game::e_PlantsShader;
 Shader Game::e_WaterShader;
 Shader Game::e_CloudShader;
 Shader Game::e_ChunkBorderShader;
+Shader Game::e_SkyColorShader;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
@@ -27,6 +29,7 @@ AudioManager Game::m_AudioManager;
 bool Game::ShowChunkBorder = true;
 GameState Game::state = GameState::MainMenu;
 GameState Game::lastState = GameState::MainMenu;
+unsigned int Game::tempVAO;
 
 
 void Game::Init() {
@@ -37,19 +40,21 @@ void Game::Init() {
 	}
 
 	//loads in all shaders
-	e_DefaultShader.loadShader("defaultVertex.file", "defaultFragment.file");
+	e_OpaqueShader.loadShader("defaultVertex.file", "defaultFragment.file");
+	e_PlantsShader.loadShader("PlantsShader_Vert.glsl", "PlantsShader_Frag.glsl");
 	e_WaterShader.loadShader("waterVertex.file", "waterFragment.file");
 	e_CloudShader.loadShader("cloudsVertex.file", "cloudsFragment.file");
 	e_ChunkBorderShader.loadShader("ChunkBorder_vert.glsl", "ChunkBorder_frag.glsl");
+	e_SkyColorShader.loadShader("SkyShader_Vert.glsl", "SkyShader_Frag.glsl");
+	glGenVertexArrays(1, &tempVAO);
 
 	Proj = glm::mat4(1.0f);
 	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 50000.0f);
 
-	m_UIManager.Init(); //initialize the UI manager
-	m_AudioManager.Init(); //initializes the sounder
+	m_UIManager.Init();
+	m_AudioManager.Init();
 
 	//after finishing loading all engines and setting engine's default rendering parameters, cache in and register the necessary objects for the game
-	LoadAllModels();
 	LoadAllTextures();
 	RegisterAllBlocks();
 	RegisterAllItems();
@@ -58,9 +63,6 @@ void Game::GameLoop() {
 
 	SDL_ShowCursor(SDL_ENABLE);
 	SDL_SetRelativeMouseMode(SDL_FALSE);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//stuff for deltatime calculations
 	Uint64 now = SDL_GetPerformanceCounter();
@@ -107,33 +109,12 @@ void Game::GameLoop() {
 			player.Update(deltaTime);
 			level->LevelUpdate(deltaTime);
 
-			glEnable(GL_DEPTH_TEST);
-
 			//set the view matrix to the current camera's view
 			View = player.getViewMatrix();
 
-			glDisable(GL_CULL_FACE);
-			e_CloudShader.use();
-			e_CloudShader.setMat4("view", View);
-			e_CloudShader.setMat4("projection", Proj);
-			glm::dvec3 cloudPos = glm::dvec3(0.0f, 128.0f, 0.0f);
-			glm::vec3 relativePos = cloudPos - player.GetPosition();
-			glm::mat4 cloudsMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, relativePos.y, 0.0f));
-			cloudsMatrix = glm::scale(cloudsMatrix, glm::vec3(1024.0f, 1.0f, 1024.0f));
-			e_CloudShader.setMat4("model", cloudsMatrix);
-			e_CloudShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
-			e_CloudShader.setVec3("playerWorldPos", player.GetPosition());
-			e_LoadedTextures[4]->bind();
-			e_LoadedModels[1]->DrawModel();
-
-			glEnable(GL_CULL_FACE);
-
-			//literally just render the entire world... lol
-			e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
 			level->RenderLevel();
-			e_LoadedTextures[0]->unbind();
 
-			if (ShowChunkBorder) {
+			/*if (ShowChunkBorder) {
 				e_ChunkBorderShader.use();
 				e_ChunkBorderShader.setMat4("view", View);
 				e_ChunkBorderShader.setMat4("projection", Proj);
@@ -144,7 +125,8 @@ void Game::GameLoop() {
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				glLineWidth(5.0f);
 				glDrawArrays(GL_LINES, 0, 24);
-			}
+			}*/
+
 			break;
 		}
 		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
@@ -161,10 +143,7 @@ void Game::GameLoop() {
 }
 // terminates all engines for the game when the game closes and unloads every cached object
 void Game::Terminate() {
-
-
 	UnloadAllTextures();
-	UnloadAllModels();
 	m_AudioManager.Terminate();
 	e_Window.Termintate();
 }
@@ -208,19 +187,6 @@ void Game::RegisterAllItems() { //register all item types in the hash map so the
 	e_ItemRegistery[BedrockBlock] = { "Bedrock Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bedrock }; //register the grass block item
 	e_ItemRegistery[ObsidianBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Obsidian }; //register the grass block item
 	e_ItemRegistery[StoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Stone }; //register the grass block item
-}
-
-void Game::LoadAllModels() {// function is called at the start of the game to load everything in
-	e_LoadedModels.push_back(InitModels::InitializeCube()); //the model for a block
-	e_LoadedModels.push_back(InitModels::InitializeCloudsPlane()); //the model for the clouds
-}
-
-void Game::UnloadAllModels() {//function is called when the game closes to unload everything out
-	for (auto& n : e_LoadedModels) {
-		n->DeleteModel();
-		delete n;
-	}
-	e_LoadedModels.clear();
 }
 
 void Game::LoadAllTextures() {// function is called at the start of the game to load everything in
