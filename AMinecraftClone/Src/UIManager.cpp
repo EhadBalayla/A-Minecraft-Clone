@@ -1,5 +1,9 @@
 #include "UIManager.h"
 
+#ifdef __linux__
+#include <Algorithm>
+#endif
+
 
 void UIManager::Init() {
 	WidgetShader.loadShader("Shaders/UIShader_Vert.glsl", "Shaders/UIShader_Frag.glsl");
