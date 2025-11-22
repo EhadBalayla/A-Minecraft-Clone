@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.20)
-project(MyMinecraft LANGUAGES CXX)
+project(MyMinecraft LANGUAGES C CXX)
 
 # Default to C++14
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Default to C11
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Enable folders in IDEs (Visual Studio, CLion, etc.)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

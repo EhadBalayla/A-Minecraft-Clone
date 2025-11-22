@@ -2,7 +2,7 @@
 
 
 void UIManager::Init() {
-	WidgetShader.loadShader("Shaders\\UIShader_Vert.glsl", "Shaders\\UIShader_Frag.glsl");
+	WidgetShader.loadShader("Shaders/UIShader_Vert.glsl", "Shaders/UIShader_Frag.glsl");
 
 	float QuadVerts[] = {
 		-0.5, -0.5,

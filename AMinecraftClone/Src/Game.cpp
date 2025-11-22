@@ -41,12 +41,12 @@ void Game::Init() {
 	}
 
 	//loads in all shaders
-	e_OpaqueShader.loadShader("Shaders\\OpaqueShader_Vert.glsl", "Shaders\\OpaqueShader_Frag.glsl");
-	e_PlantsShader.loadShader("Shaders\\PlantsShader_Vert.glsl", "Shaders\\PlantsShader_Frag.glsl");
-	e_WaterShader.loadShader("Shaders\\WaterShader_Vert.glsl", "Shaders\\WaterShader_Frag.glsl");
-	e_CloudShader.loadShader("Shaders\\CloudsShader_Vert.glsl", "Shaders\\CloudsShader_Frag.glsl");
-	e_ChunkBorderShader.loadShader("Shaders\\ChunkBorder_Vert.glsl", "Shaders\\ChunkBorder_Frag.glsl");
-	e_SkyColorShader.loadShader("Shaders\\SkyShader_Vert.glsl", "Shaders\\SkyShader_Frag.glsl");
+	e_OpaqueShader.loadShader("Shaders/OpaqueShader_Vert.glsl", "Shaders/OpaqueShader_Frag.glsl");
+	e_PlantsShader.loadShader("Shaders/PlantsShader_Vert.glsl", "Shaders/PlantsShader_Frag.glsl");
+	e_WaterShader.loadShader("Shaders/WaterShader_Vert.glsl", "Shaders/WaterShader_Frag.glsl");
+	e_CloudShader.loadShader("Shaders/CloudsShader_Vert.glsl", "Shaders/CloudsShader_Frag.glsl");
+	e_ChunkBorderShader.loadShader("Shaders/ChunkBorder_Vert.glsl", "Shaders/ChunkBorder_Frag.glsl");
+	e_SkyColorShader.loadShader("Shaders/SkyShader_Vert.glsl", "Shaders/SkyShader_Frag.glsl");
 	glGenVertexArrays(1, &tempVAO);
 
 	Proj = glm::mat4(1.0f);
@@ -182,12 +182,12 @@ void Game::RegisterAllItems() { //register all item types in the hash map so the
 
 void Game::LoadAllTextures() {// function is called at the start of the game to load everything in
 	e_LoadedTextures.push_back(new Texture("TextureAtlas.png")); //the texture atlas for the blocks
-	e_LoadedTextures.push_back(new Texture("GUI\\gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
-	e_LoadedTextures.push_back(new Texture("GUI\\icons.png"));
-	e_LoadedTextures.push_back(new Texture("GUI\\inventory.png")); //the texture for the inventory
-	e_LoadedTextures.push_back(new Texture("SkyTextures\\clouds.png")); //the texture atlas for the blocks
+	e_LoadedTextures.push_back(new Texture("GUI/gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
+	e_LoadedTextures.push_back(new Texture("GUI/icons.png"));
+	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
+	e_LoadedTextures.push_back(new Texture("SkyTextures/clouds.png")); //the texture atlas for the blocks
 	e_LoadedTextures.push_back(new Texture("DefaultFont.png")); //the font texture
-	e_LoadedTextures.push_back(new Texture("GUI\\logo.png"));
+	e_LoadedTextures.push_back(new Texture("GUI/logo.png"));
 }
 
 void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out
