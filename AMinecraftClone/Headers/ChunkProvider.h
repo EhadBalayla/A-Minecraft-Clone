@@ -36,50 +36,31 @@ public:
 	std::unordered_map<glm::ivec2, Chunk*>& GetAllChunks();
 
 	//LOD related publics
-	SuperChunk* ProvideLOD(int ChunkX, int Chunkz, uint8_t LOD);
-	void MeshLOD(SuperChunk* c);
-	std::unordered_map<glm::ivec2, SuperChunk*>& GetAllLODs(uint8_t LOD);
+	Chunk* ProvideLOD(int ChunkX, int Chunkz, uint8_t LOD);
+	void MeshLOD(Chunk* c);
+	std::unordered_map<glm::ivec2, Chunk*>& GetAllLODs(uint8_t LOD);
 private:
 	//all the caches
 	std::unordered_map<glm::ivec2, Chunk*> chunks;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD1;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD2;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD3;
-	std::unordered_map<glm::ivec2, SuperChunk*> LOD4;
+	std::unordered_map<glm::ivec2, Chunk*> LOD1;
+	std::unordered_map<glm::ivec2, Chunk*> LOD2;
+	std::unordered_map<glm::ivec2, Chunk*> LOD3;
+	std::unordered_map<glm::ivec2, Chunk*> LOD4;
 
 	//the chunks validation functions
 	bool IsValidChunk(int ChunkX, int ChunkZ);
-	Chunk* LoadNewChunk(int ChunkX, int ChunkZ);
+	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD);
 	void DeleteChunkAt(int ChunkX, int ChunkZ);
 
 	//the LOD validation functions
-	std::unordered_map<glm::ivec2, SuperChunk*>& GetLODMap(uint8_t LOD);
+	std::unordered_map<glm::ivec2, Chunk*>& GetLODMap(uint8_t LOD);
 	bool IsValidLOD(int ChunkX, int ChunkZ, uint8_t LOD);
-	SuperChunk* LoadNewLOD(int ChunkX, int ChunkZ, uint8_t LOD);
+	Chunk* LoadNewLOD(int ChunkX, int ChunkZ, uint8_t LOD);
 
 	//small helpers
 	void populate(int ChunkX, int ChunkZ);
 
-
 	//threads
-	bool ThreadsRunning = false;
 	ThreadPool pool;
-
-
-
-	std::mutex LODGenMutex;
-	std::condition_variable LODGenCV;
-	std::queue<SuperChunk*> LODGenQueue;
-	std::thread LODGenThread;
-	void LODGen();
-	
-	std::thread LODPopThread;
-	void LODPop();
-
-	std::mutex LODMeshMutex;
-	std::condition_variable LODMeshCV;
-	std::queue<SuperChunk*> LODMeshQueue;
-	std::thread LODMeshThread;
-	void LODMesh();
 };
 

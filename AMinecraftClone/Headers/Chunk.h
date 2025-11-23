@@ -57,6 +57,7 @@ class WorldManager;
 class Chunk
 {
 public:
+	uint8_t LOD; //0 - 4
 	BlockType m_Blocks[VOXEL_ARRAY_SIZE];
 	int HeightMap[HEIGHT_MAP_SIZE] = {};
 
@@ -80,6 +81,7 @@ public:
 	void RenderPlants();
 	void RenderWater();
 	void RenderTransparent();
+
 	void CreateChunkMeshData();
 	void ChunkUpload();
 
@@ -87,64 +89,10 @@ public:
 	void DeleteMeshObjects();
 
 	void GenerateHeightMap();
-	int GetHeightValue(int var1, int var2);
+	int GetHeightValue(int x, int z);
 private:
 	ChunkMeshData meshData;
 	ChunkMesh meshes; //meshes for each LOD
 };
 
-
-
-
-
-
-
-//LOD chunks stuff
 int GetLODSize(uint8_t LOD);
-struct SuperChunkMeshData {
-	std::vector<Vertex> opaqueVerticies;
-	std::vector<uint32_t> opaqueIndicies;
-
-	std::vector<Vertex> waterVerticies;
-	std::vector<uint32_t> waterIndicies;
-};
-struct SuperChunkMesh {
-	unsigned int m_VAO, m_VBO, m_EBO, opaqueCount = 0;
-	unsigned int m_VAO3, m_VBO3, m_EBO3, waterCount = 0;
-};
-
-class SuperChunk {
-public:
-	uint8_t LOD = 1; //from 1 - 4
-	BlockType m_Blocks[VOXEL_ARRAY_SIZE];
-
-	WorldManager* owningWorld;
-	int ChunkX, ChunkZ;
-
-	//flags
-	bool IsGenerated = false;
-	bool IsPopulated = false;
-	bool IsModified = false;
-	bool IsRenderReady = false;
-	bool IsMeshed = false;
-
-	//meshes flags
-	bool HasOpaque = false;
-	bool HasWater = false;
-
-	void Render();
-	void CreateSuperChunkMeshData();
-	void ChunkUpload();
-
-	void ChunkUpload(SuperChunkMeshData& meshData);
-
-	void CreateMeshObjects();
-	void DeleteMeshObjects();
-private:
-	SuperChunkMeshData meshData;
-	SuperChunkMesh mesh;
-
-	void RenderOpaque();
-	void RenderWater();
-};
-

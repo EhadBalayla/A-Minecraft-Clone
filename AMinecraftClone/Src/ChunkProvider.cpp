@@ -4,10 +4,11 @@
 
 void ChunkGen(Chunk* c, WorldManager* owningWorld) {
 	owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX, c->ChunkZ, 0);
+	c->GenerateHeightMap();
 	c->IsGenerated = true;
 }
 void ChunkPop(Chunk* c, WorldManager* owningWorld) {
-	owningWorld->GetChunkGenerator().Gen3.populate(c->ChunkX, c->ChunkZ);
+	owningWorld->GetChunkGenerator().Gen2.populate(c->ChunkX, c->ChunkZ);
 	c->IsModified = true;
 }
 void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
@@ -16,22 +17,19 @@ void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
 }
 
 
+void LODGen(Chunk* c, WorldManager* owningWorld) {
+	uint8_t LODSize = 1 << c->LOD;
+	owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX * LODSize, c->ChunkZ * LODSize, c->LOD);
+	c->IsGenerated = true;
+	c->IsModified = true;
+}
 
 
-ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), pool(6) {
-	ThreadsRunning = true;
 
-	//start LOD threads
-	LODGenThread = std::thread(&ChunkProvider::LODGen, this);
-	LODMeshThread = std::thread(&ChunkProvider::LODMesh, this);
+
+ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), pool(15) {
 }
 ChunkProvider::~ChunkProvider() {
-	ThreadsRunning = false;
-	//stop LOD threads
-	LODMeshCV.notify_all();
-	LODGenCV.notify_all();
-	LODMeshThread.join();
-	LODGenThread.join();
 }
 
 //the chunks public functions
@@ -41,7 +39,7 @@ Chunk* ChunkProvider::ProvideChunk(int ChunkX, int ChunkZ) {
 	}
 	
 	//create new chunk
-	Chunk* c = LoadNewChunk(ChunkX, ChunkZ);
+	Chunk* c = LoadNewChunk(ChunkX, ChunkZ, 0);
 	chunks[glm::ivec2(ChunkX, ChunkZ)] = c;
 	c->CreateMeshObjects();
 
@@ -77,33 +75,25 @@ std::unordered_map<glm::ivec2, Chunk*>& ChunkProvider::GetAllChunks() {
 
 
 //the LODs public functions
-SuperChunk* ChunkProvider::ProvideLOD(int ChunkX, int ChunkZ, uint8_t LOD) {
-	std::unordered_map<glm::ivec2, SuperChunk*>& MAP = GetLODMap(LOD);
+Chunk* ChunkProvider::ProvideLOD(int ChunkX, int ChunkZ, uint8_t LOD) {
+	std::unordered_map<glm::ivec2, Chunk*>& MAP = GetLODMap(LOD);
 	if (IsValidLOD(ChunkX, ChunkZ, LOD)) {
 		return MAP[glm::ivec2(ChunkX, ChunkZ)];
 	}
 
 	//create new LOD
-	SuperChunk* c = LoadNewLOD(ChunkX, ChunkZ, LOD);
+	Chunk* c = LoadNewLOD(ChunkX, ChunkZ, LOD);
 	MAP[glm::ivec2(ChunkX, ChunkZ)] = c;
 	c->CreateMeshObjects();
 
-	{
-		std::lock_guard<std::mutex> lock(LODGenMutex);
-		LODGenQueue.push(c);
-	}
-	LODGenCV.notify_one();
+	pool.QueueJob({ LODGen, c, owningWorld });
 
 	return c;
 }
-void ChunkProvider::MeshLOD(SuperChunk* c) {
-	{
-		std::lock_guard<std::mutex> lock(LODMeshMutex);
-		LODMeshQueue.push(c);
-	}
-	LODMeshCV.notify_one();
+void ChunkProvider::MeshLOD(Chunk* c) {
+	pool.QueueJob({ ChunkMesh, c, owningWorld });
 }
-std::unordered_map<glm::ivec2, SuperChunk*>& ChunkProvider::GetAllLODs(uint8_t LOD) {
+std::unordered_map<glm::ivec2, Chunk*>& ChunkProvider::GetAllLODs(uint8_t LOD) {
 	return GetLODMap(LOD);
 }
 
@@ -113,8 +103,9 @@ std::unordered_map<glm::ivec2, SuperChunk*>& ChunkProvider::GetAllLODs(uint8_t L
 bool ChunkProvider::IsValidChunk(int ChunkX, int ChunkZ) {
 	return chunks.find(glm::ivec2(ChunkX, ChunkZ)) != chunks.end(); //basically return true if this chunk is loaded (keyword: LOADED!!!)
 }
-Chunk* ChunkProvider::LoadNewChunk(int ChunkX, int ChunkZ) {
+Chunk* ChunkProvider::LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 	Chunk* chunk = new Chunk();
+	chunk->LOD = LOD;
 	chunk->ChunkX = ChunkX;
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningWorld = owningWorld;
@@ -129,15 +120,15 @@ void ChunkProvider::DeleteChunkAt(int ChunkX, int ChunkZ) {
 }
 
 //LODs checking
-std::unordered_map<glm::ivec2, SuperChunk*>& ChunkProvider::GetLODMap(uint8_t LOD) {
+std::unordered_map<glm::ivec2, Chunk*>& ChunkProvider::GetLODMap(uint8_t LOD) {
 	return LOD == 1 ? LOD1 : LOD == 2 ? LOD2 : LOD == 3 ? LOD3 : LOD4;
 }
 bool ChunkProvider::IsValidLOD(int ChunkX, int ChunkZ, uint8_t LOD) {
-	std::unordered_map<glm::ivec2, SuperChunk*>& MAP = GetLODMap(LOD);
+	std::unordered_map<glm::ivec2, Chunk*>& MAP = GetLODMap(LOD);
 	return MAP.find(glm::ivec2(ChunkX, ChunkZ)) != MAP.end(); //basically returns true if this LOD is loaded (keyword: LOADED!!!)
 }
-SuperChunk* ChunkProvider::LoadNewLOD(int ChunkX, int ChunkZ, uint8_t LOD) {
-	SuperChunk* chunk = new SuperChunk();
+Chunk* ChunkProvider::LoadNewLOD(int ChunkX, int ChunkZ, uint8_t LOD) {
+	Chunk* chunk = new Chunk;
 	chunk->ChunkX = ChunkX;
 	chunk->ChunkZ = ChunkZ;
 	chunk->owningWorld = owningWorld;
@@ -151,41 +142,5 @@ void ChunkProvider::populate(int ChunkX, int ChunkZ) {
 	if (!c->IsPopulated) {
 		c->IsPopulated = true;
 		pool.QueueJob({ChunkPop, c, owningWorld});
-	}
-}
-
-void ChunkProvider::LODGen() {
-	while (ThreadsRunning) {
-		SuperChunk* c;
-		{
-			std::unique_lock<std::mutex> lock(LODGenMutex);
-			LODGenCV.wait(lock, [this] {return !LODGenQueue.empty() || !ThreadsRunning; });
-
-			if (!ThreadsRunning) break;
-
-			c = LODGenQueue.front();
-			LODGenQueue.pop();
-		}
-		uint8_t LODSize = GetLODSize(c->LOD);
-		owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX * LODSize, c->ChunkZ * LODSize, c->LOD);
-		c->IsGenerated = true;
-		c->IsModified = true;
-	}
-}
-void ChunkProvider::LODMesh() {
-	while (ThreadsRunning) {
-		SuperChunk* c;
-		{
-			std::unique_lock<std::mutex> lock(LODMeshMutex);
-			LODMeshCV.wait(lock, [this] {return !LODMeshQueue.empty() || !ThreadsRunning; });
-
-			if (!ThreadsRunning) break;
-
-			c = LODMeshQueue.front();
-			LODMeshQueue.pop();
-		}
-
-		c->CreateSuperChunkMeshData();
-		c->IsMeshed = true;
 	}
 }

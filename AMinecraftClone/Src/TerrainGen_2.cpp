@@ -97,7 +97,7 @@ void TerrainGen_2::GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, u
     }
 }
 void TerrainGen_2::populate(int var2, int var3) {
-    /*Rand.setSeed((long)var2 * 318279123L + (long)var3 * 919871212L);
+    Rand.setSeed((long)var2 * 318279123L + (long)var3 * 919871212L);
     int var18 = var2 << 4;
     var2 = var3 << 4;
 
@@ -137,7 +137,7 @@ void TerrainGen_2::populate(int var2, int var3) {
     for (var4 = 0; var4 < var3; ++var4) {
         var5 = var18 + Rand.nextInt(16);
         var6 = var2 + Rand.nextInt(16);
-        int var8 = 64; //owningWorld->getHeightValue(var5, var6);
+        int var8 = owningWorld->getHeightValue(var5, var6);
         int var7 = var5 + 2;
         int var9 = var6 + 2;
         int var10 = Rand.nextInt(3) + 4;
@@ -162,7 +162,7 @@ void TerrainGen_2::populate(int var2, int var3) {
                     for (var15 = var9 - var13; var15 <= var9 + var13 && var11; ++var15) {
                         if (var12 >= 0 && var12 < 128) {
                             var16 = owningWorld->getBlockAt(var14, var12, var15);
-                            if (var16 != 0) {
+                            if (var16 != BlockType::Air) {
                                 var11 = false;
                             }
                         }
@@ -191,7 +191,7 @@ void TerrainGen_2::populate(int var2, int var3) {
 
                             for (var12 = var9 - var15; var12 <= var9 + var15; ++var12) {
                                 int var17 = var12 - var9;
-                                if ((std::abs(var21) != var15 || std::abs(var17) != var15 || Rand.nextInt(2) != 0 && var14 != 0) && Game::e_BlockRegistery[owningWorld->getBlockAt(var16, var22, var12)].visibility != BlockVisiblity::Opaque) {
+                                if ((std::abs(var21) != var15 || std::abs(var17) != var15 || Rand.nextInt(2) != 0 && var14 != 0) && Game::e_BlockRegistery[owningWorld->getBlockAt(var16, var22, var12)].visibility == BlockVisiblity::Opaque) {
                                     owningWorld->setBlockAt(var16, var22, var12, BlockType::Leaves);
                                 }
                             }
@@ -214,7 +214,7 @@ void TerrainGen_2::populate(int var2, int var3) {
         else {
             var23 = false;
         }
-    }*/
+    }
 }
 
 void TerrainGen_2::GenerateOre(int var3, int var4, int var5, BlockType type) {

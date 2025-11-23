@@ -118,10 +118,10 @@ void TerrainGen_3::populate(int var2, int var3) {
 		var15 = var4 + Rand.nextInt(16) + 8;
 		var16 = var5 + Rand.nextInt(16) + 8;
 		if(BigTrees) {
-			GenerateBigTree(Rand, var15, 65, var16);
+			GenerateBigTree(Rand, var15, owningWorld->getHeightValue(var15, var16), var16);
 		}
 		else { 
-			GenerateTree(Rand, var15, 65, var16); 
+			GenerateTree(Rand, var15, owningWorld->getHeightValue(var15, var16), var16);
 		}
 	}
 
