@@ -20,10 +20,10 @@ WorldManager::~WorldManager() {
 void WorldManager::ChunksStart(int CenterX, int CenterZ) {
 	//generate new chunks that aren't in render distance.
 	UpdateChunks(CenterX, CenterZ);
-	UpdateLODs(CenterX, CenterZ, 1);
-	UpdateLODs(CenterX, CenterZ, 2);
-	UpdateLODs(CenterX, CenterZ, 3);
-	UpdateLODs(CenterX, CenterZ, 4);
+	//UpdateLODs(CenterX, CenterZ, 1);
+	//UpdateLODs(CenterX, CenterZ, 2);
+	//UpdateLODs(CenterX, CenterZ, 3);
+	//UpdateLODs(CenterX, CenterZ, 4);
 }
 void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
 	//generate new chunks that aren't in render distance.

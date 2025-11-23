@@ -1,5 +1,6 @@
 #pragma once
 #include "Chunk.h"
+#include "ThreadPool.h"
 
 #include <unordered_map>
 #include <mutex>
@@ -62,24 +63,7 @@ private:
 
 	//threads
 	bool ThreadsRunning = false;
-
-	std::mutex ChunkGenMutex;
-	std::condition_variable ChunkGenCV;
-	std::queue<Chunk*> ChunkGenQueue;
-	std::thread ChunkGenThread;
-	void ChunkGen();
-
-	std::mutex ChunkPopMutex;
-	std::condition_variable ChunkPopCV;
-	std::queue<Chunk*> ChunkPopQueue;
-	std::thread ChunkPopThread;
-	void ChunkPop();
-
-	std::mutex ChunkMeshMutex;
-	std::condition_variable ChunkMeshCV;
-	std::queue<Chunk*> ChunkMeshQueue;
-	std::thread ChunkMeshThread;
-	void ChunkMesh();
+	ThreadPool pool;
 
 
 

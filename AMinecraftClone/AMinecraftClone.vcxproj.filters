@@ -181,6 +181,9 @@
     <ClCompile Include="Src\WorldManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\ThreadPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\NoiseGeneratorOctave3.h">
@@ -322,6 +325,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\WorldManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ThreadPool.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,13 +1,25 @@
 #include "ChunkProvider.h"
 #include "WorldManager.h"
 
-ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world) {
-	ThreadsRunning = true;
 
-	//start chunk threads
-	ChunkGenThread = std::thread(&ChunkProvider::ChunkGen, this);
-	ChunkPopThread = std::thread(&ChunkProvider::ChunkPop, this);
-	ChunkMeshThread = std::thread(&ChunkProvider::ChunkMesh, this);
+void ChunkGen(Chunk* c, WorldManager* owningWorld) {
+	owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX, c->ChunkZ, 0);
+	c->IsGenerated = true;
+}
+void ChunkPop(Chunk* c, WorldManager* owningWorld) {
+	owningWorld->GetChunkGenerator().Gen3.populate(c->ChunkX, c->ChunkZ);
+	c->IsModified = true;
+}
+void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
+	c->CreateChunkMeshData();
+	c->IsMeshed = true;
+}
+
+
+
+
+ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), pool(6) {
+	ThreadsRunning = true;
 
 	//start LOD threads
 	LODGenThread = std::thread(&ChunkProvider::LODGen, this);
@@ -20,14 +32,6 @@ ChunkProvider::~ChunkProvider() {
 	LODGenCV.notify_all();
 	LODMeshThread.join();
 	LODGenThread.join();
-
-	//stop chunk threads
-	ChunkMeshCV.notify_all();
-	ChunkPopCV.notify_all();
-	ChunkGenCV.notify_all();
-	ChunkMeshThread.join();
-	ChunkPopThread.join();
-	ChunkGenThread.join();
 }
 
 //the chunks public functions
@@ -41,20 +45,12 @@ Chunk* ChunkProvider::ProvideChunk(int ChunkX, int ChunkZ) {
 	chunks[glm::ivec2(ChunkX, ChunkZ)] = c;
 	c->CreateMeshObjects();
 
-	{
-		std::lock_guard<std::mutex> lock(ChunkGenMutex);
-		ChunkGenQueue.push(c);
-	}
-	ChunkGenCV.notify_one();
+	pool.QueueJob({ ChunkGen, c, owningWorld});
 
 	return c;
 }
 void ChunkProvider::MeshChunk(Chunk* c) {
-	{
-		std::lock_guard<std::mutex> lock(ChunkMeshMutex);
-		ChunkMeshQueue.push(c);
-	}
-	ChunkMeshCV.notify_one();
+	pool.QueueJob({ ChunkMesh, c, owningWorld });
 }
 void ChunkProvider::PopChunk(Chunk* c) {
 	int ChunkX = c->ChunkX;
@@ -154,64 +150,7 @@ void ChunkProvider::populate(int ChunkX, int ChunkZ) {
 	Chunk* c = ProvideChunk(ChunkX, ChunkZ);
 	if (!c->IsPopulated) {
 		c->IsPopulated = true;
-		{
-			std::lock_guard<std::mutex> lock(ChunkPopMutex);
-			ChunkPopQueue.push(c);
-		}
-		ChunkPopCV.notify_one();
-	}
-}
-
-
-
-void ChunkProvider::ChunkGen() {
-	while (ThreadsRunning) {
-		Chunk* c;
-		{
-			std::unique_lock<std::mutex> lock(ChunkGenMutex);
-			ChunkGenCV.wait(lock, [this] {return !ChunkGenQueue.empty() || !ThreadsRunning; });
-
-			if (!ThreadsRunning) break;
-
-			c = ChunkGenQueue.front();
-			ChunkGenQueue.pop();
-		}
-
-		owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX, c->ChunkZ, 0);
-		c->IsGenerated = true;
-	}
-}
-void ChunkProvider::ChunkPop() {
-	while (ThreadsRunning) {
-		Chunk* c;
-		{
-			std::unique_lock<std::mutex> lock(ChunkPopMutex);
-			ChunkPopCV.wait(lock, [this] {return !ChunkPopQueue.empty() || !ThreadsRunning; });
-
-			if (!ThreadsRunning) break;
-
-			c = ChunkPopQueue.front();
-			ChunkPopQueue.pop();
-		}
-		owningWorld->GetChunkGenerator().Gen3.populate(c->ChunkX, c->ChunkZ);
-		c->IsModified = true;
-	}
-}
-void ChunkProvider::ChunkMesh() {
-	while (ThreadsRunning) {
-		Chunk* c;
-		{
-			std::unique_lock<std::mutex> lock(ChunkMeshMutex);
-			ChunkMeshCV.wait(lock, [this] {return !ChunkMeshQueue.empty() || !ThreadsRunning; });
-
-			if (!ThreadsRunning) break;
-
-			c = ChunkMeshQueue.front();
-			ChunkMeshQueue.pop();
-		}
-
-		c->CreateChunkMeshData();
-		c->IsMeshed = true;
+		pool.QueueJob({ChunkPop, c, owningWorld});
 	}
 }
 
