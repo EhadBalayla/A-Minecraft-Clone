@@ -379,6 +379,17 @@ void Chunk::ChunkUpload() {
 
     meshData.transparentVerticies.clear();
     meshData.transparentIndicies.clear();
+
+    //deallocate all meshes
+    std::vector<Vertex>().swap(meshData.opaqueVerticies);
+    std::vector<Vertex>().swap(meshData.plantVerticies);
+    std::vector<Vertex>().swap(meshData.waterVerticies);
+    std::vector<Vertex>().swap(meshData.transparentVerticies);
+
+    std::vector<uint32_t>().swap(meshData.opaqueIndicies);
+    std::vector<uint32_t>().swap(meshData.plantIndicies);
+    std::vector<uint32_t>().swap(meshData.waterIndicies);
+    std::vector<uint32_t>().swap(meshData.transparentIndicies);
 }
 
 int GetLODSize(uint8_t LOD) {
@@ -555,8 +566,16 @@ void SuperChunk::ChunkUpload() {
 
     meshData.opaqueVerticies.clear();
     meshData.opaqueIndicies.clear();
+
     meshData.waterVerticies.clear();
     meshData.waterIndicies.clear();
+
+    //deallocate all meshes data
+    std::vector<Vertex>().swap(meshData.opaqueVerticies);
+    std::vector<Vertex>().swap(meshData.waterVerticies);
+
+    std::vector<uint32_t>().swap(meshData.opaqueIndicies);
+    std::vector<uint32_t>().swap(meshData.waterIndicies);
 }
 
 void SuperChunk::CreateMeshObjects() {
