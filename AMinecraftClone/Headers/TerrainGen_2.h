@@ -10,7 +10,7 @@ public:
 
 	//generates infdev 2010-03-27 terrain
 	void GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD);
-	void populate(int ChunkX, int ChunkZ);
+	void populate(int ChunkX, int ChunkZ, uint8_t LOD);
 private:
 	WorldManager* owningWorld = nullptr;
 	long randomSeed;
@@ -22,6 +22,6 @@ private:
 	NoiseGeneratorOctave2 noiseGen3;
 	NoiseGeneratorOctave2 mobSpawnerNoise;
 
-	void GenerateOre(int X, int Y, int Z, BlockType type);
+	void GenerateOre(int X, int Y, int Z, BlockType type, uint8_t LOD);
 };
 

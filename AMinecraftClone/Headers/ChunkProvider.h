@@ -34,6 +34,7 @@ public:
 
 	void QueueChunkForDeletion(Chunk* c);
 	void FlushDeletionQueue();
+	void DeleteAllChunks();
 private:
 	//all the caches
 	std::unordered_map<glm::ivec2, Chunk*> LOD0;
@@ -47,9 +48,6 @@ private:
 	//the chunks validation functions
 	bool IsValidChunk(int ChunkX, int ChunkZ, uint8_t LOD);
 	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD);
-
-	//small helpers
-	void populate(int ChunkX, int ChunkZ);
 
 	//threads
 	ThreadPool pool;

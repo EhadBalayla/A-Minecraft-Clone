@@ -96,7 +96,9 @@ void TerrainGen_2::GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, u
         }
     }
 }
-void TerrainGen_2::populate(int var2, int var3) {
+void TerrainGen_2::populate(int var2, int var3, uint8_t LOD) {
+    if (LOD != 0) return;
+
     Rand.setSeed((long)var2 * 318279123L + (long)var3 * 919871212L);
     int var18 = var2 << 4;
     var2 = var3 << 4;
@@ -108,28 +110,28 @@ void TerrainGen_2::populate(int var2, int var3) {
         var4 = var18 + Rand.nextInt(16);
         var5 = Rand.nextInt(128);
         var6 = var2 + Rand.nextInt(16);
-        GenerateOre(var4, var5, var6, BlockType::CoalOre);
+        GenerateOre(var4, var5, var6, BlockType::CoalOre, LOD);
     }
 
     for (var3 = 0; var3 < 10; ++var3) {
         var4 = var18 + Rand.nextInt(16);
         var5 = Rand.nextInt(64);
         var6 = var2 + Rand.nextInt(16);
-        GenerateOre(var4, var5, var6, BlockType::IronOre);
+        GenerateOre(var4, var5, var6, BlockType::IronOre, LOD);
     }
 
     if (Rand.nextInt(2) == 0) {
         var3 = var18 + Rand.nextInt(16);
         var4 = Rand.nextInt(32);
         var5 = var2 + Rand.nextInt(16);
-        GenerateOre(var4, var5, var6, BlockType::GoldOre);
+        GenerateOre(var4, var5, var6, BlockType::GoldOre, LOD);
     }
 
     if (Rand.nextInt(8) == 0) {
         var3 = var18 + Rand.nextInt(16);
         var4 = Rand.nextInt(16);
         var5 = var2 + Rand.nextInt(16);
-        GenerateOre(var4, var5, var6, BlockType::DiamondOre);
+        GenerateOre(var4, var5, var6, BlockType::DiamondOre, LOD);
     }
 
     var3 = (int)mobSpawnerNoise.noiseGenerator((double)var18 * 0.25, (double)var2 * 0.25) << 3;
@@ -161,7 +163,7 @@ void TerrainGen_2::populate(int var2, int var3) {
                 for (var14 = var7 - var13; var14 <= var7 + var13 && var11; ++var14) {
                     for (var15 = var9 - var13; var15 <= var9 + var13 && var11; ++var15) {
                         if (var12 >= 0 && var12 < 128) {
-                            var16 = owningWorld->getBlockAt(var14, var12, var15);
+                            var16 = owningWorld->getBlockAtLOD(var14, var12, var15, LOD);
                             if (var16 != BlockType::Air) {
                                 var11 = false;
                             }
@@ -177,9 +179,9 @@ void TerrainGen_2::populate(int var2, int var3) {
                 var23 = false;
             }
             else {
-                var12 = owningWorld->getBlockAt(var7, var8 - 1, var9);
+                var12 = owningWorld->getBlockAtLOD(var7, var8 - 1, var9, LOD);
                 if ((var12 == BlockType::Grass || var12 == BlockType::Dirt) && var8 < 128 - var10 - 1) {
-                    owningWorld->setBlockAt(var7, var8 - 1, var9, BlockType::Dirt);
+                    owningWorld->setBlockAtLOD(var7, var8 - 1, var9, BlockType::Dirt, LOD);
 
                     int var22;
                     for (var22 = var8 - 3 + var10; var22 <= var8 + var10; ++var22) {
@@ -191,16 +193,16 @@ void TerrainGen_2::populate(int var2, int var3) {
 
                             for (var12 = var9 - var15; var12 <= var9 + var15; ++var12) {
                                 int var17 = var12 - var9;
-                                if ((std::abs(var21) != var15 || std::abs(var17) != var15 || Rand.nextInt(2) != 0 && var14 != 0) && Game::e_BlockRegistery[owningWorld->getBlockAt(var16, var22, var12)].visibility == BlockVisiblity::Opaque) {
-                                    owningWorld->setBlockAt(var16, var22, var12, BlockType::Leaves);
+                                if ((std::abs(var21) != var15 || std::abs(var17) != var15 || Rand.nextInt(2) != 0 && var14 != 0) && Game::e_BlockRegistery[owningWorld->getBlockAtLOD(var16, var22, var12, LOD)].visibility == BlockVisiblity::Opaque) {
+                                    owningWorld->setBlockAtLOD(var16, var22, var12, BlockType::Leaves, LOD);
                                 }
                             }
                         }
                     }
 
                     for (var22 = 0; var22 < var10; ++var22) {
-                        if (!Game::e_BlockRegistery[owningWorld->getBlockAt(var7, var8 + var22, var9)].visibility != BlockVisiblity::Opaque) {
-                            owningWorld->setBlockAt(var7, var8 + var22, var9, BlockType::Wood);
+                        if (!Game::e_BlockRegistery[owningWorld->getBlockAtLOD(var7, var8 + var22, var9, LOD)].visibility != BlockVisiblity::Opaque) {
+                            owningWorld->setBlockAtLOD(var7, var8 + var22, var9, BlockType::Wood, LOD);
                         }
                     }
 
@@ -217,7 +219,7 @@ void TerrainGen_2::populate(int var2, int var3) {
     }
 }
 
-void TerrainGen_2::GenerateOre(int var3, int var4, int var5, BlockType type) {
+void TerrainGen_2::GenerateOre(int var3, int var4, int var5, BlockType type, uint8_t LOD) {
     float var6 = Rand.nextFloat() * (float)PI;
     double var7 = (double)((float)(var3 + 8) + MathHelper::sin(var6) * 2.0F);
     double var9 = (double)((float)(var3 + 8) - MathHelper::sin(var6) * 2.0F);
@@ -240,8 +242,8 @@ void TerrainGen_2::GenerateOre(int var3, int var4, int var5, BlockType type) {
                     double var35 = ((double)var4 + 0.5 - var20) / (var28 / 2.0);
                     double var37 = ((double)var5 + 0.5 - var22) / (var30 / 2.0);
                     double var39 = ((double)var41 + 0.5 - var24) / (var28 / 2.0);
-                    if (var35 * var35 + var37 * var37 + var39 * var39 < 1.0 && owningWorld->getBlockAt(var4, var5, var41) == BlockType::Stone) {
-                        owningWorld->setBlockAt(var4, var5, var41, type);
+                    if (var35 * var35 + var37 * var37 + var39 * var39 < 1.0 && owningWorld->getBlockAtLOD(var4, var5, var41, LOD) == BlockType::Stone) {
+                        owningWorld->setBlockAtLOD(var4, var5, var41, type, LOD);
                     }
                 }
             }

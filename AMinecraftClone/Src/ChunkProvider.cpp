@@ -8,10 +8,9 @@ void ChunkGen(Chunk* c, WorldManager* owningWorld) {
 	owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
 	c->GenerateHeightMap();
 	c->IsGenerated = true;
-	if (c->LOD > 0) c->IsModified = true;
 }
 void ChunkPop(Chunk* c, WorldManager* owningWorld) {
-	owningWorld->GetChunkGenerator().Gen2.populate(c->ChunkX, c->ChunkZ);
+	owningWorld->GetChunkGenerator().Gen2.populate(c->ChunkX, c->ChunkZ, c->LOD);
 	c->IsModified = true;
 }
 void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
@@ -24,6 +23,7 @@ void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
 ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), pool(15) {
 }
 ChunkProvider::~ChunkProvider() {
+	DeleteAllChunks();
 }
 
 //the chunks public functions
@@ -49,7 +49,8 @@ void ChunkProvider::PopChunk(Chunk* c) {
 	int ChunkZ = c->ChunkZ;
 
 	if (!c->IsPopulated && IsValidChunk(ChunkX + 1, ChunkZ + 1, c->LOD) && IsValidChunk(ChunkX, ChunkZ + 1, c->LOD) && IsValidChunk(ChunkX + 1, ChunkZ, c->LOD)) {
-		populate(ChunkX, ChunkZ);
+		c->IsPopulated = true;
+		pool.QueueJob({ ChunkPop, c, owningWorld });
 	}
 }
 bool ChunkProvider::HasAllNeighbors(Chunk* c) {
@@ -91,6 +92,17 @@ void ChunkProvider::FlushDeletionQueue() {
 		it++;
 	}
 }
+void ChunkProvider::DeleteAllChunks() {
+	for (int i = 0; i < 5; i++) {
+		auto& map = GetAllChunks(i);
+		for (auto& pair : map) {
+			Chunk* c = pair.second;
+			c->DeleteMeshObjects();
+			delete c;
+		}
+		map.clear();
+	}
+}
 
 
 
@@ -107,12 +119,4 @@ Chunk* ChunkProvider::LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 	chunk->owningWorld = owningWorld;
 
 	return chunk;
-}
-
-void ChunkProvider::populate(int ChunkX, int ChunkZ) {
-	Chunk* c = ProvideChunk(ChunkX, ChunkZ, 0);
-	if (!c->IsPopulated) {
-		c->IsPopulated = true;
-		pool.QueueJob({ChunkPop, c, owningWorld});
-	}
 }

@@ -40,30 +40,15 @@ void WorldManager::UpdateChunks(int CenterX, int CenterZ, uint8_t LOD) {
 	}
 }
 void WorldManager::WorldUpdate(float DeltaTime) {
-	//chunkProvider.FlushDeletionQueue();
+	chunkProvider.FlushDeletionQueue();
 
-	for (auto& pair : chunkProvider.GetAllChunks(0)) {
-		Chunk* c = pair.second;
-
-		if (c->IsGenerated) {
-			chunkProvider.PopChunk(c);
-		}
-		if (c->IsModified) {
-			c->IsModified = false;
-			chunkProvider.MeshChunk(c);
-		}
-		if (c->IsMeshed) {
-			c->ChunkUpload();
-			c->IsMeshed = false;
-			c->IsRenderReady = true;
-		}
-	}
-
-
-	for (int i = 1; i <= 4; i++) {
+	for (int i = 0; i <= 4; i++) {
 		for (auto& pair : chunkProvider.GetAllChunks(i)) {
 			Chunk* c = pair.second;
 
+			if (c->IsGenerated && !c->IsPopulated) {
+				chunkProvider.PopChunk(c);
+			}
 			if (c->IsModified) {
 				c->IsModified = false;
 				chunkProvider.MeshChunk(c);
@@ -104,9 +89,9 @@ void WorldManager::RenderWorld() {
 				if (c->HasTransparent) c->RenderTransparent();
 			}
 		}
-		/*else {
+		else {
 			chunkProvider.QueueChunkForDeletion(c);
-		}*/
+		}
 	}
 
 	for (int i = 1; i <= 4; i++) {
@@ -121,9 +106,9 @@ void WorldManager::RenderWorld() {
 					if (c->HasTransparent) c->RenderTransparent();
 				}
 			}
-			/*if (!IsChunkInRenderDistance(c)) {
+			if (!IsChunkInRenderDistance(c)) {
 				chunkProvider.QueueChunkForDeletion(c);
-			}*/
+			}
 		}
 	}
 }
@@ -145,6 +130,40 @@ void WorldManager::setBlockAt(int x, int y, int z, BlockType type) {
 
 	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
 	chunk->m_Blocks[IndexAt(x % 16, y, z % 16)] = type;
+}
+BlockType WorldManager::getBlockAtLOD(int x, int y, int z, uint8_t LOD) {
+	if (y > 127 || y < 0) return BlockType::Air;
+	
+	int LODFactor = GetLODSize(LOD);
+
+	int chunkSize = 16 * LODFactor;
+	int relativeX = (x % chunkSize + chunkSize) % chunkSize;
+	int relativeZ = (z % chunkSize + chunkSize) % chunkSize;
+
+	//if (relativeX % LODFactor != 0 || relativeZ % LODFactor != 0 || y % LODFactor != 0) return BlockType::Air;
+
+	int cx = (x < 0 ? (x - (chunkSize - 1)) : x) / chunkSize;
+	int cz = (z < 0 ? (z - (chunkSize - 1)) : z) / chunkSize;
+
+	Chunk* c = chunkProvider.ProvideChunk(cx, cz, LOD);
+	return c->m_Blocks[IndexAt(relativeX / LODFactor, y, relativeZ / LODFactor)];
+}
+void WorldManager::setBlockAtLOD(int x, int y, int z, BlockType type, uint8_t LOD) {
+	if (y > 127 || y < 0) return;
+
+	int LODFactor = GetLODSize(LOD);
+
+	int chunkSize = 16 * LODFactor;
+	int relativeX = (x % chunkSize + chunkSize) % chunkSize;
+	int relativeZ = (z % chunkSize + chunkSize) % chunkSize;
+
+	if (relativeX % LODFactor != 0 || relativeZ % LODFactor != 0 || y % LODFactor != 0) return;
+
+	int cx = (x < 0 ? (x - (chunkSize - 1)) : x) / chunkSize;
+	int cz = (z < 0 ? (z - (chunkSize - 1)) : z) / chunkSize;
+
+	Chunk* c = chunkProvider.ProvideChunk(cx, cz, LOD);
+	c->m_Blocks[IndexAt(relativeX / LODFactor, y, relativeZ / LODFactor)] = type;
 }
 int WorldManager::getHeightValue(int x, int z) {
 	return chunkProvider.ProvideChunk(x / 16, z / 16, 0)->GetHeightValue(x % 16, z % 16);

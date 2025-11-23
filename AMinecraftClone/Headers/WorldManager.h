@@ -21,6 +21,8 @@ public:
 	//block helpers
 	BlockType getBlockAt(int x, int y, int z);
 	void setBlockAt(int x, int y, int z, BlockType type);
+	BlockType getBlockAtLOD(int x, int y, int z, uint8_t LOD);
+	void setBlockAtLOD(int x, int y, int z, BlockType, uint8_t LOD);
 	int getHeightValue(int x, int z);
 	bool IsSolidBlock(int x, int y, int z);
 	void PlaceBlock(int x, int y, int z, BlockType type);
