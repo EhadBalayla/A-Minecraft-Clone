@@ -3,10 +3,7 @@
 #include "ThreadPool.h"
 
 #include <unordered_map>
-#include <mutex>
-#include <thread>
-#include <condition_variable>
-#include <queue>
+#include <unordered_set>
 
 namespace std {
 	template<>
@@ -29,33 +26,27 @@ public:
 	WorldManager* owningWorld;
 
 	//chunk related publics
-	Chunk* ProvideChunk(int ChunkX, int ChunkZ);
+	Chunk* ProvideChunk(int ChunkX, int ChunkZ, uint8_t LOD);
 	void MeshChunk(Chunk* c);
 	void PopChunk(Chunk* c);
 	bool HasAllNeighbors(Chunk* c);
-	std::unordered_map<glm::ivec2, Chunk*>& GetAllChunks();
+	std::unordered_map<glm::ivec2, Chunk*>& GetAllChunks(uint8_t LOD);
 
-	//LOD related publics
-	Chunk* ProvideLOD(int ChunkX, int Chunkz, uint8_t LOD);
-	void MeshLOD(Chunk* c);
-	std::unordered_map<glm::ivec2, Chunk*>& GetAllLODs(uint8_t LOD);
+	void QueueChunkForDeletion(Chunk* c);
+	void FlushDeletionQueue();
 private:
 	//all the caches
-	std::unordered_map<glm::ivec2, Chunk*> chunks;
+	std::unordered_map<glm::ivec2, Chunk*> LOD0;
 	std::unordered_map<glm::ivec2, Chunk*> LOD1;
 	std::unordered_map<glm::ivec2, Chunk*> LOD2;
 	std::unordered_map<glm::ivec2, Chunk*> LOD3;
 	std::unordered_map<glm::ivec2, Chunk*> LOD4;
 
-	//the chunks validation functions
-	bool IsValidChunk(int ChunkX, int ChunkZ);
-	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD);
-	void DeleteChunkAt(int ChunkX, int ChunkZ);
+	std::unordered_set<Chunk*> deletionQueue;
 
-	//the LOD validation functions
-	std::unordered_map<glm::ivec2, Chunk*>& GetLODMap(uint8_t LOD);
-	bool IsValidLOD(int ChunkX, int ChunkZ, uint8_t LOD);
-	Chunk* LoadNewLOD(int ChunkX, int ChunkZ, uint8_t LOD);
+	//the chunks validation functions
+	bool IsValidChunk(int ChunkX, int ChunkZ, uint8_t LOD);
+	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD);
 
 	//small helpers
 	void populate(int ChunkX, int ChunkZ);

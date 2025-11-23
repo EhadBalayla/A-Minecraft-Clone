@@ -3,6 +3,8 @@
 #include "Game.h"
 #include <algorithm>
 
+#include "Utilities.h"
+
 float squaredDistance(const glm::vec2& p1, const glm::vec2& p2) {
 	float dx = p2.x - p1.x;
 	float dy = p2.y - p1.y;
@@ -19,44 +21,34 @@ WorldManager::~WorldManager() {
 
 void WorldManager::ChunksStart(int CenterX, int CenterZ) {
 	//generate new chunks that aren't in render distance.
-	UpdateChunks(CenterX, CenterZ);
-	UpdateLODs(CenterX, CenterZ, 1);
-	UpdateLODs(CenterX, CenterZ, 2);
-	UpdateLODs(CenterX, CenterZ, 3);
-	UpdateLODs(CenterX, CenterZ, 4);
+	UpdateChunks(CenterX, CenterZ, 0);
+	UpdateChunks(CenterX, CenterZ, 1);
+	UpdateChunks(CenterX, CenterZ, 2);
+	UpdateChunks(CenterX, CenterZ, 3);
+	UpdateChunks(CenterX, CenterZ, 4);
 }
-void WorldManager::UpdateChunks(int CenterX, int CenterZ) {
+void WorldManager::UpdateChunks(int CenterX, int CenterZ, uint8_t LOD) {
 	//generate new chunks that aren't in render distance.
 	for (int r = 0; r <= Game::RenderDistance; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
 			for (int dz = -r; dz <= r; ++dz) {
 				if (dx != r && dz != r && dx != -r && dz != -r) continue;
 
-				chunkProvider.ProvideChunk(CenterX + dx, CenterZ + dz);
-			}
-		}
-	}
-}
-void WorldManager::UpdateLODs(int CenterLODX, int CenterLODZ, uint8_t LOD) {
-	// Generate new LOD chunks at the edges
-	for (int r = 0; r <= Game::RenderDistance; ++r) {
-		for (int dx = -r; dx <= r; ++dx) {
-			for (int dz = -r; dz <= r; ++dz) {
-				if (dx != r && dz != r && dx != -r && dz != -r) continue;
-
-				chunkProvider.ProvideLOD(CenterLODX + dx, CenterLODZ + dz, LOD);
+				chunkProvider.ProvideChunk(CenterX + dx, CenterZ + dz, LOD);
 			}
 		}
 	}
 }
 void WorldManager::WorldUpdate(float DeltaTime) {
-	for (auto& pair : chunkProvider.GetAllChunks()) {
+	//chunkProvider.FlushDeletionQueue();
+
+	for (auto& pair : chunkProvider.GetAllChunks(0)) {
 		Chunk* c = pair.second;
 
 		if (c->IsGenerated) {
 			chunkProvider.PopChunk(c);
 		}
-		if (c->IsModified/* && chunkProvider.HasAllNeighbors(c) */ ) {
+		if (c->IsModified) {
 			c->IsModified = false;
 			chunkProvider.MeshChunk(c);
 		}
@@ -69,12 +61,12 @@ void WorldManager::WorldUpdate(float DeltaTime) {
 
 
 	for (int i = 1; i <= 4; i++) {
-		for (auto& pair : chunkProvider.GetAllLODs(i)) {
+		for (auto& pair : chunkProvider.GetAllChunks(i)) {
 			Chunk* c = pair.second;
 
 			if (c->IsModified) {
 				c->IsModified = false;
-				chunkProvider.MeshLOD(c);
+				chunkProvider.MeshChunk(c);
 			}
 			if (c->IsMeshed) {
 				c->ChunkUpload();
@@ -85,16 +77,7 @@ void WorldManager::WorldUpdate(float DeltaTime) {
 	}
 }
 
-bool IsChunkInRenderDistance(Chunk* c) {
-	glm::ivec2 PlayerCoords = Game::player.GetCurrentChunkCoords();
-
-	int x = std::abs(c->ChunkX - PlayerCoords.x);
-	int z = std::abs(c->ChunkZ - PlayerCoords.y);
-
-	if (x <= Game::RenderDistance && z <= Game::RenderDistance) return true;
-	return false;
-}
-bool IsLODInRenderDistance(Chunk* c) {
+bool IsLODInRenderDistance(Chunk* c) { //specifically for LOD chunks to check if they are in the are of the previous LOD level
 	glm::ivec2 PlayerCoords = Game::player.GetCurrentChunkCoords(); //the coords of the player in LOD0 space
 	
 	//converting the player's coords from LOD0 to the coords of the LOD
@@ -111,7 +94,7 @@ bool IsLODInRenderDistance(Chunk* c) {
 void WorldManager::RenderWorld() {
 	Game::e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
 
-	for (auto& pair : chunkProvider.GetAllChunks()) {
+	for (auto& pair : chunkProvider.GetAllChunks(0)) {
 		Chunk* c = pair.second;
 		if (IsChunkInRenderDistance(c)) {
 			if (c->IsRenderReady) {
@@ -121,10 +104,13 @@ void WorldManager::RenderWorld() {
 				if (c->HasTransparent) c->RenderTransparent();
 			}
 		}
+		/*else {
+			chunkProvider.QueueChunkForDeletion(c);
+		}*/
 	}
 
 	for (int i = 1; i <= 4; i++) {
-		for (auto& pair : chunkProvider.GetAllLODs(i)) {
+		for (auto& pair : chunkProvider.GetAllChunks(i)) {
 			Chunk* c = pair.second;
 
 			if (IsLODInRenderDistance(c)) {
@@ -135,6 +121,9 @@ void WorldManager::RenderWorld() {
 					if (c->HasTransparent) c->RenderTransparent();
 				}
 			}
+			/*if (!IsChunkInRenderDistance(c)) {
+				chunkProvider.QueueChunkForDeletion(c);
+			}*/
 		}
 	}
 }
@@ -148,29 +137,29 @@ ChunkProvider& WorldManager::GetChunkProvider() {
 BlockType WorldManager::getBlockAt(int x, int y, int z) { //coordinates are in world space
 	if (y > 127 || y < 0) return BlockType::Air;
 
-	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16);
+	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
 	return chunk->m_Blocks[IndexAt(x % 16, y, z % 16)];
 }
 void WorldManager::setBlockAt(int x, int y, int z, BlockType type) {
 	if (y > 127 || y < 0) return;
 
-	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16);
+	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
 	chunk->m_Blocks[IndexAt(x % 16, y, z % 16)] = type;
 }
 int WorldManager::getHeightValue(int x, int z) {
-	return chunkProvider.ProvideChunk(x / 16, z / 16)->GetHeightValue(x % 16, z % 16);
+	return chunkProvider.ProvideChunk(x / 16, z / 16, 0)->GetHeightValue(x % 16, z % 16);
 }
 bool WorldManager::IsSolidBlock(int x, int y, int z) { //coordinates are in world space
-	BlockType type = chunkProvider.ProvideChunk(x / 16, z / 16)->m_Blocks[IndexAt(x % 16, y, z % 16)];
+	BlockType type = chunkProvider.ProvideChunk(x / 16, z / 16, 0)->m_Blocks[IndexAt(x % 16, y, z % 16)];
 	return (Game::e_BlockRegistery[type].visibility == BlockVisiblity::Opaque || Game::e_BlockRegistery[type].visibility == BlockVisiblity::Transparent) && type != BlockType::Air;
 }
 void WorldManager::PlaceBlock(int x, int y, int z, BlockType type) { //coordinates are in world space
 	setBlockAt(x, y, z, type);
-	Chunk* c = chunkProvider.ProvideChunk(x / 16, z / 16);
+	Chunk* c = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
 	c->IsModified = true;
 }
 void WorldManager::BreakBlock(int x, int y, int z) {
 	setBlockAt(x, y, z, BlockType::Air);
-	Chunk* c = chunkProvider.ProvideChunk(x / 16, z / 16);
+	Chunk* c = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
 	c->IsModified = true;
 }

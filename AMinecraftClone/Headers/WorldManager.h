@@ -14,8 +14,7 @@ public:
 	~WorldManager();
 
 	void ChunksStart(int CenterX, int CenterZ); //performs world startup operations for chunks
-	void UpdateChunks(int CenterX, int CenterZ); //basically called for when the player switches a chunk
-	void UpdateLODs(int CenterX, int CenterZ, uint8_t LOD);
+	void UpdateChunks(int CenterX, int CenterZ, uint8_t LOD); //basically called for when the player switches a chunk
 	void WorldUpdate(float DeltaTime);
 	void RenderWorld();
 

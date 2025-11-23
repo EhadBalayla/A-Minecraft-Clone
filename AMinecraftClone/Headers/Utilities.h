@@ -18,3 +18,5 @@ namespace Utils {
 	Ray shootRay(glm::vec3 origin, glm::vec3 direction, float distance);
 	RayHitReturnParams RayHitBlock(Ray& ray, float steps = 0.05f); //for simple stuff like block detection the ray doesn't need to be accurate, but for accurate block detection such as returning which face hit then yeah the parameter is there
 }
+
+bool IsChunkInRenderDistance(Chunk* c); //generalized for all chunks
