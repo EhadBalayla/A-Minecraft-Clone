@@ -35,6 +35,9 @@
     <Filter Include="Source Files\TerrainGenerators">
       <UniqueIdentifier>{5a5835fb-d7ee-4f03-a12b-59ae8812bb14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{59723cca-1e25-4d8c-9d71-14508c29427d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\NoiseGeneratorPerlin3.cpp">
@@ -184,6 +187,30 @@
     <ClCompile Include="Src\ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\DebugUIManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\backends\imgui_impl_opengl3.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\backends\imgui_impl_sdl2.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\NoiseGeneratorOctave3.h">
@@ -328,6 +355,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\ThreadPool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\DebugUIManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

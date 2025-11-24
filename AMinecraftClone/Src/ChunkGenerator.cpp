@@ -9,7 +9,7 @@ long getCurrentTimeAsLong() {
     return static_cast<long>(currentTime); // Cast time_t to long
 }
 
-ChunkGenerator::ChunkGenerator(WorldManager* world) : Gen1(69420L), Gen2(getCurrentTimeAsLong(), world), Gen3(69420L, world) {
+ChunkGenerator::ChunkGenerator(WorldManager* world) : Gen1(69420L, world), Gen2(getCurrentTimeAsLong(), world), Gen3(69420L, world) {
 
 }
 ChunkGenerator::~ChunkGenerator() {

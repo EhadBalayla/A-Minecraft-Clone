@@ -97,7 +97,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;$(ProjectDir)ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -115,7 +115,9 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;$(ProjectDir)ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +135,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;$(ProjectDir)ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +153,9 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>Default</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers;$(ProjectDir)Includes\SDL2;$(ProjectDir)ThirdParty;$(ProjectDir)ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,6 +167,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ImGui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="ImGui\backends\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="ImGui\imgui.cpp" />
+    <ClCompile Include="ImGui\imgui_demo.cpp" />
+    <ClCompile Include="ImGui\imgui_draw.cpp" />
+    <ClCompile Include="ImGui\imgui_tables.cpp" />
+    <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Src\AABB.cpp" />
     <ClCompile Include="Src\AudioManager.cpp" />
     <ClCompile Include="Src\Block.cpp" />
@@ -173,6 +184,7 @@
     <ClCompile Include="Src\ChunkProvider.cpp" />
     <ClCompile Include="Src\CombinedNoise.cpp" />
     <ClCompile Include="Src\DebugRenderer.cpp" />
+    <ClCompile Include="Src\DebugUIManager.cpp" />
     <ClCompile Include="Src\Entity.cpp" />
     <ClCompile Include="Src\Game.cpp" />
     <ClCompile Include="Src\glad.c" />
@@ -224,6 +236,7 @@
     <ClInclude Include="Headers\ChunkProvider.h" />
     <ClInclude Include="Headers\CombinedNoise.h" />
     <ClInclude Include="Headers\DebugRenderer.h" />
+    <ClInclude Include="Headers\DebugUIManager.h" />
     <ClInclude Include="Headers\Entity.h" />
     <ClInclude Include="Headers\Game.h" />
     <ClInclude Include="Headers\InventoryItem.h" />

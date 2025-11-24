@@ -140,27 +140,8 @@ bool Player::CanPerformAbility() {
 
 void Player::ProcessInput(SDL_Event& e) {
     if (e.type == SDL_KEYDOWN) { //non real time keybinds for example when pressing T for chat
-        if (e.key.keysym.sym == SDLK_t) { //for opening chat
-            std::cout << "Type X: ";
-            int x;
-            std::cin >> x;
-            std::cout << std::endl;
-            std::cout << "Type Y: ";
-            int y;
-            std::cin >> y;
-            std::cout << std::endl;
-            std::cout << "Type Z: ";
-            int z;
-            std::cin >> z;
-            std::cout << std::endl;
-
-            SetPosition(x, y, z);
-        }
-        else if (e.key.keysym.sym == SDLK_c) { //for jumping
+        if (e.key.keysym.sym == SDLK_c) { //for jumping
             CreativeMode = !CreativeMode;
-        }
-        else if (e.key.keysym.sym == SDLK_b) { //for jumping
-            ShouldUpdateChunks = !ShouldUpdateChunks;
         }
         else if (e.key.keysym.sym == SDLK_ESCAPE) {
             if (!m_PauseMenu) {
@@ -176,6 +157,9 @@ void Player::ProcessInput(SDL_Event& e) {
                 SDL_ShowCursor(0);
                 SDL_SetRelativeMouseMode(SDL_TRUE);
             }
+        }
+        else if (e.key.keysym.sym == SDLK_F3) {
+            Game::ShowDebugMenu = !Game::ShowDebugMenu;
         }
         else if (e.key.keysym.sym == SDLK_e) { //for opening inventory
             if (!inventory) {

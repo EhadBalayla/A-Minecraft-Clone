@@ -8,6 +8,8 @@
 #include "PlayerHUDScreen.h"
 #include "MainMenuScreen.h"
 
+#include "backends/imgui_impl_sdl2.h"
+
 Window Game::e_Window;
 Shader Game::e_OpaqueShader;
 Shader Game::e_PlantsShader;
@@ -31,7 +33,8 @@ GameState Game::state = GameState::MainMenu;
 GameState Game::lastState = GameState::MainMenu;
 unsigned int Game::tempVAO;
 DebugRenderer Game::m_DebugRenderer;
-
+DebugUIManager Game::m_DebugUI;
+bool Game::ShowDebugMenu = true;
 
 void Game::Init() {
 	e_Window.Init();
@@ -50,7 +53,7 @@ void Game::Init() {
 	glGenVertexArrays(1, &tempVAO);
 
 	Proj = glm::mat4(1.0f);
-	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 50000.0f);
+	Proj = glm::perspective(glm::radians(70.0f), 1920.0f / 1080.0f, 0.1f, 50000.0f);
 
 	m_UIManager.Init();
 	m_AudioManager.Init();
@@ -59,6 +62,8 @@ void Game::Init() {
 	LoadAllTextures();
 	RegisterAllBlocks();
 	RegisterAllItems();
+
+	m_DebugUI.Init();
 }
 void Game::GameLoop() {
 
@@ -105,6 +110,7 @@ void Game::GameLoop() {
 				if (event.type == SDL_QUIT) {
 					CloseGame(); //quit
 				}
+				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 
 			player.Update(deltaTime);
@@ -116,6 +122,8 @@ void Game::GameLoop() {
 			level->RenderLevel();
 
 			m_DebugRenderer.DrawChunkBoundaries();
+
+			if(ShowDebugMenu) m_DebugUI.Render(deltaTime);
 
 			break;
 		}
@@ -133,6 +141,8 @@ void Game::GameLoop() {
 }
 // terminates all engines for the game when the game closes and unloads every cached object
 void Game::Terminate() {
+	m_DebugUI.Terminate();
+
 	UnloadAllTextures();
 	m_AudioManager.Terminate();
 	e_Window.Termintate();

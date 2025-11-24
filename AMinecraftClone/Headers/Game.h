@@ -12,6 +12,7 @@
 #include "Item.h"
 #include "AudioManager.h"
 #include "DebugRenderer.h"
+#include "DebugUIManager.h"
 
 enum class GameState {
 	MainMenu,
@@ -26,6 +27,7 @@ public:
 	static UIManager m_UIManager;
 	static AudioManager m_AudioManager;
 	static DebugRenderer m_DebugRenderer;
+	static DebugUIManager m_DebugUI;
 
 	
 	static Shader e_OpaqueShader;
@@ -37,6 +39,7 @@ public:
 	static unsigned int tempVAO; //temporary vao for stuff that have hardcoded shaders
 
 	static bool ShowChunkBorder;
+	static bool ShowDebugMenu;
 	
 	
 	static std::vector<Model*> e_LoadedModels;

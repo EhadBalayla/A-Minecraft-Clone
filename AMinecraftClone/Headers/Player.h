@@ -27,6 +27,8 @@ public:
 	void UpdateChunksAroundPlayer(); //for infinite render distance
 
 	glm::ivec2 GetCurrentChunkCoords();
+
+	bool CreativeMode = true;
 private:
 	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
 	glm::vec3 getCameraPosition(); //returns the camera position
@@ -65,7 +67,6 @@ private:
 	void PlayerPlaceBlocks();
 
 
-	bool CreativeMode = true;
 	bool ShouldUpdateChunks = true;
 	const float CreativeSpeed = 0.1f;
 };
