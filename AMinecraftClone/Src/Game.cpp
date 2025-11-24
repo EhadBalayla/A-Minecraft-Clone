@@ -36,7 +36,16 @@ DebugRenderer Game::m_DebugRenderer;
 DebugUIManager Game::m_DebugUI;
 bool Game::ShowDebugMenu = true;
 
+#ifdef _WIN32
+
+#include <Windows.h>
+
+#endif
+
 void Game::Init() {
+#ifdef _WIN32
+	FreeConsole();
+#endif
 	e_Window.Init();
 	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 		std::cerr << "Failed to initialize GLAD" << std::endl;

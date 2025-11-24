@@ -1,8 +1,6 @@
 #include "UIManager.h"
 
-#ifdef __linux__
 #include <Algorithm>
-#endif
 
 
 void UIManager::Init() {
