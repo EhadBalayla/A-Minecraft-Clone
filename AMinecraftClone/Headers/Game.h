@@ -78,6 +78,8 @@ public: //this "public" section is for gameplay functions such as closing game o
 
 	static void ChangeState(GameState newState);
 
+	static int m_ChosenTerrain;
+
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
 	static GameState lastState;
 	static GameState state;

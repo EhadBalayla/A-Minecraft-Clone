@@ -20,11 +20,11 @@ inline int HeightIndexAt(int x, int z) {
 struct Vertex {
 	uint16_t pos; //4 bits for chunk X, 4 bits for chunk Z, 7 bits for chunk Y
 	uint8_t texIndex; //since the texture atlas is 16x16
-	uint8_t extras; //2 bits for which corner on the image in the atlas it is, 3 bits for which corner of a block it is
+	uint8_t extras; //2 bits for which corner on the image in the atlas it is, 3 bits for which corner of a block it is, 2 bits for the shading value
 };
 
 struct ChunkMeshData {
-	std::vector<Vertex> opaqueVerticies;
+	std::vector<uint32_t> opaqueVerticies;
 	std::vector<uint32_t> opaqueIndicies;
 
 	std::vector<Vertex> plantVerticies;
@@ -33,7 +33,7 @@ struct ChunkMeshData {
 	std::vector<Vertex> waterVerticies;
 	std::vector<uint32_t> waterIndicies;
 
-	std::vector<Vertex> transparentVerticies;
+	std::vector<uint32_t> transparentVerticies;
 	std::vector<uint32_t> transparentIndicies;
 };
 

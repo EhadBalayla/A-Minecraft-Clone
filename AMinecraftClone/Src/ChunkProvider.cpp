@@ -3,14 +3,22 @@
 
 #include "Utilities.h"
 
+#include "Game.h"
+
 void ChunkGen(Chunk* c, WorldManager* owningWorld) {
 	int LODFactor = GetLODSize(c->LOD);
-	owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
+	if(Game::m_ChosenTerrain == 0)
+		owningWorld->GetChunkGenerator().Gen1.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
+	else if(Game::m_ChosenTerrain == 1)
+		owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
 	c->GenerateHeightMap();
 	c->IsGenerated = true;
 }
 void ChunkPop(Chunk* c, WorldManager* owningWorld) {
-	owningWorld->GetChunkGenerator().Gen2.populate(c->ChunkX, c->ChunkZ, c->LOD);
+	if (Game::m_ChosenTerrain == 0)
+		owningWorld->GetChunkGenerator().Gen1.populate(c->ChunkX, c->ChunkZ, c->LOD);
+	else if (Game::m_ChosenTerrain == 1)
+		owningWorld->GetChunkGenerator().Gen2.populate(c->ChunkX, c->ChunkZ, c->LOD);
 	c->IsModified = true;
 }
 void ChunkMesh(Chunk* c, WorldManager* owningWorld) {

@@ -35,6 +35,7 @@ unsigned int Game::tempVAO;
 DebugRenderer Game::m_DebugRenderer;
 DebugUIManager Game::m_DebugUI;
 bool Game::ShowDebugMenu = true;
+int Game::m_ChosenTerrain = 0;
 
 #ifdef _WIN32
 
@@ -111,7 +112,11 @@ void Game::GameLoop() {
 				if (event.type == SDL_QUIT) {
 					CloseGame(); //quit
 				}
+				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
+
+			m_DebugUI.Render2();
+
 			break;
 		case GameState::InGame:
 			while (SDL_PollEvent(&event)) {
@@ -132,15 +137,14 @@ void Game::GameLoop() {
 
 			m_DebugRenderer.DrawChunkBoundaries();
 
-			if(ShowDebugMenu) m_DebugUI.Render(deltaTime);
-
+			if (ShowDebugMenu) m_DebugUI.Render(deltaTime);
 			break;
 		}
+
 		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
 
 		//render all the current UI stuff
 		m_UIManager.Render();
-
 
 		//swap buffers
 		SDL_GL_SwapWindow(e_Window.m_Window);

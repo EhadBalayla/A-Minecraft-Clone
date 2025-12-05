@@ -4,7 +4,7 @@
 #include "MathHelper.h"
 #include "Game.h"
 
-void AddFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
+void AddFace(glm::uvec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset, std::vector<uint32_t>& verticies, std::vector<uint32_t>& indicies);
 void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 
@@ -133,11 +133,11 @@ void Chunk::RenderTransparent() {
 
 
     int LODFactor = GetLODSize(LOD);
-    Game::e_PlantsShader.use();
-    Game::e_PlantsShader.setMat4("view", Game::View);
-    Game::e_PlantsShader.setMat4("projection", Game::Proj);
+    Game::e_OpaqueShader.use();
+    Game::e_OpaqueShader.setMat4("view", Game::View);
+    Game::e_OpaqueShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width * LODFactor, 0, ChunkZ * Chunk_Length * LODFactor) - Game::player.GetPosition();
-    Game::e_PlantsShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor)));
+    Game::e_OpaqueShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor)));
 
 
     glBindVertexArray(meshes.m_VAO4);
@@ -252,13 +252,13 @@ void Chunk::ChunkUpload() {
         // Upload to GPU
         glBindVertexArray(meshes.m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, meshes.m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(Vertex), meshData.opaqueVerticies.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.opaqueVerticies.size() * sizeof(uint32_t), meshData.opaqueVerticies.data(), GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes.m_EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.opaqueIndicies.size() * sizeof(uint32_t), meshData.opaqueIndicies.data(), GL_DYNAMIC_DRAW);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
+        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(uint32_t), (void*)0);
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -323,13 +323,13 @@ void Chunk::ChunkUpload() {
     if (meshData.transparentVerticies.size() > 0) {
         glBindVertexArray(meshes.m_VAO4);
         glBindBuffer(GL_ARRAY_BUFFER, meshes.m_VBO4);
-        glBufferData(GL_ARRAY_BUFFER, meshData.transparentVerticies.size() * sizeof(Vertex), meshData.transparentVerticies.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshData.transparentVerticies.size() * sizeof(uint32_t), meshData.transparentVerticies.data(), GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes.m_EBO4);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.transparentIndicies.size() * sizeof(uint32_t), meshData.transparentIndicies.data(), GL_DYNAMIC_DRAW);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
+        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(uint32_t), (void*)0);
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -353,10 +353,10 @@ void Chunk::ChunkUpload() {
     meshData.transparentIndicies.clear();
 
     //deallocate all meshes
-    std::vector<Vertex>().swap(meshData.opaqueVerticies);
+    std::vector<uint32_t>().swap(meshData.opaqueVerticies);
     std::vector<Vertex>().swap(meshData.plantVerticies);
     std::vector<Vertex>().swap(meshData.waterVerticies);
-    std::vector<Vertex>().swap(meshData.transparentVerticies);
+    std::vector<uint32_t>().swap(meshData.transparentVerticies);
 
     std::vector<uint32_t>().swap(meshData.opaqueIndicies);
     std::vector<uint32_t>().swap(meshData.plantIndicies);
@@ -368,13 +368,31 @@ int GetLODSize(uint8_t LOD) { return 1 << LOD; }
 
 
 //helper functions
+uint32_t getVertex(glm::uvec3 pos, int atlasTex, int texCorner, int blockCorner, int shadingAmount) {
+    uint32_t ret = 0;
+
+    ret |= blockCorner << 28;
+
+    ret |= texCorner << 26;
+
+    ret |= shadingAmount << 24;
+
+    ret |= atlasTex << 16;
+
+    ret |= pos.y << 8;
+    ret |= pos.z << 4;
+    ret |= pos.x;
+
+    return ret;
+}
+
 uint16_t convertPos(glm::uvec3 pos) {
     uint16_t ret = pos.y << 8;
     ret |= pos.z << 4;
     ret |= pos.x;
     return ret;
 }
-uint8_t getExtras(uint8_t texCorner, uint8_t blockCorner) {
+uint8_t getExtras(uint8_t texCorner, uint8_t blockCorner, uint8_t shadingAmount) {
     uint8_t ret = blockCorner << 2;
     ret |= texCorner;
     return ret;
@@ -385,55 +403,55 @@ void waterFlag(uint16_t& pos, uint8_t& extras, uint16_t flag /*from 1 - 10*/) {
 }
 
 //adds face for a square block
-void AddFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
-    uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
+void AddFace(glm::uvec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset, std::vector<uint32_t>& verticies, std::vector<uint32_t>& indicies) {
+    uint32_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
 
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
     switch (face) {
     case Face::Top:
-        e0 = getExtras(0, 4);
-        e1 = getExtras(1, 5);
-        e2 = getExtras(2, 6);
-        e3 = getExtras(3, 7);
+        e0 = getVertex(pos, faceIndexOffset, 0, 4, 0);
+        e1 = getVertex(pos, faceIndexOffset, 1, 5, 0);
+        e2 = getVertex(pos, faceIndexOffset, 2, 6, 0);
+        e3 = getVertex(pos, faceIndexOffset, 3, 7, 0);
         break;
     case Face::Bottom:
-        e0 = getExtras(3, 0);
-        e1 = getExtras(2, 3);
-        e2 = getExtras(1, 2);
-        e3 = getExtras(0, 1);
+        e0 = getVertex(pos, faceIndexOffset, 3, 0, 0);
+        e1 = getVertex(pos, faceIndexOffset, 2, 3, 0);
+        e2 = getVertex(pos, faceIndexOffset, 1, 2, 0);
+        e3 = getVertex(pos, faceIndexOffset, 0, 1, 0);
         break;
     case Face::Left:
-        e0 = getExtras(3, 0);
-        e1 = getExtras(0, 4);
-        e2 = getExtras(1, 7);
-        e3 = getExtras(2, 3);
+        e0 = getVertex(pos, faceIndexOffset, 3, 0, 2);
+        e1 = getVertex(pos, faceIndexOffset, 0, 4, 2);
+        e2 = getVertex(pos, faceIndexOffset, 1, 7, 2);
+        e3 = getVertex(pos, faceIndexOffset, 2, 3, 2);
         break;
     case Face::Right:
-        e0 = getExtras(2, 1);
-        e1 = getExtras(3, 2);
-        e2 = getExtras(0, 6);
-        e3 = getExtras(1, 5);
+        e0 = getVertex(pos, faceIndexOffset, 2, 1, 2);
+        e1 = getVertex(pos, faceIndexOffset, 3, 2, 2);
+        e2 = getVertex(pos, faceIndexOffset, 0, 6, 2);
+        e3 = getVertex(pos, faceIndexOffset, 1, 5, 2);
         break;
     case Face::Front:
-        e0 = getExtras(3, 3);
-        e1 = getExtras(0, 7);
-        e2 = getExtras(1, 6);
-        e3 = getExtras(2, 2);
+        e0 = getVertex(pos, faceIndexOffset, 3, 3, 1);
+        e1 = getVertex(pos, faceIndexOffset, 0, 7, 1);
+        e2 = getVertex(pos, faceIndexOffset, 1, 6, 1);
+        e3 = getVertex(pos, faceIndexOffset, 2, 2, 1);
         break;
     case Face::Back:
-        e0 = getExtras(2, 0);
-        e1 = getExtras(3, 1);
-        e2 = getExtras(0, 5);
-        e3 = getExtras(1, 4);
+        e0 = getVertex(pos, faceIndexOffset, 2, 0, 1);
+        e1 = getVertex(pos, faceIndexOffset, 3, 1, 1);
+        e2 = getVertex(pos, faceIndexOffset, 0, 5, 1);
+        e3 = getVertex(pos, faceIndexOffset, 1, 4, 1);
         break;
     }
 
 
     //adds the 4 verticies
-    verticies.push_back({ convertPos(pos), faceIndexOffset, e0 });
-    verticies.push_back({ convertPos(pos), faceIndexOffset, e1 });
-    verticies.push_back({ convertPos(pos), faceIndexOffset, e2 });
-    verticies.push_back({ convertPos(pos), faceIndexOffset, e3 });
+    verticies.push_back(e0);
+    verticies.push_back(e1);
+    verticies.push_back(e2);
+    verticies.push_back(e3);
 
 
     //adds the 6 indicies for the 4 verticies
@@ -452,10 +470,10 @@ void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset
     uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
 
 
-    e0 = getExtras(0, 4);
-    e1 = getExtras(1, 6);
-    e2 = getExtras(2, 2);
-    e3 = getExtras(3, 0);
+    e0 = getExtras(0, 4, 0);
+    e1 = getExtras(1, 6, 0);
+    e2 = getExtras(2, 2, 0);
+    e3 = getExtras(3, 0, 0);
 
     // First quad
     verticies.push_back({ convertPos(pos), faceIndexOffset, e0 });
@@ -474,10 +492,10 @@ void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset
 
     // Diagonal Plane 2 (Northeast to Southwest)
 
-    e0 = getExtras(0, 5);
-    e1 = getExtras(1, 7);
-    e2 = getExtras(2, 3);
-    e3 = getExtras(3, 1);
+    e0 = getExtras(0, 5, 0);
+    e1 = getExtras(1, 7, 0);
+    e2 = getExtras(2, 3, 0);
+    e3 = getExtras(3, 1, 0);
 
     // Second quad
     verticies.push_back({ convertPos(pos), faceIndexOffset, e0 });
@@ -502,10 +520,10 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
     switch (face) {
     case Face::Top:
-        e0 = getExtras(0, 4);
-        e1 = getExtras(1, 5);
-        e2 = getExtras(2, 6);
-        e3 = getExtras(3, 7);
+        e0 = getExtras(0, 4, 0);
+        e1 = getExtras(1, 5, 0);
+        e2 = getExtras(2, 6, 0);
+        e3 = getExtras(3, 7, 0);
 
         waterFlag(p0, e0, 8);
         waterFlag(p1, e1, 8);
@@ -513,10 +531,10 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p3, e3, 8);
         break;
     case Face::Bottom:
-        e0 = getExtras(3, 0);
-        e1 = getExtras(2, 3);
-        e2 = getExtras(1, 2);
-        e3 = getExtras(0, 1);
+        e0 = getExtras(3, 0, 0);
+        e1 = getExtras(2, 3, 0);
+        e2 = getExtras(1, 2, 0);
+        e3 = getExtras(0, 1, 0);
 
         waterFlag(p0, e0, 10);
         waterFlag(p1, e1, 10);
@@ -524,10 +542,10 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p3, e3, 10);
         break;
     case Face::Left:
-        e0 = getExtras(3, 0);
-        e1 = getExtras(1, 4);
-        e2 = getExtras(0, 7);
-        e3 = getExtras(2, 3);
+        e0 = getExtras(3, 0, 0);
+        e1 = getExtras(1, 4, 0);
+        e2 = getExtras(0, 7, 0);
+        e3 = getExtras(2, 3, 0);
 
         waterFlag(p0, e0, 10);
         waterFlag(p1, e1, IsMiddle ? 10 : 8);
@@ -535,10 +553,10 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p3, e3, 10);
         break;
     case Face::Right:
-        e0 = getExtras(2, 1);
-        e1 = getExtras(3, 2);
-        e2 = getExtras(0, 6);
-        e3 = getExtras(1, 5);
+        e0 = getExtras(2, 1, 0);
+        e1 = getExtras(3, 2, 0);
+        e2 = getExtras(0, 6, 0);
+        e3 = getExtras(1, 5, 0);
 
         waterFlag(p0, e0, 10);
         waterFlag(p1, e1, 10);
@@ -546,10 +564,10 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p3, e3, IsMiddle ? 10 : 8);
         break;
     case Face::Front:
-        e0 = getExtras(3, 3);
-        e1 = getExtras(0, 7);
-        e2 = getExtras(1, 6);
-        e3 = getExtras(2, 2);
+        e0 = getExtras(3, 3, 0);
+        e1 = getExtras(0, 7, 0);
+        e2 = getExtras(1, 6, 0);
+        e3 = getExtras(2, 2, 0);
 
         waterFlag(p0, e0, 10);
         waterFlag(p1, e1, IsMiddle ? 10 : 8);
@@ -557,10 +575,10 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p3, e3, 10);
         break;
     case Face::Back:
-        e0 = getExtras(2, 0);
-        e1 = getExtras(3, 1);
-        e2 = getExtras(0, 5);
-        e3 = getExtras(1, 4);
+        e0 = getExtras(2, 0, 0);
+        e1 = getExtras(3, 1, 0);
+        e2 = getExtras(0, 5, 0);
+        e3 = getExtras(1, 4, 0);
 
         waterFlag(p0, e0, 10);
         waterFlag(p1, e1, 10);

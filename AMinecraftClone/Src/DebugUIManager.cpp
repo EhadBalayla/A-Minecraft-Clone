@@ -45,3 +45,34 @@ void DebugUIManager::Render(float DeltaTime) {
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+const char* comboOptions[] = {
+	"Infdev 2010-02-27",
+	"Infdev 2010-03-27"
+};
+void DebugUIManager::Render2() {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::SetNextWindowSize(ImVec2(340, 350));
+	ImGui::SetNextWindowPos(ImVec2(4, 33));
+	ImGui::Begin("Debug Menu for Main Menu", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+	ImGui::TextUnformatted("Select Terrain: ");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(150.0f);
+	if (ImGui::BeginCombo("##Terrain Type Select: ", comboOptions[Game::m_ChosenTerrain])) {
+		for (int i = 0; i < 2; i++) { 
+			if (ImGui::Selectable(comboOptions[i], Game::m_ChosenTerrain == i)) {
+				Game::m_ChosenTerrain = i;
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
