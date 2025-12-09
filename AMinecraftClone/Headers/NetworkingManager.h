@@ -31,7 +31,6 @@ public:
 private:
 	ENetHost* client = nullptr;
 	ENetPeer* peer = nullptr;
-	ENetEvent event;
 
 	//status stuff
 	NetworkingState state = NetworkingState::Disconnected;

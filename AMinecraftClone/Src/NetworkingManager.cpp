@@ -1,5 +1,6 @@
 #include "NetworkingManager.h"
 #include <iostream>
+#include "Game.h"
 
 void NetworkingManager::Init() {
 	if (enet_initialize() != 0) {
@@ -38,7 +39,7 @@ void NetworkingManager::Connect(const char* hostAddress, int pPort) {
 void NetworkingManager::Disconnect() {
 	if (state != NetworkingState::Connected) return;
 
-	tempCV.notify_one();
+	state = NetworkingState::Disconnected; //if it is on the connected state, the networking thread will never change the variable it will only read from it, so its safe
 }
 
 status NetworkingManager::GetCurrentStatus() {
@@ -91,16 +92,21 @@ void NetworkingManager::NetworkThread() {
 			break;
 		}
 		case NetworkingState::Connected: {
-			//temporary we will be putting this to sleep, but later i will rewrite it to send and recieve packets
+			ENetEvent event;
+			glm::dvec3 playerPos = Game::player.GetPosition();
+			ENetPacket* playerCoordsPack = enet_packet_create(&playerPos, sizeof(glm::dvec3), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+			
+			enet_peer_send(peer, 0, playerCoordsPack);
 
-			{
-				std::unique_lock<std::mutex> lock(tempMTX);
-				tempCV.wait(lock);
+			while (enet_host_service(client, &event, 100) > 0) {
+				switch (event.type) {
+				case ENET_EVENT_TYPE_RECEIVE:
+
+					break;
+				}
 			}
 
-			if (!threadRunning) return;
-
-			state = NetworkingState::Disconnecting;
+			
 			break;
 		}
 		case NetworkingState::Disconnecting: {
