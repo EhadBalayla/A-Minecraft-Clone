@@ -49,6 +49,8 @@ const char* comboOptions[] = {
 	"Infdev 2010-02-27",
 	"Infdev 2010-03-27"
 };
+char addressBuffer[256] = "127.0.0.1";
+int port = 25565;
 void DebugUIManager::Render2() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
@@ -70,6 +72,45 @@ void DebugUIManager::Render2() {
 
 		ImGui::EndCombo();
 	}
+	ImGui::SeparatorText("networking");
+	ImGui::TextUnformatted("Connect: ");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::InputText("##addressInputter", addressBuffer, 256);
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::InputInt("##portInputter", &port);
+	if (ImGui::Button("Connect")) {
+		Game::m_Networking.Connect(addressBuffer, port);
+	}
+	if (ImGui::Button("Disconnect")) {
+		Game::m_Networking.Disconnect();
+	}
+	ImGui::TextUnformatted("Status: ");
+	ImGui::SameLine();
+	switch (Game::m_Networking.GetCurrentStatus().state) {
+	case NetworkingState::Disconnected:
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Not Connected");
+		break;
+	case NetworkingState::Connecting:
+		ImGui::TextColored(ImVec4(0.0f, 0.25f, 1.0f, 1.0f), "Connecting...");
+		break;
+	case NetworkingState::Connected:
+		ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.2f, 1.0f),"Connected");
+		
+		ImGui::TextUnformatted("IP: ");
+		ImGui::SameLine();
+		ImGui::TextUnformatted(Game::m_Networking.GetCurrentStatus().ip);
+
+		ImGui::TextUnformatted("Port: ");
+		ImGui::SameLine();
+		ImGui::TextUnformatted(std::to_string(Game::m_Networking.GetCurrentStatus().port).c_str());
+		break;
+	case NetworkingState::Disconnecting:
+		ImGui::TextColored(ImVec4(1.0f, 5.0f, 0.0f, 1.0f), "Disconnecting...");
+		break;
+	}
+
 
 	ImGui::End();
 

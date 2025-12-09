@@ -36,6 +36,8 @@ DebugRenderer Game::m_DebugRenderer;
 DebugUIManager Game::m_DebugUI;
 bool Game::ShowDebugMenu = true;
 int Game::m_ChosenTerrain = 0;
+NetworkingManager Game::m_Networking;
+
 
 #ifdef _WIN32
 
@@ -74,6 +76,9 @@ void Game::Init() {
 	RegisterAllItems();
 
 	m_DebugUI.Init();
+
+	//initialize the networking
+	m_Networking.Init();
 }
 void Game::GameLoop() {
 
@@ -154,6 +159,8 @@ void Game::GameLoop() {
 }
 // terminates all engines for the game when the game closes and unloads every cached object
 void Game::Terminate() {
+	m_Networking.Terminate();
+
 	m_DebugUI.Terminate();
 
 	UnloadAllTextures();

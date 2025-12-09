@@ -13,6 +13,7 @@
 #include "AudioManager.h"
 #include "DebugRenderer.h"
 #include "DebugUIManager.h"
+#include "NetworkingManager.h"
 
 enum class GameState {
 	MainMenu,
@@ -28,6 +29,7 @@ public:
 	static AudioManager m_AudioManager;
 	static DebugRenderer m_DebugRenderer;
 	static DebugUIManager m_DebugUI;
+	static NetworkingManager m_Networking;
 
 	
 	static Shader e_OpaqueShader;

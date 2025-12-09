@@ -211,6 +211,9 @@
     <ClCompile Include="ImGui\backends\imgui_impl_sdl2.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Src\NetworkingManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\NoiseGeneratorOctave3.h">
@@ -358,6 +361,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\DebugUIManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\NetworkingManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
