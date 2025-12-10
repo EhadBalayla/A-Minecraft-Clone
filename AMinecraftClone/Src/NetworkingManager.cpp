@@ -42,6 +42,27 @@ void NetworkingManager::Disconnect() {
 	state = NetworkingState::Disconnected; //if it is on the connected state, the networking thread will never change the variable it will only read from it, so its safe
 }
 
+void NetworkingManager::Render() {
+	if (otherPlayersCount > 0) {
+
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
+
+		Game::e_DummyPlayersShader.use();
+		Game::e_DummyPlayersShader.setMat4("view", Game::View);
+		Game::e_DummyPlayersShader.setMat4("proj", Game::Proj);
+		for (int i = 0; i < otherPlayersCount; i++) {
+			glm::vec3 relativePos = playersPos[i] - Game::player.GetPosition();
+			Game::e_OpaqueShader.setMat4("model", glm::translate(glm::mat4(1.0), relativePos));
+			glBindVertexArray(Game::tempVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 24);
+		}
+	}
+}
+
+
 status NetworkingManager::GetCurrentStatus() {
 	return { state, ConnectedIP, port };
 }
@@ -101,8 +122,17 @@ void NetworkingManager::NetworkThread() {
 			while (enet_host_service(client, &event, 100) > 0) {
 				switch (event.type) {
 				case ENET_EVENT_TYPE_RECEIVE:
+				{
+					uint8_t* buffer = event.packet->data;
+
+					uint8_t senderIDX = buffer[0];
+
+					memcpy(&playersPos[senderIDX], buffer + 1, sizeof(glm::dvec3));
+
+					enet_packet_destroy(event.packet);
 
 					break;
+				}
 				}
 			}
 

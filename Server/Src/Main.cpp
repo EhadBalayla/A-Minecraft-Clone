@@ -2,6 +2,15 @@
 #include <iostream>
 #include <thread>
 
+int connected_peers_count(ENetHost* host) {
+	int count = 0;
+	for (size_t i = 0; i < host->peerCount; ++i) {
+		if (host->peers[i].state == ENET_PEER_STATE_CONNECTED) count++;
+	}
+	return count;
+}
+
+
 struct dvec3 {
 	double x;
 	double y;
@@ -16,9 +25,24 @@ void ServerThread() {
 		while (enet_host_service(server, &event, 100) > 0) {
 			switch (event.type) {
 			case ENET_EVENT_TYPE_RECEIVE:
-				dvec3* data = reinterpret_cast<dvec3*>(event.packet->data);			
+				ENetPeer* sender = event.peer;
 
-				std::cout << "a player is a: X - " << (int)data->x << ", Y - " << (int)data->y << ", Z - " << (int)data->z << std::endl;
+				for (size_t i = 0; i < server->peerCount; i++) {
+					ENetPeer* peer = &server->peers[i];
+
+					if (peer->state != ENET_PEER_STATE_CONNECTED) continue;
+					if (peer == sender) continue;
+
+					uint8_t buffer[1 + sizeof(dvec3)];
+					buffer[0] = sender->incomingPeerID;
+					memcpy(buffer + 1, event.packet->data, sizeof(dvec3));
+
+
+					ENetPacket* packet = enet_packet_create(buffer, sizeof(buffer), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+
+					enet_peer_send(peer, 0, packet);
+				}
+
 				enet_packet_destroy(event.packet);
 				break;
 			}

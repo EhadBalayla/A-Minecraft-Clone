@@ -3,6 +3,7 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <glm/glm.hpp>
 
 
 
@@ -19,6 +20,7 @@ struct status {
 	int port;
 };
 
+
 class NetworkingManager {
 public:
 	void Init();
@@ -26,6 +28,8 @@ public:
 
 	void Connect(const char* address, int port);
 	void Disconnect();
+
+	void Render();
 
 	status GetCurrentStatus();
 private:
@@ -43,4 +47,9 @@ private:
 	std::thread networkThread;
 	std::mutex tempMTX;
 	std::condition_variable tempCV;
+
+	//the player info
+	std::mutex playerPosMTX; //to protect on it when we render so we wont change data while rendering
+	uint32_t otherPlayersCount = 10;
+	glm::dvec3 playersPos[10] = { {0.0, 0.0, 0.0} };
 };
