@@ -39,6 +39,7 @@ public:
 	static Shader e_SkyColorShader;
 	static Shader e_ChunkBorderShader;
 	static Shader e_DummyPlayersShader;
+	static Shader e_InventoryBlockShader;
 	static unsigned int tempVAO; //temporary vao for stuff that have hardcoded shaders
 
 	static bool ShowChunkBorder;

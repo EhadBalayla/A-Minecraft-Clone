@@ -27,15 +27,15 @@ protected:
 	glm::dvec3 position = glm::dvec3(0.0f);
 	float yaw = 0.0f, pitch = 0.0f;
 
-	glm::vec3 velocity = glm::vec3(0.0f);
+	glm::dvec3 velocity = glm::vec3(0.0f);
 
 	void MoveAndCollide(float DeltaTime);
 
 	bool IsOnGround = false;
 
 	float acceleration = 0.5f;
-	float maxMovementSpeed = 5.2f;
-	float friction = 0.8f;
+	double maxMovementSpeed = 5.2f;
+	double friction = 0.8f;
 	float gravity = 15.0f;
 };
 

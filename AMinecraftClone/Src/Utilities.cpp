@@ -1,7 +1,7 @@
 #include "Utilities.h"
 #include "Game.h"
 
-std::vector<PositionedBlock> Utils::GetNearbySolidBlocks(glm::ivec3 pos, int tallness) { //basically gathers the surroning blocks around a position
+std::vector<PositionedBlock> Utils::GetNearbySolidBlocks(glm::i64vec3 pos, int tallness) { //basically gathers the surroning blocks around a position
 	std::vector<PositionedBlock> returnal;
 	if (Game::level->GetWorld().IsSolidBlock(pos.x, pos.y - 1, pos.z))
 		returnal.push_back({ Game::level->GetWorld().getBlockAt(pos.x, pos.y - 1, pos.z), glm::ivec3(pos.x, pos.y - 1, pos.z) });
@@ -23,21 +23,21 @@ std::vector<PositionedBlock> Utils::GetNearbySolidBlocks(glm::ivec3 pos, int tal
 	return returnal;
 }
 
-Ray Utils::shootRay(glm::vec3 origin, glm::vec3 direction, float distance) {
+Ray Utils::shootRay(glm::dvec3 origin, glm::dvec3 direction, float distance) {
 	return { origin, direction, distance };
 }
 
-RayHitReturnParams Utils::RayHitBlock(Ray& ray, float steps) {
-	for (float t = 0; t < ray.RayDistance; t += steps) {
-		glm::vec3 currentPos = ray.RayOrigin + ray.RayDirection * t;
-		glm::ivec3 blockPos = glm::floor(currentPos);
+RayHitReturnParams Utils::RayHitBlock(Ray& ray, double steps) {
+	for (double t = 0; t < ray.RayDistance; t += steps) {
+		glm::dvec3 currentPos = ray.RayOrigin + ray.RayDirection * t;
+		glm::i64vec3 blockPos = glm::floor(currentPos);
 		if (Game::level->GetWorld().IsSolidBlock(blockPos.x, blockPos.y, blockPos.z)) {
 			BlockType blockPoint = Game::level->GetWorld().getBlockAt(blockPos.x, blockPos.y, blockPos.z);
 			
 			//x y and z relative to the block itself, so we can check which face based on which is closer, however accuracy depends on the ste
-			float relX = currentPos.x - blockPos.x;
-			float relY = currentPos.y - blockPos.y;
-			float relZ = currentPos.z - blockPos.z;
+			double relX = currentPos.x - blockPos.x;
+			double relY = currentPos.y - blockPos.y;
+			double relZ = currentPos.z - blockPos.z;
 			if (relY > relX && relY > relZ) //the up face
 			{
 				return { blockPoint, blockPos, Face::Top };

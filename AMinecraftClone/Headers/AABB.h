@@ -2,19 +2,19 @@
 #include "glm/glm.hpp"
 
 struct AABB {
-	glm::vec3 min;
-	glm::vec3 max;
+	glm::dvec3 min;
+	glm::dvec3 max;
 
 
-	AABB MovedTo(glm::vec3 pos) { //returns a modified AABB that is moved to a certain position
+	AABB MovedTo(glm::dvec3 pos) { //returns a modified AABB that is moved to a certain position
 		return { min + pos, max + pos };
 	}
 };
 
 struct Ray {
-	glm::vec3 RayOrigin;
-	glm::vec3 RayDirection;
-	float RayDistance;
+	glm::dvec3 RayOrigin;
+	glm::dvec3 RayDirection;
+	double RayDistance;
 };
 
 namespace AABBHelper {

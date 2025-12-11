@@ -14,9 +14,9 @@ struct UIUVQuad {
 class Widget
 {
 public:
-	glm::vec2 position = glm::vec2(0.0, 0.0); //position on the screen relative to the middle
-	glm::vec2 scale = glm::vec2(1.0, 1.0); //scale on the screen relative to the sprite's middle
-	float rotation = 0.0f; //rotation on the screen relative to the sprite's middle
+	glm::vec2 position = glm::vec2(0.0, 0.0);
+	glm::vec2 scale = glm::vec2(1.0, 1.0);
+	float rotation = 0.0f;
 	
 	Texture* m_Texture = nullptr; //texture that a widget will display
 	UIUVQuad uvs;

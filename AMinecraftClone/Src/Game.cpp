@@ -18,6 +18,7 @@ Shader Game::e_CloudShader;
 Shader Game::e_ChunkBorderShader;
 Shader Game::e_SkyColorShader;
 Shader Game::e_DummyPlayersShader;
+Shader Game::e_InventoryBlockShader;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
 std::vector<Model*> Game::e_LoadedModels;
@@ -64,6 +65,7 @@ void Game::Init() {
 	e_ChunkBorderShader.loadShader("Shaders/ChunkBorder_Vert.glsl", "Shaders/ChunkBorder_Frag.glsl");
 	e_SkyColorShader.loadShader("Shaders/SkyShader_Vert.glsl", "Shaders/SkyShader_Frag.glsl");
 	e_DummyPlayersShader.loadShader("Shaders/TempPlayersShader_Vert.glsl", "Shaders/TempPlayersShader_Frag.glsl");
+	e_InventoryBlockShader.loadShader("Shaders/InventoryItem_Vert.glsl", "Shaders/InventoryItem_Frag.glsl");
 	glGenVertexArrays(1, &tempVAO);
 
 	Proj = glm::mat4(1.0f);

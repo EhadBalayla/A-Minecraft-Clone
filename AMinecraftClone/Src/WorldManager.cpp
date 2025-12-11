@@ -119,17 +119,25 @@ ChunkGenerator& WorldManager::GetChunkGenerator() {
 ChunkProvider& WorldManager::GetChunkProvider() {
 	return chunkProvider;
 }
+
+//coords converter helpers
+inline int WorldToChunk(int a) {
+	return a >= 0 ? a / 16 : (a - 15) / 16;
+}
+inline int WorldToBlock(int a) {
+	return (a % 16 + 16) % 16;
+}
 BlockType WorldManager::getBlockAt(int x, int y, int z) { //coordinates are in world space
 	if (y > 127 || y < 0) return BlockType::Air;
 
-	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
-	return chunk->m_Blocks[IndexAt(x % 16, y, z % 16)];
+	Chunk* chunk = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
+	return chunk->m_Blocks[IndexAt(WorldToBlock(x), y, WorldToBlock(z))];
 }
 void WorldManager::setBlockAt(int x, int y, int z, BlockType type) {
 	if (y > 127 || y < 0) return;
 
-	Chunk* chunk = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
-	chunk->m_Blocks[IndexAt(x % 16, y, z % 16)] = type;
+	Chunk* chunk = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
+	chunk->m_Blocks[IndexAt(WorldToBlock(x), y, WorldToBlock(z))] = type;
 }
 BlockType WorldManager::getBlockAtLOD(int x, int y, int z, uint8_t LOD) {
 	if (y > 127 || y < 0) return BlockType::Air;
@@ -169,16 +177,16 @@ int WorldManager::getHeightValue(int x, int z) {
 	return chunkProvider.ProvideChunk(x / 16, z / 16, 0)->GetHeightValue(x % 16, z % 16);
 }
 bool WorldManager::IsSolidBlock(int x, int y, int z) { //coordinates are in world space
-	BlockType type = chunkProvider.ProvideChunk(x / 16, z / 16, 0)->m_Blocks[IndexAt(x % 16, y, z % 16)];
+	BlockType type = getBlockAt(x, y, z);
 	return (Game::e_BlockRegistery[type].visibility == BlockVisiblity::Opaque || Game::e_BlockRegistery[type].visibility == BlockVisiblity::Transparent) && type != BlockType::Air;
 }
 void WorldManager::PlaceBlock(int x, int y, int z, BlockType type) { //coordinates are in world space
 	setBlockAt(x, y, z, type);
-	Chunk* c = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
+	Chunk* c = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
 	c->IsModified = true;
 }
 void WorldManager::BreakBlock(int x, int y, int z) {
 	setBlockAt(x, y, z, BlockType::Air);
-	Chunk* c = chunkProvider.ProvideChunk(x / 16, z / 16, 0);
+	Chunk* c = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
 	c->IsModified = true;
 }

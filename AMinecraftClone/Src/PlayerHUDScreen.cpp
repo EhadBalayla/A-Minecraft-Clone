@@ -1,6 +1,7 @@
 #include "PlayerHUDScreen.h"
 #include "Game.h"
 #include "TextDisplayer.h"
+#include "ItemDisplayer.h"
 
 PlayerHUDScreen::PlayerHUDScreen() {
 	// the hotbar
@@ -10,6 +11,11 @@ PlayerHUDScreen::PlayerHUDScreen() {
 	hotbar.get()->SetPosition(glm::vec2(640, 689.7805));
 	hotbar.get()->SetScale(glm::vec2(500, 60.439));
 	AddWidget(std::move(hotbar));
+
+	std::unique_ptr<ItemDisplayer> item1 = std::make_unique<ItemDisplayer>();
+	item1.get()->SetPosition(glm::vec2(640, 689.7805));
+	item1.get()->SetScale(glm::vec2(0.25, 0.25));
+	AddWidget(std::move(item1));
 
 
 	//the reticle in the center
