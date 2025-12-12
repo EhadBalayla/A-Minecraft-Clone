@@ -19,16 +19,26 @@ Shader Game::e_ChunkBorderShader;
 Shader Game::e_SkyColorShader;
 Shader Game::e_DummyPlayersShader;
 Shader Game::e_InventoryBlockShader;
+Shader Game::e_ImageWidgetShader;
+Texture Game::terrainAtlas;
+Texture Game::guiAtlas;
+Texture Game::iconsAtlas;
+Texture Game::inventoryTex;
+Texture Game::cloudsTex;
+Texture Game::fontTex;
+Texture Game::logoTex;
+PlayerInventory Game::inventoryMenu;
+PlayerHUDScreen Game::hudScreen;
+PauseMenu Game::pauseMenu;
+MainMenuScreen Game::mainMenuScreen;
+glm::mat4 Game::ScreenProjection;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
-std::vector<Model*> Game::e_LoadedModels;
-std::vector<Texture*> Game::e_LoadedTextures;
 Player Game::player;
 Level* Game::level;
 std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
 std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
 bool Game::IsGameRunning = true;
-UIManager Game::m_UIManager;
 AudioManager Game::m_AudioManager;
 bool Game::ShowChunkBorder = false;
 GameState Game::state = GameState::MainMenu;
@@ -49,7 +59,7 @@ NetworkingManager Game::m_Networking;
 
 void Game::Init() {
 #ifdef _WIN32
-	FreeConsole();
+	//FreeConsole();
 #endif
 	e_Window.Init();
 	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
@@ -57,7 +67,7 @@ void Game::Init() {
 		exit(-1);
 	}
 
-	//loads in all shaders
+
 	e_OpaqueShader.loadShader("Shaders/OpaqueShader_Vert.glsl", "Shaders/OpaqueShader_Frag.glsl");
 	e_PlantsShader.loadShader("Shaders/PlantsShader_Vert.glsl", "Shaders/PlantsShader_Frag.glsl");
 	e_WaterShader.loadShader("Shaders/WaterShader_Vert.glsl", "Shaders/WaterShader_Frag.glsl");
@@ -66,23 +76,30 @@ void Game::Init() {
 	e_SkyColorShader.loadShader("Shaders/SkyShader_Vert.glsl", "Shaders/SkyShader_Frag.glsl");
 	e_DummyPlayersShader.loadShader("Shaders/TempPlayersShader_Vert.glsl", "Shaders/TempPlayersShader_Frag.glsl");
 	e_InventoryBlockShader.loadShader("Shaders/InventoryItem_Vert.glsl", "Shaders/InventoryItem_Frag.glsl");
+	e_ImageWidgetShader.loadShader("Shaders/UIShader_Vert.glsl", "Shaders/UIShader_Frag.glsl");
 	glGenVertexArrays(1, &tempVAO);
 
-	Proj = glm::mat4(1.0f);
+
+	terrainAtlas.LoadTexture("TextureAtlas.png");
+	guiAtlas.LoadTexture("GUI/gui.png");
+	iconsAtlas.LoadTexture("GUI/icons.png");
+	inventoryTex.LoadTexture("GUI/inventory.png");
+	cloudsTex.LoadTexture("SkyTextures/clouds.png");
+	fontTex.LoadTexture("DefaultFont.png");
+	logoTex.LoadTexture("GUI/logo.png");
+
+
 	Proj = glm::perspective(glm::radians(70.0f), 1920.0f / 1080.0f, 0.1f, 50000.0f);
+	ScreenProjection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
-	m_UIManager.Init();
+
 	m_AudioManager.Init();
+	m_DebugUI.Init();
+	m_Networking.Init();
 
-	//after finishing loading all engines and setting engine's default rendering parameters, cache in and register the necessary objects for the game
-	LoadAllTextures();
+
 	RegisterAllBlocks();
 	RegisterAllItems();
-
-	m_DebugUI.Init();
-
-	//initialize the networking
-	m_Networking.Init();
 }
 void Game::GameLoop() {
 
@@ -124,6 +141,9 @@ void Game::GameLoop() {
 				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 
+			mainMenuScreen.UpdateScreen();
+			mainMenuScreen.RenderScreen();
+
 			m_DebugUI.Render2();
 
 			break;
@@ -147,14 +167,18 @@ void Game::GameLoop() {
 
 			m_DebugRenderer.DrawChunkBoundaries();
 
+			hudScreen.RenderScreen();
+			if (player.IsPaused) {
+				pauseMenu.UpdateScreen();
+				pauseMenu.RenderScreen();
+			}
+			if (player.IsInventory) {
+				inventoryMenu.RenderScreen();
+			}
+
 			if (ShowDebugMenu) m_DebugUI.Render(deltaTime);
 			break;
 		}
-
-		m_UIManager.Update(); //after updating world information update the UI information so that by the time rendering comes it will use current data
-
-		//render all the current UI stuff
-		m_UIManager.Render();
 
 		//swap buffers
 		SDL_GL_SwapWindow(e_Window.m_Window);
@@ -168,7 +192,6 @@ void Game::Terminate() {
 
 	m_DebugUI.Terminate();
 
-	UnloadAllTextures();
 	m_AudioManager.Terminate();
 	e_Window.Termintate();
 }
@@ -215,23 +238,6 @@ void Game::RegisterAllItems() { //register all item types in the hash map so the
 	e_ItemRegistery[StoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Stone }; //register the grass block item
 }
 
-void Game::LoadAllTextures() {// function is called at the start of the game to load everything in
-	e_LoadedTextures.push_back(new Texture("TextureAtlas.png")); //the texture atlas for the blocks
-	e_LoadedTextures.push_back(new Texture("GUI/gui.png")); //texture atlas for GUI stuff like player hotbar and buttons
-	e_LoadedTextures.push_back(new Texture("GUI/icons.png"));
-	e_LoadedTextures.push_back(new Texture("GUI/inventory.png")); //the texture for the inventory
-	e_LoadedTextures.push_back(new Texture("SkyTextures/clouds.png")); //the texture atlas for the blocks
-	e_LoadedTextures.push_back(new Texture("DefaultFont.png")); //the font texture
-	e_LoadedTextures.push_back(new Texture("GUI/logo.png"));
-}
-
-void Game::UnloadAllTextures() {//function is called when the game closes to unload everything out
-	for (auto& n : e_LoadedTextures) {
-		delete n;
-	}
-	e_LoadedTextures.clear();
-}
-
 void Game::CloseGame() {
 	IsGameRunning = false;
 }
@@ -266,11 +272,9 @@ void Game::LoadState() {
 void Game::LoadMainMenuState() {
 	SDL_ShowCursor(SDL_ENABLE);
 	SDL_SetRelativeMouseMode(SDL_FALSE);
-	auto ptr = std::make_unique<MainMenuScreen>();
-	m_UIManager.AddScreen(std::move(ptr));
 }
 void Game::UnloadMainMenuState() {
-	m_UIManager.ClearScreens();
+
 }
 
 
@@ -282,12 +286,10 @@ void Game::LoadGameState() {
 	level->GetWorld().ChunksStart(0, 0);
 	player.SetPosition(10, 100, 10);
 	player.AddStarterItems();
-	m_UIManager.AddScreen(std::make_unique<PlayerHUDScreen>());
 }
 void Game::UnloadGameState() {
 	SDL_ShowCursor(SDL_ENABLE);
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 
 	delete level;
-	m_UIManager.ClearScreens();
 }

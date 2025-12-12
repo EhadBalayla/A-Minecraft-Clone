@@ -4,41 +4,44 @@
 #include "ItemDisplayer.h"
 
 PlayerHUDScreen::PlayerHUDScreen() {
-	// the hotbar
-	UIUVQuad hotbarUV = { glm::vec2(0.0, 0.0), glm::vec2(0.7109375, 0.0), glm::vec2(0.7109375, 0.0859375), glm::vec2(0.0, 0.0859375)};
-	std::unique_ptr<Widget> hotbar = std::make_unique<Widget>(hotbarUV);
-	hotbar.get()->AssignTexture(Game::e_LoadedTextures[1]);
-	hotbar.get()->SetPosition(glm::vec2(640, 689.7805));
-	hotbar.get()->SetScale(glm::vec2(500, 60.439));
-	AddWidget(std::move(hotbar));
+	Hotbar.uv = { glm::vec2(0.0, 0.0), glm::vec2(0.7109375, 0.0), glm::vec2(0.7109375, 0.0859375), glm::vec2(0.0, 0.0859375) };
+	Hotbar.tex = &Game::guiAtlas;
+	Hotbar.position = glm::vec2(640, 689.7805);
+	Hotbar.scale = glm::vec2(500, 60.439);
 
-	std::unique_ptr<ItemDisplayer> item1 = std::make_unique<ItemDisplayer>();
-	item1.get()->SetPosition(glm::vec2(640, 689.7805));
-	item1.get()->SetScale(glm::vec2(0.25, 0.25));
-	AddWidget(std::move(item1));
+	for (int i = 0; i < 9; i++) {
 
 
-	//the reticle in the center
-	UIUVQuad reticleUV = { glm::vec2(0.0, 0.0), glm::vec2(0.05859375, 0.0), glm::vec2(0.05859375, 0.05859375), glm::vec2(0.0, 0.05859375) };
-	std::unique_ptr<Widget> reticle = std::make_unique<Widget>(reticleUV);
-	reticle.get()->AssignTexture(Game::e_LoadedTextures[2]);
-	reticle.get()->SetPosition(glm::vec2(640, 360));
-	reticle.get()->SetScale(glm::vec2(50, 50));
-	AddWidget(std::move(reticle));
+		//items[i].position = glm::vec2(640, 689.7805);
+		items[i].item = &Game::player.m_PlayerItems[i];
+		items[i].position = glm::vec2(420.2195 + 55.0 * (float)i, 689.7805);
+		items[i].scale = glm::vec2(40.0f, 40.0f);
+	}
+
+	Reticle.uv = { glm::vec2(0.0, 0.0), glm::vec2(0.05859375, 0.0), glm::vec2(0.05859375, 0.05859375), glm::vec2(0.0, 0.05859375) };
+	Reticle.tex = &Game::iconsAtlas;
+	Reticle.position = glm::vec2(640, 360);
+	Reticle.scale = glm::vec2(50, 50);
+
+	Selection.uv = { glm::vec2(0.0, 0.0859375), glm::vec2(0.09375, 0.0859375), glm::vec2(0.09375, 0.1796875), glm::vec2(0.0, 0.1796875) };
+	Selection.tex = &Game::guiAtlas;
+	Selection.position = glm::vec2(420.2195, 689.7805);
+	Selection.scale = glm::vec2(60.439, 60.439);
+
+	//Text.setText("Minecraft Infdev");
+	//Text.position = glm::vec2(15.0f, 20.0f);
+	//Text.scale = glm::vec2(15.0f, 15.0f);
+	//Text.scale = glm::vec2(15.0f, 15.0f);
+}
 
 
-	//the hotbar selection
-	UIUVQuad selectionUV = { glm::vec2(0.0, 0.0859375), glm::vec2(0.09375, 0.0859375), glm::vec2(0.09375, 0.1796875), glm::vec2(0.0, 0.1796875) };
-	std::unique_ptr<Widget> selection = std::make_unique<Widget>(selectionUV);
-	selection.get()->AssignTexture(Game::e_LoadedTextures[1]);
-	selection.get()->SetPosition(glm::vec2(420.2195, 689.7805));
-	selection.get()->SetScale(glm::vec2(60.439, 60.439));
-	AddWidget(std::move(selection));
+void PlayerHUDScreen::RenderScreen() {
+	Hotbar.Render();
+	for (auto& i : items) i.Render();
+	Reticle.Render();
+	Selection.Render();
+	Text.Render();
+}
+void PlayerHUDScreen::UpdateScreen() {
 
-	//the "Minecraft Infdev" text
-	std::unique_ptr<TextDisplayer> text = std::make_unique<TextDisplayer>();
-	text.get()->setText("Minecraft Infdev");
-	text.get()->SetPosition(glm::vec2(15.0f, 20.0f));
-	text.get()->SetScale(glm::vec2(15.0f, 15.0f));
-	AddWidget(std::move(text));
 }

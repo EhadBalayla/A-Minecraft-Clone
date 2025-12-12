@@ -1,6 +1,8 @@
 #include "TextDisplayer.h"
 #include "Game.h"
 
+#include "glm/gtc/matrix_transform.hpp"
+
 glm::vec2 reg_lowercase_size = glm::vec2(1.0f, 1.0f);
 glm::vec2 tall_lowercase_size = glm::vec2(1.0f, 1.4f);
 float tall_lowercase_height = 0.2f;
@@ -111,14 +113,10 @@ std::unordered_map<char, Letter> letters = {
 				reg_uppercase_height }}
 };
 
-
-TextDisplayer::TextDisplayer() {
-	AssignTexture(Game::e_LoadedTextures[5]);
-}
-
 void TextDisplayer::setText(const std::string& newText) {
+	std::string txt = newText;
 	CharUVs.clear();
-	for (auto& c : newText) {
+	for (auto& c : txt) {
 		switch (c) {
 		case 'a':
 			CharUVs.push_back(letters['a']);
@@ -174,23 +172,31 @@ void TextDisplayer::setText(const std::string& newText) {
 	}
 }
 
-void TextDisplayer::RenderWidget(Shader& shader) {
+void TextDisplayer::Render() {
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	Game::fontTex.bind();
+	Game::e_ImageWidgetShader.use();
+
 	float advance = 0.0f;
 	for (auto& c : CharUVs) {
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(position.x + advance, position.y - c.height * scale.y, 0.0f));
 		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0, 0.0, 1.0f));
 		model = glm::scale(model, glm::vec3(scale.x * c.size.x, scale.y * c.size.y, 1.0));
-		shader.setMat4("model", model);
+		Game::e_ImageWidgetShader.setMat4("model", model);
 
-		shader.setVec2("UV0", c.uvs.uv0);
-		shader.setVec2("UV1", c.uvs.uv1);
-		shader.setVec2("UV2", c.uvs.uv2);
-		shader.setVec2("UV3", c.uvs.uv3);
+		Game::e_ImageWidgetShader.setVec2("UV0", c.uvs.uv0);
+		Game::e_ImageWidgetShader.setVec2("UV1", c.uvs.uv1);
+		Game::e_ImageWidgetShader.setVec2("UV2", c.uvs.uv2);
+		Game::e_ImageWidgetShader.setVec2("UV3", c.uvs.uv3);
 
-		m_Texture->bind();
-
-		Game::m_UIManager.DrawQuad();
+		glBindVertexArray(Game::tempVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		advance += c.advance * scale.x;
 	}

@@ -1,5 +1,7 @@
 #pragma once
 #include "Widget.h"
+#include <string>
+#include <vector>
 
 struct Letter {
 	UIUVQuad uvs;
@@ -11,11 +13,10 @@ struct Letter {
 class TextDisplayer : public Widget
 {
 public:
-	TextDisplayer();
 
 	void setText(const std::string& newText);
 
-	void RenderWidget(Shader& shader) override;
+	void Render();
 private:
 	std::vector<Letter> CharUVs;
 };

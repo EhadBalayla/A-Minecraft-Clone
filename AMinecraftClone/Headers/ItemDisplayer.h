@@ -5,9 +5,9 @@
 class ItemDisplayer : public Widget
 {
 public:
-	//InventoryItem* item;
+	InventoryItem* item;
 
-	void RenderWidget(Shader& shader) override;
+	void Render();
 private:
 };
 

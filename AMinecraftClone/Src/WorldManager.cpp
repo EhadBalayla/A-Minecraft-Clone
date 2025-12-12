@@ -77,7 +77,7 @@ bool IsLODInRenderDistance(Chunk* c) { //specifically for LOD chunks to check if
 	return false;
 }
 void WorldManager::RenderWorld() {
-	Game::e_LoadedTextures[0]->bind(); //binds the texture atlas just before drawing
+	Game::terrainAtlas.bind();
 
 	for (auto& pair : chunkProvider.GetAllChunks(0)) {
 		Chunk* c = pair.second;

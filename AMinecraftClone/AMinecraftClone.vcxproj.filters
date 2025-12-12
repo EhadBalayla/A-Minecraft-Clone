@@ -103,9 +103,6 @@
     <ClCompile Include="Src\PlayerInventory.cpp">
       <Filter>Source Files\UI\ActualScreens</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Button.cpp">
-      <Filter>Source Files\UI\ActualWidgets</Filter>
-    </ClCompile>
     <ClCompile Include="Src\ItemDisplayer.cpp">
       <Filter>Source Files\UI\ActualWidgets</Filter>
     </ClCompile>
@@ -119,9 +116,6 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\UIScreen.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Widget.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="Src\AABB.cpp">
@@ -214,6 +208,9 @@
     <ClCompile Include="Src\NetworkingManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\ImageDisplayer.cpp">
+      <Filter>Source Files\UI\ActualWidgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\NoiseGeneratorOctave3.h">
@@ -278,9 +275,6 @@
     </ClInclude>
     <ClInclude Include="Headers\PlayerInventory.h">
       <Filter>Source Files\UI\ActualScreens</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Button.h">
-      <Filter>Source Files\UI\ActualWidgets</Filter>
     </ClInclude>
     <ClInclude Include="Headers\ItemDisplayer.h">
       <Filter>Source Files\UI\ActualWidgets</Filter>
@@ -365,6 +359,9 @@
     </ClInclude>
     <ClInclude Include="Headers\NetworkingManager.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ImageDisplayer.h">
+      <Filter>Source Files\UI\ActualWidgets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,19 +1,26 @@
 #pragma once
 #include "Window.h"
-#include "Shader.h"
-#include <vector>
-#include <glm/glm.hpp>
-#include "Model.h"
-#include "Player.h"
-#include "Texture.h"
-#include "Level.h"
-#include "UIManager.h"
-#include <unordered_map>
-#include "Item.h"
 #include "AudioManager.h"
 #include "DebugRenderer.h"
 #include "DebugUIManager.h"
 #include "NetworkingManager.h"
+
+#include "Shader.h"
+#include "Texture.h"
+
+#include "PlayerHUDScreen.h"
+#include "PlayerInventory.h"
+#include "PauseMenu.h"
+#include "MainMenuScreen.h"
+
+#include "Player.h"
+#include <glm/glm.hpp>
+#include "Level.h"
+#include "Item.h"
+
+#include <vector>
+#include <unordered_map>
+
 
 enum class GameState {
 	MainMenu,
@@ -24,8 +31,7 @@ class MainMenuScreen;
 class Game
 {
 public:
-	static Window e_Window; 
-	static UIManager m_UIManager;
+	static Window e_Window;
 	static AudioManager m_AudioManager;
 	static DebugRenderer m_DebugRenderer;
 	static DebugUIManager m_DebugUI;
@@ -40,18 +46,29 @@ public:
 	static Shader e_ChunkBorderShader;
 	static Shader e_DummyPlayersShader;
 	static Shader e_InventoryBlockShader;
-	static unsigned int tempVAO; //temporary vao for stuff that have hardcoded shaders
+	static Shader e_ImageWidgetShader;
+	static unsigned int tempVAO;
+
+	static Texture terrainAtlas;
+	static Texture guiAtlas;
+	static Texture iconsAtlas;
+	static Texture inventoryTex;
+	static Texture cloudsTex;
+	static Texture fontTex;
+	static Texture logoTex;
+
+	static PlayerInventory inventoryMenu;
+	static PlayerHUDScreen hudScreen;
+	static PauseMenu pauseMenu;
+	static MainMenuScreen mainMenuScreen;
 
 	static bool ShowChunkBorder;
 	static bool ShowDebugMenu;
-	
-	
-	static std::vector<Model*> e_LoadedModels;
-	static std::vector<Texture*> e_LoadedTextures;
 
 
 	static Player player;
 
+	static glm::mat4 ScreenProjection;
 	static glm::mat4 Proj;
 	static glm::mat4 View;
 
@@ -69,9 +86,6 @@ private:
 
 	void RegisterAllBlocks();
 	void RegisterAllItems();
-
-	void LoadAllTextures();
-	void UnloadAllTextures();
 
 	static bool IsGameRunning;
 public: //this "public" section is for gameplay functions such as closing game or creating a specific new UI screen and more

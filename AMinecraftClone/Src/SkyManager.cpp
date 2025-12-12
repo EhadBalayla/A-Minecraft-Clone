@@ -33,7 +33,7 @@ void SkyManager::RenderClouds() {
 	Game::e_CloudShader.setMat4("model", cloudsMatrix);
 	Game::e_CloudShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
 	Game::e_CloudShader.setVec3("playerWorldPos", Game::player.GetPosition());
-	Game::e_LoadedTextures[4]->bind();
+	Game::cloudsTex.bind();
 	
 
 	glBindVertexArray(Game::tempVAO);

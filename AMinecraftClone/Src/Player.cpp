@@ -135,7 +135,7 @@ void Player::Update(float DeltaTime) {
 }
 
 bool Player::CanPerformAbility() {
-    return !inventory && !m_PauseMenu;
+    return !IsInventory && !IsPaused;
 }
 
 void Player::ProcessInput(SDL_Event& e) {
@@ -144,16 +144,13 @@ void Player::ProcessInput(SDL_Event& e) {
             CreativeMode = !CreativeMode;
         }
         else if (e.key.keysym.sym == SDLK_ESCAPE) {
-            if (!m_PauseMenu) {
-                auto ptr = std::make_unique<PauseMenu>();
-                m_PauseMenu = ptr.get();
-                Game::m_UIManager.AddScreen(std::move(ptr));
+            if (!IsPaused) {
+                IsPaused = true;
                 SDL_ShowCursor(1);
                 SDL_SetRelativeMouseMode(SDL_FALSE);
             }
             else {
-                Game::m_UIManager.RemoveScreen(m_PauseMenu);
-                m_PauseMenu = nullptr;
+                IsPaused = false;
                 SDL_ShowCursor(0);
                 SDL_SetRelativeMouseMode(SDL_TRUE);
             }
@@ -162,16 +159,13 @@ void Player::ProcessInput(SDL_Event& e) {
             Game::ShowDebugMenu = !Game::ShowDebugMenu;
         }
         else if (e.key.keysym.sym == SDLK_e) { //for opening inventory
-            if (!inventory) {
-                auto ptr = std::make_unique<PlayerInventory>();
-                inventory = ptr.get();
-                Game::m_UIManager.AddScreen(std::move(ptr));
+            if (!IsInventory) {
+                IsInventory = true;
                 SDL_ShowCursor(1);
                 SDL_SetRelativeMouseMode(SDL_FALSE);
             }
             else {
-                Game::m_UIManager.RemoveScreen(inventory);
-                inventory = nullptr;
+                IsInventory = false;
                 SDL_ShowCursor(0);
                 SDL_SetRelativeMouseMode(SDL_TRUE);
             }
@@ -265,7 +259,7 @@ void Player::ProcessInput(SDL_Event& e) {
 void Player::setSelectedSlot(uint8_t slot) {
     selectedSlot = slot;
     uint8_t slotMultiplier = slot - 1;
-    Game::m_UIManager.GetScreen(0)->GetWidget(2)->SetPosition(glm::vec2(420.2195 + 55 * slotMultiplier, 689.7805));
+    Game::hudScreen.Selection.position = glm::vec2(420.2195 + 55 * slotMultiplier, 689.7805);
 }
 
 void Player::AddItem(Item item, int amount) { //add item to inventory

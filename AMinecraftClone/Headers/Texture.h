@@ -1,12 +1,10 @@
 #pragma once
-#include <string>
 
 class Texture
 {
 public:
-	Texture(const std::string& path);
-	~Texture();
-
+	void LoadTexture(const char* path);
+	void UnloadTexture();
 
 	void bind(unsigned int slot = 0) const;
 	void unbind() const;
@@ -18,4 +16,3 @@ private:
 	unsigned int m_TextureID;
 	int m_Width, m_Height, m_Channels;
 };
-

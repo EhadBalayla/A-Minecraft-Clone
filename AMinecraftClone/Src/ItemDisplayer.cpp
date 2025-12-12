@@ -1,16 +1,33 @@
 #include "ItemDisplayer.h"
 #include "Game.h"
 
-void ItemDisplayer::RenderWidget(Shader& shader) {
-	glDisable(GL_DEPTH_TEST);
+void ItemDisplayer::Render() {
+	ItemData id = Game::e_ItemRegistery[item->m_Item.getType()];
 
+	if (id.type == ItemUsageType::PlaceableBlock) {
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		glFrontFace(GL_CW);
+		glDisable(GL_BLEND);
 
-	glm::mat4 transform = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f)), rotation, glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(position, 0.0f));
+		Game::terrainAtlas.bind();
 
-	Game::e_InventoryBlockShader.use();
-	Game::e_InventoryBlockShader.setMat4("proj", Game::m_UIManager.ScreenProjection);
-	Game::e_InventoryBlockShader.setMat4("model", transform);
+		glm::mat4 transform = glm::mat4(1.0f);
+		transform = glm::translate(transform, glm::vec3(position.x, position.y, 0.0f));
+		transform = glm::scale(transform, glm::vec3(scale.x, scale.y, 1.0f));
+		transform = glm::rotate(transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	glBindVertexArray(Game::tempVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 18);
+		Game::e_InventoryBlockShader.use();
+		Game::e_InventoryBlockShader.setMat4("proj", Game::ScreenProjection);
+		Game::e_InventoryBlockShader.setMat4("model", transform);
+
+		BlockData bd = Game::e_BlockRegistery[id.blockID];
+
+		Game::e_InventoryBlockShader.setInt("TopIDX", bd.uv.Top);
+		Game::e_InventoryBlockShader.setInt("RightIDX", bd.uv.Right);
+		Game::e_InventoryBlockShader.setInt("LeftIDX", bd.uv.Left);
+
+		glBindVertexArray(Game::tempVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 18);
+	}
 }

@@ -1,8 +1,15 @@
 #pragma once
-#include "Button.h"
-class MenuButtons : public Button
+#include "Widget.h"
+
+class MenuButtons : public Widget
 {
 public:
-	MenuButtons();
+	void Render();
+	void Update();
+
+	void(*Callback)();
+private:
+	bool IsHovered = false;
+	bool FirstClick = false;
 };
 

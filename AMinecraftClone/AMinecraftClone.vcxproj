@@ -177,7 +177,6 @@
     <ClCompile Include="Src\AABB.cpp" />
     <ClCompile Include="Src\AudioManager.cpp" />
     <ClCompile Include="Src\Block.cpp" />
-    <ClCompile Include="Src\Button.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\Chunk.cpp" />
     <ClCompile Include="Src\ChunkGenerator.cpp" />
@@ -188,6 +187,7 @@
     <ClCompile Include="Src\Entity.cpp" />
     <ClCompile Include="Src\Game.cpp" />
     <ClCompile Include="Src\glad.c" />
+    <ClCompile Include="Src\ImageDisplayer.cpp" />
     <ClCompile Include="Src\InventoryItem.cpp" />
     <ClCompile Include="Src\Item.cpp" />
     <ClCompile Include="Src\ItemDisplayer.cpp" />
@@ -222,7 +222,6 @@
     <ClCompile Include="Src\UIManager.cpp" />
     <ClCompile Include="Src\UIScreen.cpp" />
     <ClCompile Include="Src\Utilities.cpp" />
-    <ClCompile Include="Src\Widget.cpp" />
     <ClCompile Include="Src\Window.cpp" />
     <ClCompile Include="Src\WorldManager.cpp" />
   </ItemGroup>
@@ -230,7 +229,6 @@
     <ClInclude Include="Headers\AABB.h" />
     <ClInclude Include="Headers\AudioManager.h" />
     <ClInclude Include="Headers\Block.h" />
-    <ClInclude Include="Headers\Button.h" />
     <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Chunk.h" />
     <ClInclude Include="Headers\ChunkGenerator.h" />
@@ -240,6 +238,7 @@
     <ClInclude Include="Headers\DebugUIManager.h" />
     <ClInclude Include="Headers\Entity.h" />
     <ClInclude Include="Headers\Game.h" />
+    <ClInclude Include="Headers\ImageDisplayer.h" />
     <ClInclude Include="Headers\InventoryItem.h" />
     <ClInclude Include="Headers\Item.h" />
     <ClInclude Include="Headers\ItemDisplayer.h" />

@@ -29,6 +29,12 @@ public:
 	glm::ivec2 GetCurrentChunkCoords();
 
 	bool CreativeMode = true;
+	bool IsPaused = false;
+	bool IsInventory = false;
+
+	//inventory stuff
+	InventoryItem m_PlayerItems[36];
+	void AddItem(Item item, int amount); //basically adds an item to the player's inventory,
 private:
 	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
 	glm::vec3 getCameraPosition(); //returns the camera position
@@ -45,13 +51,7 @@ private:
 
 	bool CanPerformAbility(); //returns wether the player can perform an ability, as in wether any menu that should interrupt the player such as inventory is open
 
-	//inventory stuff
-	PlayerInventory* inventory;
-	InventoryItem m_PlayerItems[36];
-	void AddItem(Item item, int amount); //basically adds an item to the player's inventory,
 
-	//Pause Menu stuff
-	PauseMenu* m_PauseMenu;
 
 	//whatever the chunk the player is currently in
 	int currentChunkX = 0;

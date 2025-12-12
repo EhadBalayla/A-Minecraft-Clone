@@ -21,7 +21,6 @@ struct ItemData {
 	BlockType blockID = BlockType::Air; // the type of block if the item is a placeable block
 };
 
-
 enum ItemType //basically ItemIDs
 {
 	NoItem,
