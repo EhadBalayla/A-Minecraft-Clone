@@ -60,6 +60,7 @@ void DebugUIManager::Render2() {
 	ImGui::SetNextWindowPos(ImVec2(4, 33));
 	ImGui::Begin("Debug Menu for Main Menu", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
+	ImGui::SeparatorText("settings");
 	ImGui::TextUnformatted("Select Terrain: ");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(150.0f);
@@ -72,6 +73,16 @@ void DebugUIManager::Render2() {
 
 		ImGui::EndCombo();
 	}
+	ImGui::TextUnformatted("LOD count: ");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(150.0f);
+	ImGui::SliderInt("##LODSlider", &Game::LODCount, 1, 5);
+	ImGui::TextUnformatted("Render Distance: ");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(150.0f);
+	ImGui::SliderInt("##RD SLider", &Game::RenderDistance, 3, 32);
+
+
 	ImGui::SeparatorText("networking");
 	ImGui::TextUnformatted("Connect: ");
 	ImGui::SameLine();

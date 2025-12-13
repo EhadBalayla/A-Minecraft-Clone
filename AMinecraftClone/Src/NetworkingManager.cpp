@@ -39,11 +39,11 @@ void NetworkingManager::Connect(const char* hostAddress, int pPort) {
 void NetworkingManager::Disconnect() {
 	if (state != NetworkingState::Connected) return;
 
-	state = NetworkingState::Disconnected; //if it is on the connected state, the networking thread will never change the variable it will only read from it, so its safe
+	state = NetworkingState::Disconnecting; //if it is on the connected state, the networking thread will never change the variable it will only read from it, so its safe
 }
 
 void NetworkingManager::Render() {
-	if (otherPlayersCount > 0) {
+	if (otherPlayersCount > 0 && state == NetworkingState::Connected) {
 
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);

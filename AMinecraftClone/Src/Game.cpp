@@ -49,6 +49,8 @@ DebugUIManager Game::m_DebugUI;
 bool Game::ShowDebugMenu = true;
 int Game::m_ChosenTerrain = 0;
 NetworkingManager Game::m_Networking;
+int Game::RenderDistance = 16;
+int Game::LODCount = 5;
 
 
 #ifdef _WIN32
@@ -59,7 +61,7 @@ NetworkingManager Game::m_Networking;
 
 void Game::Init() {
 #ifdef _WIN32
-	//FreeConsole();
+	FreeConsole();
 #endif
 	e_Window.Init();
 	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
@@ -292,4 +294,5 @@ void Game::UnloadGameState() {
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 
 	delete level;
+	player.IsPaused = false;
 }

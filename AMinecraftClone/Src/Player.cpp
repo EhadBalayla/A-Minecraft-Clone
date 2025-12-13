@@ -82,17 +82,19 @@ void Player::UpdateChunksAroundPlayer() {
             currentChunkZ = newChunkZ;
         }
 
-        for (int i = 1; i <= 4; i++) {
-            int LODSize = GetLODSize(i);
+        if (Game::LODCount > 1) {
+            for (int i = 1; i <= Game::LODCount - 1; i++) {
+                int LODSize = GetLODSize(i);
 
-            int newLodChunkX = newChunkX / LODSize;
-            int newLodChunkZ = newChunkZ / LODSize;
+                int newLodChunkX = newChunkX / LODSize;
+                int newLodChunkZ = newChunkZ / LODSize;
 
-            if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
-                Game::level->GetWorld().UpdateChunks(newLodChunkX, newLodChunkZ, i);
+                if (newLodChunkX != currentLODChunkX[i - 1] || newLodChunkZ != currentLODChunkZ[i - 1]) {
+                    Game::level->GetWorld().UpdateChunks(newLodChunkX, newLodChunkZ, i);
 
-                currentLODChunkX[i - 1] = newLodChunkX;
-                currentLODChunkZ[i - 1] = newLodChunkZ;
+                    currentLODChunkX[i - 1] = newLodChunkX;
+                    currentLODChunkZ[i - 1] = newLodChunkZ;
+                }
             }
         }
     }

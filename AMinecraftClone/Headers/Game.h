@@ -92,7 +92,8 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void CloseGame();
 
 
-	const static uint8_t RenderDistance = 16;
+	static int RenderDistance;
+	static int LODCount; /*from 1 - 5*/
 
 	static void ChangeState(GameState newState);
 

@@ -21,11 +21,9 @@ WorldManager::~WorldManager() {
 
 void WorldManager::ChunksStart(int CenterX, int CenterZ) {
 	//generate new chunks that aren't in render distance.
-	UpdateChunks(CenterX, CenterZ, 0);
-	UpdateChunks(CenterX, CenterZ, 1);
-	UpdateChunks(CenterX, CenterZ, 2);
-	UpdateChunks(CenterX, CenterZ, 3);
-	UpdateChunks(CenterX, CenterZ, 4);
+	for (int i = 0; i < Game::LODCount; i++) {
+		UpdateChunks(CenterX, CenterZ, i);
+	}
 }
 void WorldManager::UpdateChunks(int CenterX, int CenterZ, uint8_t LOD) {
 	//generate new chunks that aren't in render distance.
