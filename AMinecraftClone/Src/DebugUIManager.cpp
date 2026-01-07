@@ -47,7 +47,8 @@ void DebugUIManager::Render(float DeltaTime) {
 }
 const char* comboOptions[] = {
 	"Infdev 2010-02-27",
-	"Infdev 2010-03-27"
+	"Infdev 2010-03-27",
+	"Infdev 2010-06-30"
 };
 char addressBuffer[256] = "127.0.0.1";
 int port = 25565;
@@ -65,7 +66,7 @@ void DebugUIManager::Render2() {
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(150.0f);
 	if (ImGui::BeginCombo("##Terrain Type Select: ", comboOptions[Game::m_ChosenTerrain])) {
-		for (int i = 0; i < 2; i++) { 
+		for (int i = 0; i < 3; i++) { 
 			if (ImGui::Selectable(comboOptions[i], Game::m_ChosenTerrain == i)) {
 				Game::m_ChosenTerrain = i;
 			}

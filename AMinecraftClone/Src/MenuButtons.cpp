@@ -30,17 +30,25 @@ void MenuButtons::Render() {
 	Game::e_ImageWidgetShader.setMat4("projection", Game::ScreenProjection);
 	Game::e_ImageWidgetShader.setMat4("model", trans);
 
-	if (IsHovered) {
-		Game::e_ImageWidgetShader.setVec2("UV0", buttonHoveredUV.uv0);
-		Game::e_ImageWidgetShader.setVec2("UV1", buttonHoveredUV.uv1);
-		Game::e_ImageWidgetShader.setVec2("UV2", buttonHoveredUV.uv2);
-		Game::e_ImageWidgetShader.setVec2("UV3", buttonHoveredUV.uv3);
+	if (!IsDisabled) {
+		if (IsHovered) {
+			Game::e_ImageWidgetShader.setVec2("UV0", buttonHoveredUV.uv0);
+			Game::e_ImageWidgetShader.setVec2("UV1", buttonHoveredUV.uv1);
+			Game::e_ImageWidgetShader.setVec2("UV2", buttonHoveredUV.uv2);
+			Game::e_ImageWidgetShader.setVec2("UV3", buttonHoveredUV.uv3);
+		}
+		else {
+			Game::e_ImageWidgetShader.setVec2("UV0", buttonNormalUV.uv0);
+			Game::e_ImageWidgetShader.setVec2("UV1", buttonNormalUV.uv1);
+			Game::e_ImageWidgetShader.setVec2("UV2", buttonNormalUV.uv2);
+			Game::e_ImageWidgetShader.setVec2("UV3", buttonNormalUV.uv3);
+		}
 	}
 	else {
-		Game::e_ImageWidgetShader.setVec2("UV0", buttonNormalUV.uv0);
-		Game::e_ImageWidgetShader.setVec2("UV1", buttonNormalUV.uv1);
-		Game::e_ImageWidgetShader.setVec2("UV2", buttonNormalUV.uv2);
-		Game::e_ImageWidgetShader.setVec2("UV3", buttonNormalUV.uv3);
+		Game::e_ImageWidgetShader.setVec2("UV0", buttonOffUV.uv0);
+		Game::e_ImageWidgetShader.setVec2("UV1", buttonOffUV.uv1);
+		Game::e_ImageWidgetShader.setVec2("UV2", buttonOffUV.uv2);
+		Game::e_ImageWidgetShader.setVec2("UV3", buttonOffUV.uv3);
 	}
 
 
@@ -49,39 +57,49 @@ void MenuButtons::Render() {
 
 	//render the text
 	text.position = glm::vec2(position.x - FindTextSize(text.GetText()) / 2.0f, position.y);
-	if (!IsHovered) text.setTint(glm::vec4(1.0f));
-	else text.setTint(glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
+	if (!IsDisabled) {
+		if (!IsHovered) text.setTint(glm::vec4(1.0f));
+		else text.setTint(glm::vec4(1.0f, 1.0f, 0.6f, 1.0f));
+	}
+	else {
+		text.setTint(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+	}
 	text.Render();
 }
 void MenuButtons::Update() {
-	int MouseX = 0;
-	int MouseY = 0;
-	auto mouseState = SDL_GetMouseState(&MouseX, &MouseY);
+	if (!IsDisabled) {
+		int MouseX = 0;
+		int MouseY = 0;
+		auto mouseState = SDL_GetMouseState(&MouseX, &MouseY);
 
-	if ((MouseX > position.x - (scale.x / 2.0f) && MouseX < position.x + (scale.x / 2.0f)) &&
-		(MouseY > position.y - (scale.y / 2.0f) && MouseY < position.y + (scale.y / 2.0f))) {
-		if (!IsHovered) { //if wasn't hovered already then make hovered
-			IsHovered = true;
-		}
+		if ((MouseX > position.x - (scale.x / 2.0f) && MouseX < position.x + (scale.x / 2.0f)) &&
+			(MouseY > position.y - (scale.y / 2.0f) && MouseY < position.y + (scale.y / 2.0f))) {
+			if (!IsHovered) { //if wasn't hovered already then make hovered
+				IsHovered = true;
+			}
 
-		if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-			if (!FirstClick) {
-				FirstClick = true;
-				Callback();
+			if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+				if (!Game::FirstClick) {
+					Game::FirstClick = true;
+					Callback();
+				}
+			}
+			else {
+				if (Game::FirstClick)
+					Game::FirstClick = false;
 			}
 		}
 		else {
-			if (FirstClick)
-				FirstClick = false;
-		}
-	}
-	else {
-		if (IsHovered) {
-			IsHovered = false;
+			if (IsHovered) {
+				IsHovered = false;
+			}
 		}
 	}
 }
 
 void MenuButtons::SetText(const std::string& newText) {
 	text.setText(newText);
+}
+void MenuButtons::SetDisabled(bool disabled) {
+	IsDisabled = disabled;
 }

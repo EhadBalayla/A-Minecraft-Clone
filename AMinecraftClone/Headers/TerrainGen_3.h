@@ -11,7 +11,7 @@ public:
 
 	//generates Alpha terrain
 	void GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD);
-	void populate(int ChunkX, int ChunkZ);
+	void populate(int ChunkX, int ChunkZ, uint8_t LOD);
 private:
 	WorldManager* owningWorld = nullptr;
 	long randomSeed;
@@ -44,8 +44,8 @@ private:
 	double* stoneNoise = nullptr;
 
 	//terrain gen
-	void generateTerrain(int var1, int var2, BlockType* voxelData);
-	void replaceSurfaceBlocks(int var1, int var2, BlockType* voxelData);
+	void generateTerrain(int var1, int var2, BlockType* voxelData, uint8_t LOD);
+	void replaceSurfaceBlocks(int var1, int var2, BlockType* voxelData, uint8_t LOD);
 	void GenerateCaves(int var3, int var4, BlockType* var5);
 
 	//population gen

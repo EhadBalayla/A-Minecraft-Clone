@@ -21,6 +21,7 @@ Shader Game::e_DummyPlayersShader;
 Shader Game::e_InventoryBlockShader;
 Shader Game::e_ImageWidgetShader;
 Shader Game::e_TextShader;
+Shader Game::e_MainMenuBackgroundShader;
 Texture Game::terrainAtlas;
 Texture Game::guiAtlas;
 Texture Game::iconsAtlas;
@@ -28,10 +29,13 @@ Texture Game::inventoryTex;
 Texture Game::cloudsTex;
 Texture Game::fontTex;
 Texture Game::logoTex;
+Texture Game::dirtTex;
 PlayerInventory Game::inventoryMenu;
 PlayerHUDScreen Game::hudScreen;
 PauseMenu Game::pauseMenu;
 MainMenuScreen Game::mainMenuScreen;
+OptionsMenu Game::optionsMenu;
+SavesMenu Game::savesMenu;
 glm::mat4 Game::ScreenProjection;
 glm::mat4 Game::Proj;
 glm::mat4 Game::View;
@@ -53,6 +57,10 @@ int Game::m_ChosenTerrain = 0;
 NetworkingManager Game::m_Networking;
 int Game::RenderDistance = 16;
 int Game::LODCount = 5;
+MainMenuMenu Game::MainMenuState = MainMenuMenu::Title;
+InGameMenu Game::InGameMenuState = InGameMenu::PauseMenu;
+GameState Game::GetGameState() { return state; }
+bool Game::FirstClick = false;
 
 
 #ifdef _WIN32
@@ -82,6 +90,7 @@ void Game::Init() {
 	e_InventoryBlockShader.loadShader("Shaders/InventoryItem_Vert.glsl", "Shaders/InventoryItem_Frag.glsl");
 	e_ImageWidgetShader.loadShader("Shaders/UIShader_Vert.glsl", "Shaders/UIShader_Frag.glsl");
 	e_TextShader.loadShader("Shaders/TextShader_Vert.glsl", "Shaders/TextShader_Frag.glsl");
+	e_MainMenuBackgroundShader.loadShader("Shaders/MainMenuBackground_Vert.glsl", "Shaders/MainMenuBackground_Frag.glsl");
 	glGenVertexArrays(1, &tempVAO);
 
 
@@ -92,6 +101,7 @@ void Game::Init() {
 	cloudsTex.LoadTexture("SkyTextures/clouds.png");
 	fontTex.LoadTexture("DefaultFont.png");
 	logoTex.LoadTexture("GUI/logo.png");
+	dirtTex.LoadTexture("dirt.png");
 
 
 	Proj = glm::perspective(glm::radians(70.0f), 1920.0f / 1080.0f, 0.1f, 50000.0f);
@@ -147,10 +157,36 @@ void Game::GameLoop() {
 				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 
-			mainMenuScreen.UpdateScreen();
-			mainMenuScreen.RenderScreen();
+			//render the background of the main menu
+			dirtTex.bind();
+			e_MainMenuBackgroundShader.use();
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_BLEND);
+			glBindVertexArray(tempVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+	
+			switch (MainMenuState) {
+			case MainMenuMenu::Title:
+				//render and update the main menu screen
+				mainMenuScreen.UpdateScreen();
+				mainMenuScreen.RenderScreen();
+				break;
+			case MainMenuMenu::SinglePlayer:
+				//render and update the world selection screen
+				savesMenu.UpdateScreen();
+				savesMenu.RenderScreen();
+				break;
+			case MainMenuMenu::MultiPlayer:
 
-			m_DebugUI.Render2();
+				break;
+			case MainMenuMenu::Options:
+				//render and update the options menu inside the main menu (not the in game version)
+				optionsMenu.UpdateScreen();
+				optionsMenu.RenderScreen();
+				break;
+			}
+
+			if (ShowDebugMenu) m_DebugUI.Render2();
 
 			break;
 		case GameState::InGame:
@@ -175,8 +211,16 @@ void Game::GameLoop() {
 
 			hudScreen.RenderScreen();
 			if (player.IsPaused) {
-				pauseMenu.UpdateScreen();
-				pauseMenu.RenderScreen();
+				switch(InGameMenuState) {
+				case InGameMenu::PauseMenu:
+					pauseMenu.UpdateScreen();
+					pauseMenu.RenderScreen();
+					break;
+				case InGameMenu::Options:
+					optionsMenu.UpdateScreen();
+					optionsMenu.RenderScreen();
+					break;
+				}
 			}
 			if (player.IsInventory) {
 				inventoryMenu.RenderScreen();

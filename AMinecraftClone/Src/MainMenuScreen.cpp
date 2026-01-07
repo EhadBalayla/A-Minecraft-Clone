@@ -2,7 +2,11 @@
 #include "Game.h"
 
 void StartGameCallback() {
-	Game::ChangeState(GameState::InGame);
+	Game::MainMenuState = MainMenuMenu::SinglePlayer;
+}
+
+void GoToOptions() {
+	Game::MainMenuState = MainMenuMenu::Options;
 }
 
 MainMenuScreen::MainMenuScreen() {
@@ -19,14 +23,17 @@ MainMenuScreen::MainMenuScreen() {
 	MultiPlayerButton.position = glm::vec2(640, 430);
 	MultiPlayerButton.scale = glm::vec2(600, 60);
 	MultiPlayerButton.SetText("Multiplayer");
+	MultiPlayerButton.SetDisabled(true);
 
 	TutorialButton.position = glm::vec2(640, 500);
 	TutorialButton.scale = glm::vec2(600, 60);
 	TutorialButton.SetText("Play tutorial level");
+	TutorialButton.SetDisabled(true);
 
 	OptionsButton.position = glm::vec2(640, 600);
 	OptionsButton.scale = glm::vec2(600, 60);
 	OptionsButton.SetText("Options...");
+	OptionsButton.Callback = GoToOptions;
 }
 
 

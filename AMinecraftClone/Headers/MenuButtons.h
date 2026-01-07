@@ -11,9 +11,10 @@ public:
 	void(*Callback)();
 
 	void SetText(const std::string& newText);
+	void SetDisabled(bool disabled);
 private:
+	bool IsDisabled = false;
 	bool IsHovered = false;
-	bool FirstClick = false;
 
 	TextDisplayer text;
 };

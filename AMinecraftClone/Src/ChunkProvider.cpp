@@ -7,18 +7,32 @@
 
 void ChunkGen(Chunk* c, WorldManager* owningWorld) {
 	int LODFactor = GetLODSize(c->LOD);
-	if(Game::m_ChosenTerrain == 0)
+	switch (Game::m_ChosenTerrain) {
+	case 0:
 		owningWorld->GetChunkGenerator().Gen1.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
-	else if(Game::m_ChosenTerrain == 1)
+		break;
+	case 1:
 		owningWorld->GetChunkGenerator().Gen2.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
+		break;
+	case 2:
+		owningWorld->GetChunkGenerator().Gen3.GenerateChunk(c->m_Blocks, c->ChunkX * LODFactor, c->ChunkZ * LODFactor, c->LOD);
+		break;
+	}
 	c->GenerateHeightMap();
 	c->IsGenerated = true;
 }
 void ChunkPop(Chunk* c, WorldManager* owningWorld) {
-	if (Game::m_ChosenTerrain == 0)
+	switch (Game::m_ChosenTerrain) {
+	case 0:
 		owningWorld->GetChunkGenerator().Gen1.populate(c->ChunkX, c->ChunkZ, c->LOD);
-	else if (Game::m_ChosenTerrain == 1)
+		break;
+	case 1:
 		owningWorld->GetChunkGenerator().Gen2.populate(c->ChunkX, c->ChunkZ, c->LOD);
+		break;
+	case 2:
+		owningWorld->GetChunkGenerator().Gen3.populate(c->ChunkX, c->ChunkZ, c->LOD);
+		break;
+	}
 	c->IsModified = true;
 }
 void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
@@ -28,7 +42,7 @@ void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
 
 
 
-ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), pool(15) {
+ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), /*pool(20)*/genPool(8), popPool(8), meshPool(5) {
 }
 ChunkProvider::~ChunkProvider() {
 	DeleteAllChunks();
@@ -45,12 +59,12 @@ Chunk* ChunkProvider::ProvideChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 	GetAllChunks(LOD)[glm::ivec2(ChunkX, ChunkZ)] = c;
 	c->CreateMeshObjects();
 
-	pool.QueueJob({ ChunkGen, c, owningWorld});
+	genPool.QueueJob({ ChunkGen, c, owningWorld});
 
 	return c;
 }
 void ChunkProvider::MeshChunk(Chunk* c) {
-	pool.QueueJob({ ChunkMesh, c, owningWorld });
+	popPool.QueueJob({ ChunkMesh, c, owningWorld });
 }
 void ChunkProvider::PopChunk(Chunk* c) {
 	int ChunkX = c->ChunkX;
@@ -58,7 +72,7 @@ void ChunkProvider::PopChunk(Chunk* c) {
 
 	if (!c->IsPopulated && IsValidChunk(ChunkX + 1, ChunkZ + 1, c->LOD) && IsValidChunk(ChunkX, ChunkZ + 1, c->LOD) && IsValidChunk(ChunkX + 1, ChunkZ, c->LOD)) {
 		c->IsPopulated = true;
-		pool.QueueJob({ ChunkPop, c, owningWorld });
+		meshPool.QueueJob({ ChunkPop, c, owningWorld });
 	}
 }
 bool ChunkProvider::HasAllNeighbors(Chunk* c) {

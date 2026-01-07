@@ -12,6 +12,8 @@
 #include "PlayerInventory.h"
 #include "PauseMenu.h"
 #include "MainMenuScreen.h"
+#include "OptionsMenu.h"
+#include "SavesMenu.h"
 
 #include "Player.h"
 #include <glm/glm.hpp>
@@ -30,6 +32,18 @@ struct Glyph {
 enum class GameState {
 	MainMenu,
 	InGame
+};
+
+enum class MainMenuMenu {
+	Title,
+	SinglePlayer,
+	MultiPlayer,
+	Options,
+};
+
+enum class InGameMenu {
+	PauseMenu,
+	Options
 };
 
 class Game
@@ -52,6 +66,7 @@ public:
 	static Shader e_InventoryBlockShader;
 	static Shader e_ImageWidgetShader;
 	static Shader e_TextShader;
+	static Shader e_MainMenuBackgroundShader;
 	static unsigned int tempVAO;
 
 	static Texture terrainAtlas;
@@ -61,11 +76,14 @@ public:
 	static Texture cloudsTex;
 	static Texture fontTex;
 	static Texture logoTex;
+	static Texture dirtTex;
 
 	static PlayerInventory inventoryMenu;
 	static PlayerHUDScreen hudScreen;
 	static PauseMenu pauseMenu;
 	static MainMenuScreen mainMenuScreen;
+	static OptionsMenu optionsMenu;
+	static SavesMenu savesMenu;
 
 	static bool ShowChunkBorder;
 	static bool ShowDebugMenu;
@@ -105,6 +123,12 @@ public: //this "public" section is for gameplay functions such as closing game o
 	static void ChangeState(GameState newState);
 
 	static int m_ChosenTerrain;
+
+	static MainMenuMenu MainMenuState;
+	static InGameMenu InGameMenuState;
+
+	static GameState GetGameState();
+	static bool FirstClick;
 
 private: //this "private" section is for gameplay functions such as cloud rendering etc...
 	static GameState lastState;

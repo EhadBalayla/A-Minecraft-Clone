@@ -206,11 +206,13 @@
     <ClCompile Include="Src\NoiseGeneratorPerlin2.cpp" />
     <ClCompile Include="Src\NoiseGeneratorPerlin3.cpp" />
     <ClCompile Include="Src\OctaveNoise.cpp" />
+    <ClCompile Include="Src\OptionsMenu.cpp" />
     <ClCompile Include="Src\PauseMenu.cpp" />
     <ClCompile Include="Src\PerlinNoise.cpp" />
     <ClCompile Include="Src\Player.cpp" />
     <ClCompile Include="Src\PlayerHUDScreen.cpp" />
     <ClCompile Include="Src\PlayerInventory.cpp" />
+    <ClCompile Include="Src\SavesMenu.cpp" />
     <ClCompile Include="Src\Shader.cpp" />
     <ClCompile Include="Src\SkyManager.cpp" />
     <ClCompile Include="Src\TerrainGen_1.cpp" />
@@ -256,11 +258,13 @@
     <ClInclude Include="Headers\NoiseGeneratorPerlin2.h" />
     <ClInclude Include="Headers\NoiseGeneratorPerlin3.h" />
     <ClInclude Include="Headers\OctaveNoise.h" />
+    <ClInclude Include="Headers\OptionsMenu.h" />
     <ClInclude Include="Headers\PauseMenu.h" />
     <ClInclude Include="Headers\PerlinNoise.h" />
     <ClInclude Include="Headers\Player.h" />
     <ClInclude Include="Headers\PlayerHUDScreen.h" />
     <ClInclude Include="Headers\PlayerInventory.h" />
+    <ClInclude Include="Headers\SavesMenu.h" />
     <ClInclude Include="Headers\Shader.h" />
     <ClInclude Include="Headers\SkyManager.h" />
     <ClInclude Include="Headers\TerrainGen_1.h" />

@@ -208,6 +208,12 @@
     <ClCompile Include="Src\ImageDisplayer.cpp">
       <Filter>Source Files\UI\ActualWidgets</Filter>
     </ClCompile>
+    <ClCompile Include="Src\OptionsMenu.cpp">
+      <Filter>Source Files\UI\ActualScreens</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\SavesMenu.cpp">
+      <Filter>Source Files\UI\ActualScreens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\NoiseGeneratorOctave3.h">
@@ -356,6 +362,12 @@
     </ClInclude>
     <ClInclude Include="Headers\ImageDisplayer.h">
       <Filter>Source Files\UI\ActualWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\OptionsMenu.h">
+      <Filter>Source Files\UI\ActualScreens</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SavesMenu.h">
+      <Filter>Source Files\UI\ActualScreens</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

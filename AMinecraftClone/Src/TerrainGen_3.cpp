@@ -19,10 +19,14 @@ TerrainGen_3::~TerrainGen_3() {
 void TerrainGen_3::GenerateChunk(BlockType* voxelData, int ChunkX, int ChunkZ, uint8_t LOD) {
 	Rand.setSeed((long)ChunkX * 341873128712L + (long)ChunkZ * 132897987541L);
 
-	generateTerrain(ChunkX, ChunkZ, voxelData);
-	replaceSurfaceBlocks(ChunkX, ChunkZ, voxelData);
+	generateTerrain(ChunkX, ChunkZ, voxelData, LOD);
+	replaceSurfaceBlocks(ChunkX, ChunkZ, voxelData, LOD);
 }
-void TerrainGen_3::populate(int var2, int var3) {
+void TerrainGen_3::populate(int var2, int var3, uint8_t LOD) {
+	if (LOD != 0) return;
+
+	return;
+
 	int var4 = var2 * 16;
 	int var5 = var3 * 16;
 	Rand.setSeed(randomSeed);
@@ -194,77 +198,80 @@ void TerrainGen_3::populate(int var2, int var3) {
 	//BlockSand.fallInstantly = false;
 }
 
-void TerrainGen_3::generateTerrain(int var1, int var2, BlockType* voxelData) {
-	char var4 = 4;
-	char var5 = 64;
-	int var6 = var4 + 1;
-	char var7 = 17;
-	int var8 = var4 + 1;
-	noiseArray = initializeNoiseField(noiseArray, var1 * var4, 0, var2 * var4, var6, var7, var8);
+void TerrainGen_3::generateTerrain(int chunkX, int chunkZ, BlockType* voxelData, uint8_t LOD) {
+	int LODFactor = 1 << LOD;
 
-	for (int var9 = 0; var9 < var4; ++var9) {
-		for (int var10 = 0; var10 < var4; ++var10) {
-			for (int var11 = 0; var11 < 16; ++var11) {
-				double var12 = 0.125;
-				double var14 = noiseArray[((var9 + 0) * var8 + var10 + 0) * var7 + var11 + 0];
-				double var16 = noiseArray[((var9 + 0) * var8 + var10 + 1) * var7 + var11 + 0];
-				double var18 = noiseArray[((var9 + 1) * var8 + var10 + 0) * var7 + var11 + 0];
-				double var20 = noiseArray[((var9 + 1) * var8 + var10 + 1) * var7 + var11 + 0];
-				double var22 = (noiseArray[((var9 + 0) * var8 + var10 + 0) * var7 + var11 + 1] - var14) * var12;
-				double var24 = (noiseArray[((var9 + 0) * var8 + var10 + 1) * var7 + var11 + 1] - var16) * var12;
-				double var26 = (noiseArray[((var9 + 1) * var8 + var10 + 0) * var7 + var11 + 1] - var18) * var12;
-				double var28 = (noiseArray[((var9 + 1) * var8 + var10 + 1) * var7 + var11 + 1] - var20) * var12;
+	const int NOISE_STEP = 4;
+	constexpr int SEA_LEVEL = 64;
+	constexpr int NOISE_Y = 17;
 
-				for (int var30 = 0; var30 < 8; ++var30) {
-					double var31 = 0.25;
-					double var33 = var14;
-					double var35 = var16;
-					double var37 = (var18 - var14) * var31;
-					double var39 = (var20 - var16) * var31;
+	int noiseX = NOISE_STEP + 1;
+	int noiseZ = NOISE_STEP + 1;
 
-					for (int var41 = 0; var41 < 4; ++var41) {
-						double var44 = 0.25;
-						double var46 = var33;
-						double var48 = (var35 - var33) * var44;
+	noiseArray = initializeNoiseField(noiseArray, chunkX * NOISE_STEP, 0, chunkZ * NOISE_STEP, noiseX, NOISE_Y, noiseZ);
 
-						for (int var50 = 0; var50 < 4; ++var50) {
-							BlockType var51 = BlockType::Air;
-							if (var11 * 8 + var30 < var5) {
-								if (owningWorld->IsSnowWorld && var11 * 8 + var30 >= var5 - 1) {
-									var51 = BlockType::Obsidian;
-								}
-								else {
-									var51 = BlockType::WaterStill;
-								}
-							}
+	for (int nx = 0; nx < NOISE_STEP; nx++) {
+		for (int nz = 0; nz < NOISE_STEP; nz++) {
+			for (int ny = 0; ny < 16; ny++) {
 
-							if (var46 > 0.0) {
-								var51 = BlockType::Stone;
-							}
+				// Sample 8 noise corners
+				double d000 = noiseArray[((nx + 0) * noiseZ + (nz + 0)) * NOISE_Y + ny];
+				double d001 = noiseArray[((nx + 0) * noiseZ + (nz + 1)) * NOISE_Y + ny];
+				double d010 = noiseArray[((nx + 1) * noiseZ + (nz + 0)) * NOISE_Y + ny];
+				double d011 = noiseArray[((nx + 1) * noiseZ + (nz + 1)) * NOISE_Y + ny];
 
-							voxelData[IndexAt(var41 + var9 * 4, var11 * 8 + var30, var50 + var10 * 4)] = var51;
-							var46 += var48;
+				double dy000 = (noiseArray[((nx + 0) * noiseZ + (nz + 0)) * NOISE_Y + ny + 1] - d000) * 0.125;
+				double dy001 = (noiseArray[((nx + 0) * noiseZ + (nz + 1)) * NOISE_Y + ny + 1] - d001) * 0.125;
+				double dy010 = (noiseArray[((nx + 1) * noiseZ + (nz + 0)) * NOISE_Y + ny + 1] - d010) * 0.125;
+				double dy011 = (noiseArray[((nx + 1) * noiseZ + (nz + 1)) * NOISE_Y + ny + 1] - d011) * 0.125;
+
+				for (int ySub = 0; ySub < 8; ySub++) {
+					double dx00 = d000;
+					double dx01 = d001;
+					double dxStep0 = (d010 - d000) * 0.25;
+					double dxStep1 = (d011 - d001) * 0.25;
+
+					for (int xSub = 0; xSub < 4; xSub++) {
+						double density = dx00;
+						double dzStep = (dx01 - dx00) * 0.25;
+
+						for (int zSub = 0; zSub < 4; zSub++) {
+							int x = xSub + nx * 4;
+							int y = ySub + ny * 8;
+							int z = zSub + nz * 4;
+
+							BlockType block = BlockType::Air;
+
+							if (y < SEA_LEVEL)
+								block = BlockType::WaterStill;
+
+							if (density > 0.0)
+								block = BlockType::Stone;
+
+							voxelData[IndexAt(x, y, z)] = block;
+
+							density += dzStep;
 						}
 
-						var33 += var37;
-						var35 += var39;
+						dx00 += dxStep0;
+						dx01 += dxStep1;
 					}
 
-					var14 += var22;
-					var16 += var24;
-					var18 += var26;
-					var20 += var28;
+					d000 += dy000;
+					d001 += dy001;
+					d010 += dy010;
+					d011 += dy011;
 				}
 			}
 		}
 	}
 }
-void TerrainGen_3::replaceSurfaceBlocks(int var1, int var2, BlockType* voxelData) {
+void TerrainGen_3::replaceSurfaceBlocks(int ChunkX, int ChunkZ, BlockType* voxelData, uint8_t LOD) {
 	int var4 = 64;
 	double var5 = 1.0 / 32.0;
-	sandNoise = noiseGen4.generateNoiseOctaves(sandNoise, (double)(var1 * 16), (double)(var2 * 16), 0.0, 16, 16, 1, var5, var5, 1.0);
-	gravelNoise = noiseGen4.generateNoiseOctaves(gravelNoise, (double)(var2 * 16), 109.0134, (double)(var1 * 16), 16, 1, 16, var5, 1.0, var5);
-	stoneNoise = noiseGen5.generateNoiseOctaves(stoneNoise, (double)(var1 * 16), (double)(var2 * 16), 0.0, 16, 16, 1, var5 * 2.0, var5 * 2.0, var5 * 2.0);
+	sandNoise = noiseGen4.generateNoiseOctaves(sandNoise, (double)(ChunkX * 16), (double)(ChunkZ * 16), 0.0, 16, 16, 1, var5, var5, 1.0);
+	gravelNoise = noiseGen4.generateNoiseOctaves(gravelNoise, (double)(ChunkZ * 16), 109.0134, (double)(ChunkX * 16), 16, 1, 16, var5, 1.0, var5);
+	stoneNoise = noiseGen5.generateNoiseOctaves(stoneNoise, (double)(ChunkX * 16), (double)(ChunkZ * 16), 0.0, 16, 16, 1, var5 * 2.0, var5 * 2.0, var5 * 2.0);
 
 	for (int var7 = 0; var7 < 16; ++var7) {
 		for (int var8 = 0; var8 < 16; ++var8) {

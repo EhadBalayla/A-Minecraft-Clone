@@ -50,6 +50,9 @@ private:
 	Chunk* LoadNewChunk(int ChunkX, int ChunkZ, uint8_t LOD);
 
 	//threads
-	ThreadPool pool;
+	//ThreadPool pool;
+	ThreadPool genPool;
+	ThreadPool popPool;
+	ThreadPool meshPool;
 };
 
