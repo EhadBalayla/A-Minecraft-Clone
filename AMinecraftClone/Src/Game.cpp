@@ -20,6 +20,7 @@ Shader Game::e_SkyColorShader;
 Shader Game::e_DummyPlayersShader;
 Shader Game::e_InventoryBlockShader;
 Shader Game::e_ImageWidgetShader;
+Shader Game::e_TextShader;
 Texture Game::terrainAtlas;
 Texture Game::guiAtlas;
 Texture Game::iconsAtlas;
@@ -38,6 +39,7 @@ Player Game::player;
 Level* Game::level;
 std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
 std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
+std::unordered_map<char, Glyph> Game::e_FontRegistery;
 bool Game::IsGameRunning = true;
 AudioManager Game::m_AudioManager;
 bool Game::ShowChunkBorder = false;
@@ -79,6 +81,7 @@ void Game::Init() {
 	e_DummyPlayersShader.loadShader("Shaders/TempPlayersShader_Vert.glsl", "Shaders/TempPlayersShader_Frag.glsl");
 	e_InventoryBlockShader.loadShader("Shaders/InventoryItem_Vert.glsl", "Shaders/InventoryItem_Frag.glsl");
 	e_ImageWidgetShader.loadShader("Shaders/UIShader_Vert.glsl", "Shaders/UIShader_Frag.glsl");
+	e_TextShader.loadShader("Shaders/TextShader_Vert.glsl", "Shaders/TextShader_Frag.glsl");
 	glGenVertexArrays(1, &tempVAO);
 
 
@@ -102,6 +105,7 @@ void Game::Init() {
 
 	RegisterAllBlocks();
 	RegisterAllItems();
+	LoadFont();
 }
 void Game::GameLoop() {
 
@@ -238,6 +242,45 @@ void Game::RegisterAllItems() { //register all item types in the hash map so the
 	e_ItemRegistery[BedrockBlock] = { "Bedrock Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bedrock }; //register the grass block item
 	e_ItemRegistery[ObsidianBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Obsidian }; //register the grass block item
 	e_ItemRegistery[StoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Stone }; //register the grass block item
+}
+
+#include "stbi_image.h"
+
+void Game::LoadFont() {
+	std::string lookup = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_\'abcdefghijklmnopqrstuvwxyz{|}~\u2302\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb";
+
+	int width, height, channels;
+	unsigned char* pixels = stbi_load("DefaultFont.png", &width, &height, &channels, 4);
+
+	for (int i = 0; i < lookup.size(); i++) {
+		int CellX = (i + 32) % 16;
+		int CellY = (i + 32) / 16;
+		glm::vec2 uv0 = glm::vec2((CellX * 8.0f) / static_cast<float>(width), (CellY * 8.0f) / static_cast<float>(height));
+		glm::vec2 uv1 = glm::vec2((CellX * 8.0f + 7.99f) / static_cast<float>(width), (CellY * 8.0f + 7.99f) / static_cast<float>(height));
+
+		int char_width = 0;
+		if (lookup[i] == ' ') char_width = 4;
+		else for (int x = 7; x >= 0; --x) {
+			int rightmost = -1;
+			for (int x = 7; x >= 0; --x) {
+				bool emptyColumn = true;
+				for (int y = 0; y < 8; ++y) {
+					int pixel = pixels[((CellY * 8 + y) * width + (CellX * 8 + x)) * 4 + 3];
+					if (pixel > 0) emptyColumn = false;
+				}
+				if (!emptyColumn) {
+					rightmost = x;
+					break;
+				}
+			}
+			if (rightmost == -1) rightmost = 0;
+			char_width = rightmost + 2;
+		}
+
+		e_FontRegistery[lookup[i]] = { char_width, uv0, uv1 };
+	}
+
+	stbi_image_free(pixels);
 }
 
 void Game::CloseGame() {

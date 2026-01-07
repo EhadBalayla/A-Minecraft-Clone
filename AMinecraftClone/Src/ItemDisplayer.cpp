@@ -4,7 +4,7 @@
 void ItemDisplayer::Render() {
 	ItemData id = Game::e_ItemRegistery[item->m_Item.getType()];
 
-	if (id.type == ItemUsageType::PlaceableBlock) {
+	if (id.type == ItemUsageType::PlaceableBlock && item->m_Item.getType() != ItemType::NoItem) {
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glFrontFace(GL_CW);
@@ -29,5 +29,11 @@ void ItemDisplayer::Render() {
 
 		glBindVertexArray(Game::tempVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 18);
+	}
+
+	if (item->m_Amount > 1) {
+		countText.position = position + glm::vec2(5.0f, 12.5f);
+		countText.setText(std::to_string(item->m_Amount));
+		countText.Render();
 	}
 }

@@ -35,6 +35,7 @@ public:
 	//inventory stuff
 	InventoryItem m_PlayerItems[36];
 	void AddItem(Item item, int amount); //basically adds an item to the player's inventory,
+	void RemoveItem(InventoryItem* item, int amountToRemove); //for removing an item from the inventory
 private:
 	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
 	glm::vec3 getCameraPosition(); //returns the camera position

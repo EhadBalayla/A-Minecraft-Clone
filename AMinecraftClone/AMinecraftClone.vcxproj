@@ -220,7 +220,6 @@
     <ClCompile Include="Src\Texture.cpp" />
     <ClCompile Include="Src\ThreadPool.cpp" />
     <ClCompile Include="Src\UIManager.cpp" />
-    <ClCompile Include="Src\UIScreen.cpp" />
     <ClCompile Include="Src\Utilities.cpp" />
     <ClCompile Include="Src\Window.cpp" />
     <ClCompile Include="Src\WorldManager.cpp" />
@@ -271,7 +270,6 @@
     <ClInclude Include="Headers\Texture.h" />
     <ClInclude Include="Headers\ThreadPool.h" />
     <ClInclude Include="Headers\UIManager.h" />
-    <ClInclude Include="Headers\UIScreen.h" />
     <ClInclude Include="Headers\Utilities.h" />
     <ClInclude Include="Headers\Widget.h" />
     <ClInclude Include="Headers\Window.h" />

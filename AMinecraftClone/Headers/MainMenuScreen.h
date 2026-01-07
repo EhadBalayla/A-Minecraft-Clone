@@ -1,9 +1,8 @@
 #pragma once
-#include "UIScreen.h"
 #include "MenuButtons.h"
 #include "ImageDisplayer.h"
 
-class MainMenuScreen : public UIScreen {
+class MainMenuScreen {
 public:
 	MainMenuScreen();
 

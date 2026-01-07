@@ -242,6 +242,7 @@ void Player::ProcessInput(SDL_Event& e) {
                         Game::m_AudioManager.StartSound("Sounds\\stone4.wav");
                         break;
                     }
+                    RemoveItem(&m_PlayerItems[selectedSlot - 1], 1);
                 }
             }
         }
@@ -261,7 +262,7 @@ void Player::ProcessInput(SDL_Event& e) {
 void Player::setSelectedSlot(uint8_t slot) {
     selectedSlot = slot;
     uint8_t slotMultiplier = slot - 1;
-    Game::hudScreen.Selection.position = glm::vec2(420.2195 + 55 * slotMultiplier, 689.7805);
+    Game::hudScreen.Selection.position = glm::vec2(398.24145 + 60.5 * slotMultiplier, 689.7805);
 }
 
 void Player::AddItem(Item item, int amount) { //add item to inventory
@@ -291,6 +292,13 @@ void Player::AddItem(Item item, int amount) { //add item to inventory
         if (currentAmount == 0) {
             return;
         }
+    }
+}
+void Player::RemoveItem(InventoryItem* item, int amountToRemove) {
+    item->m_Amount -= amountToRemove;
+    if (item->m_Amount <= 0) {
+        item->m_Amount = 0;
+        item->m_Item.setType(ItemType::NoItem);
     }
 }
 

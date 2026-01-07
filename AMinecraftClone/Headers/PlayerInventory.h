@@ -1,8 +1,8 @@
 #pragma once
-#include "UIScreen.h"
 #include "ImageDisplayer.h"
+#include "ItemDisplayer.h"
 
-class PlayerInventory : public UIScreen
+class PlayerInventory
 {
 public:
 	PlayerInventory();
@@ -10,6 +10,7 @@ public:
 	void RenderScreen();
 	void UpdateScreen();
 
+	ItemDisplayer items[36];
 	ImageDisplayer InventoryIMG;
 };
 

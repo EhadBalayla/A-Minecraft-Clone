@@ -21,13 +21,17 @@
 #include <vector>
 #include <unordered_map>
 
+struct Glyph {
+	int width;
+	glm::vec2 uv0;
+	glm::vec2 uv1;
+};
 
 enum class GameState {
 	MainMenu,
 	InGame
 };
 
-class MainMenuScreen;
 class Game
 {
 public:
@@ -47,6 +51,7 @@ public:
 	static Shader e_DummyPlayersShader;
 	static Shader e_InventoryBlockShader;
 	static Shader e_ImageWidgetShader;
+	static Shader e_TextShader;
 	static unsigned int tempVAO;
 
 	static Texture terrainAtlas;
@@ -78,6 +83,7 @@ public:
 	
 	static std::unordered_map<BlockType, BlockData> e_BlockRegistery;
 	static std::unordered_map<ItemType, ItemData> e_ItemRegistery;
+	static std::unordered_map<char, Glyph> e_FontRegistery;
 
 	void Init();
 	void GameLoop();
@@ -86,6 +92,7 @@ private:
 
 	void RegisterAllBlocks();
 	void RegisterAllItems();
+	void LoadFont();
 
 	static bool IsGameRunning;
 public: //this "public" section is for gameplay functions such as closing game or creating a specific new UI screen and more

@@ -1,8 +1,7 @@
 #pragma once
-#include "UIScreen.h"
 #include "MenuButtons.h"
 
-class PauseMenu : public UIScreen
+class PauseMenu
 {
 public:
 	PauseMenu();
@@ -12,5 +11,6 @@ public:
 
 	MenuButtons ContinueButton;
 	MenuButtons QuitButton;
+	MenuButtons OptionsButton;
 };
 

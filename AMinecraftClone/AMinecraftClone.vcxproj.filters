@@ -115,9 +115,6 @@
     <ClCompile Include="Src\UIManager.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Src\UIScreen.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Src\AABB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -289,9 +286,6 @@
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="Headers\UIManager.h">
-      <Filter>Source Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\UIScreen.h">
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="Headers\AABB.h">

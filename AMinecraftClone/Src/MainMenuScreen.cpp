@@ -13,16 +13,20 @@ MainMenuScreen::MainMenuScreen() {
 
 	SinglePlayerButton.position = glm::vec2(640, 360);
 	SinglePlayerButton.scale = glm::vec2(600, 60);
+	SinglePlayerButton.SetText("Singleplayer");
 	SinglePlayerButton.Callback = StartGameCallback;
 
 	MultiPlayerButton.position = glm::vec2(640, 430);
 	MultiPlayerButton.scale = glm::vec2(600, 60);
+	MultiPlayerButton.SetText("Multiplayer");
 
 	TutorialButton.position = glm::vec2(640, 500);
 	TutorialButton.scale = glm::vec2(600, 60);
+	TutorialButton.SetText("Play tutorial level");
 
 	OptionsButton.position = glm::vec2(640, 600);
 	OptionsButton.scale = glm::vec2(600, 60);
+	OptionsButton.SetText("Options...");
 }
 
 

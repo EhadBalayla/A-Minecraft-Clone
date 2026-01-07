@@ -126,19 +126,19 @@ inline int WorldToBlock(int a) {
 	return (a % 16 + 16) % 16;
 }
 BlockType WorldManager::getBlockAt(int x, int y, int z) { //coordinates are in world space
-	if (y > 127 || y < 0) return BlockType::Air;
+	if (y > Chunk_Height - 1 || y < 0) return BlockType::Air;
 
 	Chunk* chunk = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
 	return chunk->m_Blocks[IndexAt(WorldToBlock(x), y, WorldToBlock(z))];
 }
 void WorldManager::setBlockAt(int x, int y, int z, BlockType type) {
-	if (y > 127 || y < 0) return;
+	if (y > Chunk_Height - 1 || y < 0) return;
 
 	Chunk* chunk = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
 	chunk->m_Blocks[IndexAt(WorldToBlock(x), y, WorldToBlock(z))] = type;
 }
 BlockType WorldManager::getBlockAtLOD(int x, int y, int z, uint8_t LOD) {
-	if (y > 127 || y < 0) return BlockType::Air;
+	if (y > Chunk_Height - 1 || y < 0) return BlockType::Air;
 	
 	int LODFactor = GetLODSize(LOD);
 
@@ -155,7 +155,7 @@ BlockType WorldManager::getBlockAtLOD(int x, int y, int z, uint8_t LOD) {
 	return c->m_Blocks[IndexAt(relativeX / LODFactor, y, relativeZ / LODFactor)];
 }
 void WorldManager::setBlockAtLOD(int x, int y, int z, BlockType type, uint8_t LOD) {
-	if (y > 127 || y < 0) return;
+	if (y > Chunk_Height - 1 || y < 0) return;
 
 	int LODFactor = GetLODSize(LOD);
 

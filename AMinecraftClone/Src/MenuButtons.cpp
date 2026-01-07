@@ -5,7 +5,17 @@ UIUVQuad buttonOffUV = { glm::vec2(0.0, 0.1796875), glm::vec2(0.78125, 0.1796875
 UIUVQuad buttonNormalUV = { glm::vec2(0.0, 0.2578125), glm::vec2(0.78125, 0.2578125), glm::vec2(0.78125, 0.3359375), glm::vec2(0.0, 0.3359375) };
 UIUVQuad buttonHoveredUV = { glm::vec2(0.0, 0.3359375), glm::vec2(0.78125, 0.3359375), glm::vec2(0.78125, 0.4140625), glm::vec2(0.0, 0.4140625) };
 
+float FindTextSize(const std::string& text) {
+	float size = 0.0f;
+	const float Scale = 3.0f;
+	for (auto& c : text) {
+		size += Scale * Game::e_FontRegistery[c].width;
+	}
+	return size;
+}
+
 void MenuButtons::Render() {
+	//render the button image
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -36,6 +46,12 @@ void MenuButtons::Render() {
 
 	glBindVertexArray(Game::tempVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//render the text
+	text.position = glm::vec2(position.x - FindTextSize(text.GetText()) / 2.0f, position.y);
+	if (!IsHovered) text.setTint(glm::vec4(1.0f));
+	else text.setTint(glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
+	text.Render();
 }
 void MenuButtons::Update() {
 	int MouseX = 0;
@@ -64,4 +80,8 @@ void MenuButtons::Update() {
 			IsHovered = false;
 		}
 	}
+}
+
+void MenuButtons::SetText(const std::string& newText) {
+	text.setText(newText);
 }
