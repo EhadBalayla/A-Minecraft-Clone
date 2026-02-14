@@ -92,6 +92,9 @@ public:
 	static Player player;
 
 	static glm::mat4 ScreenProjection;
+	static glm::mat4 ScrMidProj;
+	static glm::mat4 ScrMidBottomProj;
+	static glm::mat4 ScrTopRightProj;
 	static glm::mat4 Proj;
 	static glm::mat4 View;
 

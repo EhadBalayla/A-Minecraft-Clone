@@ -12,10 +12,10 @@ public:
 
 	void SetText(const std::string& newText);
 	void SetDisabled(bool disabled);
+	TextDisplayer text;
 private:
 	bool IsDisabled = false;
 	bool IsHovered = false;
 
-	TextDisplayer text;
 };
 

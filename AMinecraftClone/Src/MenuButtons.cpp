@@ -27,7 +27,7 @@ void MenuButtons::Render() {
 	Game::guiAtlas.bind();
 
 	Game::e_ImageWidgetShader.use();
-	Game::e_ImageWidgetShader.setMat4("projection", Game::ScreenProjection);
+	Game::e_ImageWidgetShader.setMat4("projection", *projMtx);
 	Game::e_ImageWidgetShader.setMat4("model", trans);
 
 	if (!IsDisabled) {

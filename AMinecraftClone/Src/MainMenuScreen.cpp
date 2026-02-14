@@ -12,28 +12,37 @@ void GoToOptions() {
 MainMenuScreen::MainMenuScreen() {
 	Logo.uv = { glm::vec2(0.0, 0.0), glm::vec2(1.0, 0.0), glm::vec2(1.0, 1.0), glm::vec2(0.0, 1.0) };
 	Logo.tex = &Game::logoTex;
-	Logo.position = glm::vec2(640, 470);
+	Logo.position = glm::vec2(0, 110);
 	Logo.scale = glm::vec2(765, 755);
+	Logo.projMtx = &Game::ScrMidProj;
 
-	SinglePlayerButton.position = glm::vec2(640, 360);
+	SinglePlayerButton.position = glm::vec2(0, 0);
 	SinglePlayerButton.scale = glm::vec2(600, 60);
 	SinglePlayerButton.SetText("Singleplayer");
 	SinglePlayerButton.Callback = StartGameCallback;
+	SinglePlayerButton.projMtx = &Game::ScrMidProj;
+	SinglePlayerButton.text.projMtx = &Game::ScrMidProj;
 
-	MultiPlayerButton.position = glm::vec2(640, 430);
+	MultiPlayerButton.position = glm::vec2(0, 70);
 	MultiPlayerButton.scale = glm::vec2(600, 60);
 	MultiPlayerButton.SetText("Multiplayer");
 	MultiPlayerButton.SetDisabled(true);
+	MultiPlayerButton.projMtx = &Game::ScrMidProj;
+	MultiPlayerButton.text.projMtx = &Game::ScrMidProj;
 
-	TutorialButton.position = glm::vec2(640, 500);
+	TutorialButton.position = glm::vec2(0, 140);
 	TutorialButton.scale = glm::vec2(600, 60);
 	TutorialButton.SetText("Play tutorial level");
 	TutorialButton.SetDisabled(true);
+	TutorialButton.projMtx = &Game::ScrMidProj;
+	TutorialButton.text.projMtx = &Game::ScrMidProj;
 
-	OptionsButton.position = glm::vec2(640, 600);
+	OptionsButton.position = glm::vec2(0, 240);
 	OptionsButton.scale = glm::vec2(600, 60);
 	OptionsButton.SetText("Options...");
 	OptionsButton.Callback = GoToOptions;
+	OptionsButton.projMtx = &Game::ScrMidProj;
+	OptionsButton.text.projMtx = &Game::ScrMidProj;
 }
 
 

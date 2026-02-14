@@ -33,32 +33,41 @@ void ChangeWorldType() {
 }
 
 SavesMenu::SavesMenu() {
-	titleText.position = glm::vec2(560, 72);
+	titleText.position = glm::vec2(-80, -288);
 	titleText.setText("Select world");
+	titleText.projMtx = &Game::ScrMidProj;
 
-	CancelButton.position = glm::vec2(640, 655);
+	CancelButton.position = glm::vec2(0, 295);
 	CancelButton.scale = glm::vec2(600, 60);
 	CancelButton.SetText("Cancel");
 	CancelButton.Callback = CancelButtonCallback;
+	CancelButton.projMtx = &Game::ScrMidProj;
+	CancelButton.text.projMtx = &Game::ScrMidProj;
 
-	DeleteWorldButton.position = glm::vec2(640, 545);
+	DeleteWorldButton.position = glm::vec2(0, 185);
 	DeleteWorldButton.scale = glm::vec2(600, 60);
 	DeleteWorldButton.SetText("Delete World...");
 	DeleteWorldButton.Callback = DeleteButtonCallback;
+	DeleteWorldButton.projMtx = &Game::ScrMidProj;
+	DeleteWorldButton.text.projMtx = &Game::ScrMidProj;
 
 	int index = 0;
 	for (auto& n : WorldButtons) {
-		n.position = glm::vec2(640, 150 + index * 72);
+		n.position = glm::vec2(0, -210 + index * 72);
 		n.scale = glm::vec2(600, 60);
 		n.SetText("- empty -");
 		n.Callback = WorldButtonClick;
+		n.projMtx = &Game::ScrMidProj;
+		n.text.projMtx = &Game::ScrMidProj;
 		index++;
 	}
 
-	WorldType.position = glm::vec2(1025, 40);
+	WorldType.position = glm::vec2(-255, 40);
 	WorldType.scale = glm::vec2(490, 60);
 	WorldType.SetText("World Type: Infdev-20100227");
 	WorldType.Callback = ChangeWorldType;
+	WorldType.projMtx = &Game::ScrTopRightProj;
+	WorldType.text.projMtx = &Game::ScrTopRightProj;
 }
 
 void SavesMenu::RenderScreen() {

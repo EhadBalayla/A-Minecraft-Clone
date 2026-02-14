@@ -9,7 +9,7 @@ public:
 	InventoryItem* item;
 
 	void Render();
-private:
 	TextDisplayer countText;
+private:
 };
 

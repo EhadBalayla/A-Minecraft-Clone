@@ -18,7 +18,7 @@ void ItemDisplayer::Render() {
 		transform = glm::rotate(transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		Game::e_InventoryBlockShader.use();
-		Game::e_InventoryBlockShader.setMat4("proj", Game::ScreenProjection);
+		Game::e_InventoryBlockShader.setMat4("proj", *projMtx);
 		Game::e_InventoryBlockShader.setMat4("model", transform);
 
 		BlockData bd = Game::e_BlockRegistery[id.blockID];

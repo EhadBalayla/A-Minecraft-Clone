@@ -262,7 +262,7 @@ void Player::ProcessInput(SDL_Event& e) {
 void Player::setSelectedSlot(uint8_t slot) {
     selectedSlot = slot;
     uint8_t slotMultiplier = slot - 1;
-    Game::hudScreen.Selection.position = glm::vec2(398.24145 + 60.5 * slotMultiplier, 689.7805);
+    Game::hudScreen.Selection.position = glm::vec2(-241.75855 + 60.5 * slotMultiplier, -30.2195);
 }
 
 void Player::AddItem(Item item, int amount) { //add item to inventory

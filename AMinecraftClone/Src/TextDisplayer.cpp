@@ -21,7 +21,7 @@ void TextDisplayer::Render() {
 
 	Game::fontTex.bind();
 	Game::e_TextShader.use();
-	Game::e_TextShader.setMat4("projection", Game::ScreenProjection);
+	Game::e_TextShader.setMat4("projection", *projMtx);
 
 	float CursorX = position.x;
 	float CursorY = position.y;

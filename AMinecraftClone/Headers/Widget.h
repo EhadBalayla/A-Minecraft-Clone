@@ -14,5 +14,7 @@ public:
 	glm::vec2 position = glm::vec2(0.0, 0.0);
 	glm::vec2 scale = glm::vec2(1.0, 1.0);
 	float rotation = 0.0f;
+
+	glm::mat4* projMtx = nullptr;
 };
 

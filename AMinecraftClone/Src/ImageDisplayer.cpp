@@ -12,7 +12,7 @@ void ImageDisplayer::Render() {
 	tex->bind();
 
 	Game::e_ImageWidgetShader.use();
-	Game::e_ImageWidgetShader.setMat4("projection", Game::ScreenProjection);
+	Game::e_ImageWidgetShader.setMat4("projection", *projMtx);
 	Game::e_ImageWidgetShader.setMat4("model", trans);
 
 	Game::e_ImageWidgetShader.setVec2("UV0", uv.uv0);
