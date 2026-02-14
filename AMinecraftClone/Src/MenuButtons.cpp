@@ -72,8 +72,23 @@ void MenuButtons::Update() {
 		int MouseY = 0;
 		auto mouseState = SDL_GetMouseState(&MouseX, &MouseY);
 
-		if ((MouseX > position.x - (scale.x / 2.0f) && MouseX < position.x + (scale.x / 2.0f)) &&
-			(MouseY > position.y - (scale.y / 2.0f) && MouseY < position.y + (scale.y / 2.0f))) {
+		float* m = reinterpret_cast<float*>(projMtx);
+
+		float halfWidth = 1.0f / m[0];
+		float halfHeight = 1.0f / m[5];
+		float centerX = -m[12] / m[0];
+		float centerY = -m[13] / m[5];
+
+		float Right = centerX + halfWidth;
+		float Bottom = centerY - halfHeight;
+		float Left = centerX - halfWidth;
+		float Top = centerY + halfHeight;
+
+		float realXPos = (position.x * Game::ScrSizeRel - Left) / (Right - Left) * (Game::ScrSizeX);
+		float realYPos = Game::ScrSizeY - (Bottom - position.y * Game::ScrSizeRel) / (Bottom - Top) * (Game::ScrSizeY);
+
+		if ((MouseX > realXPos - ((scale.x * Game::ScrSizeRel) / 2.0f) && MouseX < realXPos + ((scale.x * Game::ScrSizeRel) / 2.0f)) &&
+			(MouseY > realYPos - ((scale.y * Game::ScrSizeRel) / 2.0f) && MouseY < realYPos + ((scale.y * Game::ScrSizeRel) / 2.0f))) {
 			if (!IsHovered) { //if wasn't hovered already then make hovered
 				IsHovered = true;
 			}

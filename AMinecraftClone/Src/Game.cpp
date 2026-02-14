@@ -37,6 +37,8 @@ MainMenuScreen Game::mainMenuScreen;
 OptionsMenu Game::optionsMenu;
 SavesMenu Game::savesMenu;
 float Game::ScrSizeRel = 1.0f;
+float Game::ScrSizeX = 1280.0f;
+float Game::ScrSizeY = 720.0f;
 glm::mat4 Game::ScreenProjection;
 glm::mat4 Game::ScrMidProj;
 glm::mat4 Game::ScrMidBottomProj;
@@ -163,6 +165,8 @@ void Game::GameLoop() {
 				}
 				else if (event.type == SDL_WINDOWEVENT) {
 					if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+						ScrSizeX = event.window.data1;
+						ScrSizeY = event.window.data2;
 						glViewport(0, 0, event.window.data1, event.window.data2);
 						glScissor(0, 0, event.window.data1, event.window.data2);
 						Proj = glm::perspective(glm::radians(70.0f), static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2), 0.1f, 50000.0f);
