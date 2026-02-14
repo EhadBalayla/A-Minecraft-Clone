@@ -36,6 +36,7 @@ PauseMenu Game::pauseMenu;
 MainMenuScreen Game::mainMenuScreen;
 OptionsMenu Game::optionsMenu;
 SavesMenu Game::savesMenu;
+float Game::ScrSizeRel = 1.0f;
 glm::mat4 Game::ScreenProjection;
 glm::mat4 Game::ScrMidProj;
 glm::mat4 Game::ScrMidBottomProj;
@@ -107,12 +108,12 @@ void Game::Init() {
 	dirtTex.LoadTexture("dirt.png");
 
 
-	Proj = glm::perspective(glm::radians(70.0f), 1920.0f / 1080.0f, 0.1f, 50000.0f);
+	Proj = glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 50000.0f);
 	ScreenProjection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 	ScrMidProj = glm::ortho(-640.0f, 640.0f, 360.0f, -360.0f, -1.0f, 1.0f);
 	ScrMidBottomProj = glm::ortho(-640.0f, 640.0f, 0.0f, -720.0f, -1.0f, 1.0f);
 	ScrTopRightProj = glm::ortho(-1280.0f, 0.0f, 720.0f, 0.0f, -1.0f, 1.0f);
-
+	ScrSizeRel = 1.0f;
 
 	m_AudioManager.Init();
 	m_DebugUI.Init();
@@ -164,10 +165,12 @@ void Game::GameLoop() {
 					if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 						glViewport(0, 0, event.window.data1, event.window.data2);
 						glScissor(0, 0, event.window.data1, event.window.data2);
+						Proj = glm::perspective(glm::radians(70.0f), static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2), 0.1f, 50000.0f);
 						ScreenProjection = glm::ortho(0.0f, static_cast<float>(event.window.data1), static_cast<float>(event.window.data2), 0.0f, -1.0f, 1.0f);
 						ScrMidProj = glm::ortho(-static_cast<float>(event.window.data1) / 2.0f, static_cast<float>(event.window.data1) / 2.0f, static_cast<float>(event.window.data2) / 2.0f, -static_cast<float>(event.window.data2) / 2.0f, -1.0f, 1.0f);
 						ScrMidBottomProj = glm::ortho(-static_cast<float>(event.window.data1) / 2.0f, static_cast<float>(event.window.data1) / 2.0f, 0.0f, -static_cast<float>(event.window.data2), -1.0f, 1.0f);
 						ScrTopRightProj = glm::ortho(-static_cast<float>(event.window.data1), 0.0f, static_cast<float>(event.window.data2), 0.0f, -1.0f, 1.0f);
+						ScrSizeRel = static_cast<float>(event.window.data1) / 1280.0f;
 					}
 				}
 				ImGui_ImplSDL2_ProcessEvent(&event);
@@ -215,10 +218,12 @@ void Game::GameLoop() {
 					if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 						glViewport(0, 0, event.window.data1, event.window.data2);
 						glScissor(0, 0, event.window.data1, event.window.data2);
+						Proj = glm::perspective(glm::radians(70.0f), static_cast<float>(event.window.data1) / static_cast<float>(event.window.data2), 0.1f, 50000.0f);
 						ScreenProjection = glm::ortho(0.0f, static_cast<float>(event.window.data1), static_cast<float>(event.window.data2), 0.0f, -1.0f, 1.0f);
 						ScrMidProj = glm::ortho(-static_cast<float>(event.window.data1) / 2.0f, static_cast<float>(event.window.data1) / 2.0f, static_cast<float>(event.window.data2) / 2.0f, -static_cast<float>(event.window.data2) / 2.0f, -1.0f, 1.0f);
 						ScrMidBottomProj = glm::ortho(-static_cast<float>(event.window.data1) / 2.0f, static_cast<float>(event.window.data1) / 2.0f, 0.0f, -static_cast<float>(event.window.data2), -1.0f, 1.0f);
 						ScrTopRightProj = glm::ortho(-static_cast<float>(event.window.data1), 0.0f, static_cast<float>(event.window.data2), 0.0f, -1.0f, 1.0f);
+						ScrSizeRel = static_cast<float>(event.window.data1) / 1280.0f;
 					}
 				}
 				ImGui_ImplSDL2_ProcessEvent(&event);

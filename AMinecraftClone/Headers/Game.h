@@ -91,6 +91,7 @@ public:
 
 	static Player player;
 
+	static float ScrSizeRel; //the relative between the screen size and 720p resoltuion, since UI elements are hardcoded to 720p positions and scales
 	static glm::mat4 ScreenProjection;
 	static glm::mat4 ScrMidProj;
 	static glm::mat4 ScrMidBottomProj;

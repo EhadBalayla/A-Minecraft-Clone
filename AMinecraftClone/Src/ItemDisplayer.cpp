@@ -13,8 +13,8 @@ void ItemDisplayer::Render() {
 		Game::terrainAtlas.bind();
 
 		glm::mat4 transform = glm::mat4(1.0f);
-		transform = glm::translate(transform, glm::vec3(position.x, position.y, 0.0f));
-		transform = glm::scale(transform, glm::vec3(scale.x, scale.y, 1.0f));
+		transform = glm::translate(transform, glm::vec3(position.x * Game::ScrSizeRel, position.y * Game::ScrSizeRel, 0.0f));
+		transform = glm::scale(transform, glm::vec3(scale.x * Game::ScrSizeRel, scale.y * Game::ScrSizeRel, 1.0f));
 		transform = glm::rotate(transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		Game::e_InventoryBlockShader.use();

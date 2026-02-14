@@ -23,8 +23,8 @@ void TextDisplayer::Render() {
 	Game::e_TextShader.use();
 	Game::e_TextShader.setMat4("projection", *projMtx);
 
-	float CursorX = position.x;
-	float CursorY = position.y;
+	float CursorX = position.x * Game::ScrSizeRel;
+	float CursorY = position.y * Game::ScrSizeRel;
 
 	const float Scale = 3.0f;
 
@@ -41,9 +41,9 @@ void TextDisplayer::Render() {
 		Game::e_TextShader.setVec2("UV1", g.uv1);
 
 		//render shadow
-		model = glm::translate(model, glm::vec3(CursorX + Scale, CursorY + Scale, 0.0f));
+		model = glm::translate(model, glm::vec3(CursorX + Scale * Game::ScrSizeRel, CursorY + Scale * Game::ScrSizeRel, 0.0f));
 		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0, 0.0, 1.0f));
-		model = glm::scale(model, glm::vec3(8.0 * Scale, 8.0 * Scale, 1.0));
+		model = glm::scale(model, glm::vec3(8.0 * Scale * Game::ScrSizeRel, 8.0 * Scale * Game::ScrSizeRel, 1.0));
 
 		Game::e_TextShader.setMat4("model", model);
 		Game::e_TextShader.setVec4("Tint", glm::vec4(0.0f, 0.0f, 0.0f, 0.5f));
@@ -55,7 +55,7 @@ void TextDisplayer::Render() {
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(CursorX, CursorY, 0.0f));
 		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0, 0.0, 1.0f));
-		model = glm::scale(model, glm::vec3(8.0 * Scale, 8.0 * Scale, 1.0));
+		model = glm::scale(model, glm::vec3(8.0 * Scale * Game::ScrSizeRel, 8.0 * Scale * Game::ScrSizeRel, 1.0));
 
 		Game::e_TextShader.setMat4("model", model);
 		Game::e_TextShader.setVec4("Tint", Tint);
@@ -64,6 +64,6 @@ void TextDisplayer::Render() {
 
 
 		//advancing the cursor
-		CursorX += g.width * Scale;
+		CursorX += g.width * Scale * Game::ScrSizeRel;
 	}
 }
