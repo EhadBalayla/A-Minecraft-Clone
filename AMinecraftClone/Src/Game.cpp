@@ -119,7 +119,7 @@ void Game::Init() {
 
 	m_AudioManager.Init();
 	m_DebugUI.Init();
-	m_Networking.Init();
+	//m_Networking.Init();
 
 
 	RegisterAllBlocks();
@@ -177,7 +177,6 @@ void Game::GameLoop() {
 						ScrSizeRel = static_cast<float>(event.window.data1) / 1280.0f;
 					}
 				}
-				ImGui_ImplSDL2_ProcessEvent(&event);
 			}
 
 			//render the background of the main menu
@@ -209,8 +208,6 @@ void Game::GameLoop() {
 				break;
 			}
 
-			if (ShowDebugMenu) m_DebugUI.Render2();
-
 			break;
 		case GameState::InGame:
 			while (SDL_PollEvent(&event)) {
@@ -240,7 +237,7 @@ void Game::GameLoop() {
 			View = player.getViewMatrix();
 
 			level->RenderLevel();
-			m_Networking.Render();
+			//m_Networking.Render();
 
 			m_DebugRenderer.DrawChunkBoundaries();
 
@@ -273,7 +270,7 @@ void Game::GameLoop() {
 }
 // terminates all engines for the game when the game closes and unloads every cached object
 void Game::Terminate() {
-	m_Networking.Terminate();
+	//m_Networking.Terminate();
 
 	m_DebugUI.Terminate();
 

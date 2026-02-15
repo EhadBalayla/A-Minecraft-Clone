@@ -26,21 +26,21 @@ OptionsMenu::OptionsMenu() {
 	DoneButton.SetText("Done");
 	DoneButton.Callback = DoneButtonCallback;
 	DoneButton.projMtx = &Game::ScreenProjection;
-	DoneButton.text.projMtx = &Game::ScreenProjection;
+	DoneButton.SetTextProj(Game::ScreenProjection);
 
 	LODCountButton.position = glm::vec2(640, 100);
 	LODCountButton.scale = glm::vec2(600, 60);
 	LODCountButton.SetText("LOD Count: " + std::to_string(Game::LODCount));
 	LODCountButton.Callback = LODCountButtonCallback;
 	LODCountButton.projMtx = &Game::ScreenProjection;
-	LODCountButton.text.projMtx = &Game::ScreenProjection;
+	LODCountButton.SetTextProj(Game::ScreenProjection);
 
 	RenderDistanceButton.position = glm::vec2(640, 180);
 	RenderDistanceButton.scale = glm::vec2(600, 60);
 	RenderDistanceButton.SetText("Render Distance: " + std::to_string(Game::RenderDistance));
 	RenderDistanceButton.Callback = RenderDistanceButtonCallback;
 	RenderDistanceButton.projMtx = &Game::ScreenProjection;
-	RenderDistanceButton.text.projMtx = &Game::ScreenProjection;
+	RenderDistanceButton.SetTextProj(Game::ScreenProjection);
 }
 
 void OptionsMenu::RenderScreen() {

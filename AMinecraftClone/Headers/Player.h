@@ -38,7 +38,7 @@ public:
 	void RemoveItem(InventoryItem* item, int amountToRemove); //for removing an item from the inventory
 private:
 	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
-	glm::vec3 getCameraPosition(); //returns the camera position
+	glm::dvec3 getCameraPosition(); //returns the camera position
 
 	float mouseSensitivity = 0.5f; //mouse sensitivity
 

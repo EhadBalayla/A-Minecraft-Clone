@@ -93,10 +93,10 @@ void DebugUIManager::Render2() {
 	ImGui::SetNextItemWidth(100.0f);
 	ImGui::InputInt("##portInputter", &port);
 	if (ImGui::Button("Connect")) {
-		Game::m_Networking.Connect(addressBuffer, port);
+		/*Game::m_Networking.Connect(addressBuffer, port);
 	}
 	if (ImGui::Button("Disconnect")) {
-		Game::m_Networking.Disconnect();
+		Game::m_Networking.Disconnect();*/
 	}
 	ImGui::TextUnformatted("Status: ");
 	ImGui::SameLine();

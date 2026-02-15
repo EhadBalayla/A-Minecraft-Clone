@@ -15,7 +15,7 @@ Player::Player() {
 Player::~Player() {
 }
 
-glm::vec3 Player::getCameraPosition() {
+glm::dvec3 Player::getCameraPosition() {
     return position + glm::dvec3(0.0, cameraHeight, 0.0);
 }
 
@@ -225,10 +225,9 @@ void Player::ProcessInput(SDL_Event& e) {
     else if (e.type == SDL_MOUSEBUTTONDOWN) { //for mouse 
         if (e.button.button == SDL_BUTTON_LEFT) { //for left click
             if(CanPerformAbility()) { //check if no menu is open
-                Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
-                RayHitReturnParams rayInfo = Utils::RayHitBlock(ray);
-                if (rayInfo.HitBlock) {
-                    Game::level->GetWorld().BreakBlock(rayInfo.pos.x, rayInfo.pos.y, rayInfo.pos.z);
+                RayBlockInfo hitInfo = Game::level->GetWorld().RaycastBlock(getCameraPosition(), getLookVector(), 5.0f);
+                if (hitInfo.block != BlockType::Air) {
+                    Game::level->GetWorld().BreakBlock(hitInfo.blockPos.x, hitInfo.blockPos.y, hitInfo.blockPos.z);
                     Game::m_AudioManager.StartSound("Sounds\\grass4.wav");
                 }
             }
@@ -305,29 +304,27 @@ void Player::RemoveItem(InventoryItem* item, int amountToRemove) {
 
 //place block item
 void Player::PlayerPlaceBlocks() {
-    Ray ray = Utils::shootRay(getCameraPosition(), getLookVector(), 5.0f);
-    RayHitReturnParams rayInfo = Utils::RayHitBlock(ray, 0.025);
-    if (rayInfo.HitBlock) {
-        glm::ivec3 blockPos = rayInfo.pos;
+    RayBlockInfo hitInfo = Game::level->GetWorld().RaycastBlock(getCameraPosition(), getLookVector(), 5.0f);
+    if (hitInfo.block != BlockType::Air) {
         BlockType typeToPlace = m_PlayerItems[selectedSlot - 1].m_Item.getData().blockID;
-        switch (rayInfo.HitFace) {
-        case Face::Top:
-            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y + 1, blockPos.z, typeToPlace);
+        switch (hitInfo.face) {
+        case BlockFace::Top:
+            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y + 1, hitInfo.blockPos.z, typeToPlace);
             break;
-        case Face::Bottom:
-            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y - 1, blockPos.z, typeToPlace);
+        case BlockFace::Bottom:
+            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y - 1, hitInfo.blockPos.z, typeToPlace);
             break;
-        case Face::Right:
-            Game::level->GetWorld().PlaceBlock(blockPos.x + 1, blockPos.y, blockPos.z, typeToPlace);
+        case BlockFace::Right:
+            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x + 1, hitInfo.blockPos.y, hitInfo.blockPos.z, typeToPlace);
             break;
-        case Face::Left:
-            Game::level->GetWorld().PlaceBlock(blockPos.x - 1, blockPos.y, blockPos.z, typeToPlace);
+        case BlockFace::Left:
+            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x - 1, hitInfo.blockPos.y, hitInfo.blockPos.z, typeToPlace);
             break;
-        case Face::Front:
-            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z + 1, typeToPlace);
+        case BlockFace::Front:
+            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y, hitInfo.blockPos.z - 1, typeToPlace);
             break;
-        case Face::Back:
-            Game::level->GetWorld().PlaceBlock(blockPos.x, blockPos.y, blockPos.z - 1, typeToPlace);
+        case BlockFace::Back:
+            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y, hitInfo.blockPos.z + 1, typeToPlace);
             break;
         }
     }

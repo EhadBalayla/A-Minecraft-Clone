@@ -118,3 +118,6 @@ void MenuButtons::SetText(const std::string& newText) {
 void MenuButtons::SetDisabled(bool disabled) {
 	IsDisabled = disabled;
 }
+void MenuButtons::SetTextProj(glm::mat4& mtx) {
+	text.projMtx = &mtx;
+}

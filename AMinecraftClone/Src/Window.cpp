@@ -7,8 +7,8 @@ void Window::Init() { //initializes SDL and the window
         exit(-1);
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     m_Window = SDL_CreateWindow("Minecraft", 100, 100, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE); //creates the window
@@ -27,6 +27,7 @@ void Window::Init() { //initializes SDL and the window
         exit(-1);
     }
 
+    SDL_GL_SetSwapInterval(0);
 }
 
 void Window::Termintate() { //terminates SDL as well as destroys the window

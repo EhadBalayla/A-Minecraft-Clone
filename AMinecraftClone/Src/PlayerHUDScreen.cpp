@@ -15,7 +15,7 @@ PlayerHUDScreen::PlayerHUDScreen() {
 		items[i].position = glm::vec2(-241.75855 + 60.5 * (float)i, -30.2195);
 		items[i].scale = glm::vec2(47.0f, 47.0f);
 		items[i].projMtx = &Game::ScrMidBottomProj;
-		items[i].countText.projMtx = &Game::ScrMidBottomProj;
+		items[i].SetTextProj(Game::ScrMidBottomProj);
 	}
 
 	Reticle.uv = { glm::vec2(0.0, 0.0), glm::vec2(0.05859375, 0.0), glm::vec2(0.05859375, 0.05859375), glm::vec2(0.0, 0.05859375) };

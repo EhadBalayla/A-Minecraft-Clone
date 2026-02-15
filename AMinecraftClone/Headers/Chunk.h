@@ -44,15 +44,6 @@ struct ChunkMesh {
 	unsigned int m_VAO4, m_VBO4, m_EBO4, transparentCount = 0;
 };
 
-enum Face {
-	Top,
-	Bottom,
-	Left,
-	Right,
-	Front,
-	Back
-};
-
 class WorldManager;
 class Chunk
 {

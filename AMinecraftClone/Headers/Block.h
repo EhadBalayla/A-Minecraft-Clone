@@ -1,5 +1,8 @@
 #pragma once
 #include "AABB.h"
+//a simple headerfile for enums and structs for blocks stuff
+
+extern AABB blockHitbox;
 
 struct BlockUV {
 	uint8_t Top = 0;
@@ -55,27 +58,11 @@ enum BlockType : uint8_t { //block ids
 	Leaves,
 };
 
-class Chunk;
-
-class Block
-{
-public:
-	Chunk* owningChunk;
-	int BlockX, BlockY, BlockZ; //the coords of the block in chunk space
-
-	BlockType m_Type = Air;
-	BlockData data;
-
-	static AABB blockHitbox;
-
-	Block();
-	Block(BlockType type);
-
-	BlockType getType() { return m_Type; }
-	BlockData getData() { return data; };
-	void setType(BlockType newType);
-
-	void BreakBlock();
-	glm::ivec3 getWorldPosition();
+enum BlockFace {
+	Top,
+	Bottom,
+	Left,
+	Right,
+	Front,
+	Back
 };
-

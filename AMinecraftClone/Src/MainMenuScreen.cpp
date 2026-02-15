@@ -21,28 +21,28 @@ MainMenuScreen::MainMenuScreen() {
 	SinglePlayerButton.SetText("Singleplayer");
 	SinglePlayerButton.Callback = StartGameCallback;
 	SinglePlayerButton.projMtx = &Game::ScrMidProj;
-	SinglePlayerButton.text.projMtx = &Game::ScrMidProj;
+	SinglePlayerButton.SetTextProj(Game::ScrMidProj);
 
 	MultiPlayerButton.position = glm::vec2(0, 70);
 	MultiPlayerButton.scale = glm::vec2(600, 60);
 	MultiPlayerButton.SetText("Multiplayer");
 	MultiPlayerButton.SetDisabled(true);
 	MultiPlayerButton.projMtx = &Game::ScrMidProj;
-	MultiPlayerButton.text.projMtx = &Game::ScrMidProj;
+	MultiPlayerButton.SetTextProj(Game::ScrMidProj);
 
 	TutorialButton.position = glm::vec2(0, 140);
 	TutorialButton.scale = glm::vec2(600, 60);
 	TutorialButton.SetText("Play tutorial level");
 	TutorialButton.SetDisabled(true);
 	TutorialButton.projMtx = &Game::ScrMidProj;
-	TutorialButton.text.projMtx = &Game::ScrMidProj;
+	TutorialButton.SetTextProj(Game::ScrMidProj);
 
 	OptionsButton.position = glm::vec2(0, 240);
 	OptionsButton.scale = glm::vec2(600, 60);
 	OptionsButton.SetText("Options...");
 	OptionsButton.Callback = GoToOptions;
 	OptionsButton.projMtx = &Game::ScrMidProj;
-	OptionsButton.text.projMtx = &Game::ScrMidProj;
+	OptionsButton.SetTextProj(Game::ScrMidProj);
 }
 
 

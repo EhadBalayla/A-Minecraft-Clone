@@ -188,3 +188,54 @@ void WorldManager::BreakBlock(int x, int y, int z) {
 	Chunk* c = chunkProvider.ProvideChunk(WorldToChunk(x), WorldToChunk(z), 0);
 	c->IsModified = true;
 }
+
+#undef max
+#undef min
+
+RayBlockInfo WorldManager::RaycastBlock(glm::dvec3 origin, glm::vec3 direction, float distance) {
+	BlockType hitBlock = BlockType::Air;
+	BlockType prevBlock = BlockType::Air;
+	glm::i64vec3 hitBlockPos = glm::i64vec3(0);
+	double hitX = 0.0f;
+	double hitY = 0.0f;
+	double hitZ = 0.0f;
+	float dist = 0.0f;
+	while (dist <= distance) {
+		glm::dvec3 pos = origin + glm::dvec3(direction * dist);
+		glm::i64vec3 blockPos = glm::i64vec3(
+			pos.x < 0.0 ? floor(pos.x) : pos.x,
+			pos.y < 0.0 ? floor(pos.y) : pos.y,
+			pos.z < 0.0 ? floor(pos.z) : pos.z
+		);
+
+		BlockType block = getBlockAt(blockPos.x, blockPos.y, blockPos.z);
+
+		if (block != prevBlock && block != BlockType::Air) {
+			hitBlock = block;
+			hitBlockPos = blockPos;
+			hitX = pos.x;
+			hitY = pos.y;
+			hitZ = pos.z;
+			break;
+		}
+		dist += 0.01f;
+		block = prevBlock;
+	}
+
+	if (hitBlock != BlockType::Air) {
+		BlockFace hitFace = BlockFace::Top;
+		double distX = hitX - (hitBlockPos.x + 0.5f);
+		double distY = hitY - (hitBlockPos.y + 0.5f);
+		double distZ = hitZ - (hitBlockPos.z + 0.5f);
+
+		if (std::fabs(distX) > std::fabs(distY) && std::fabs(distX) > std::fabs(distZ))
+			hitFace = (distX > 0 ? BlockFace::Right : BlockFace::Left);
+		else if (std::fabs(distY) > std::fabs(distX) && std::fabs(distY) > std::fabs(distZ))
+			hitFace = (distY > 0 ? BlockFace::Top : BlockFace::Bottom);
+		else
+			hitFace = (distZ > 0 ? BlockFace::Back : BlockFace::Front);
+
+		return { hitBlockPos, hitBlock, hitFace };
+	}
+	return { glm::i64vec3(0), BlockType::Air, BlockFace::Top };
+}

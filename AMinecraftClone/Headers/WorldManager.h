@@ -1,7 +1,12 @@
 #pragma once
-
 #include "ChunkGenerator.h"
 #include "ChunkProvider.h"
+
+struct RayBlockInfo {
+	glm::i64vec3 blockPos;
+	BlockType block;
+	BlockFace face;
+};
 
 class Level;
 class WorldManager
@@ -27,6 +32,8 @@ public:
 	bool IsSolidBlock(int x, int y, int z);
 	void PlaceBlock(int x, int y, int z, BlockType type);
 	void BreakBlock(int x, int y, int z);
+
+	RayBlockInfo RaycastBlock(glm::dvec3 origin, glm::vec3 direction, float distance); //a raycasting function for detecting blocks starting from an origin point
 
 	ChunkGenerator& GetChunkGenerator();
 	ChunkProvider& GetChunkProvider();

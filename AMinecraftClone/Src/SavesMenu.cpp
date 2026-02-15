@@ -42,14 +42,14 @@ SavesMenu::SavesMenu() {
 	CancelButton.SetText("Cancel");
 	CancelButton.Callback = CancelButtonCallback;
 	CancelButton.projMtx = &Game::ScrMidProj;
-	CancelButton.text.projMtx = &Game::ScrMidProj;
+	CancelButton.SetTextProj(Game::ScrMidProj);
 
 	DeleteWorldButton.position = glm::vec2(0, 185);
 	DeleteWorldButton.scale = glm::vec2(600, 60);
 	DeleteWorldButton.SetText("Delete World...");
 	DeleteWorldButton.Callback = DeleteButtonCallback;
 	DeleteWorldButton.projMtx = &Game::ScrMidProj;
-	DeleteWorldButton.text.projMtx = &Game::ScrMidProj;
+	DeleteWorldButton.SetTextProj(Game::ScrMidProj);
 
 	int index = 0;
 	for (auto& n : WorldButtons) {
@@ -58,7 +58,7 @@ SavesMenu::SavesMenu() {
 		n.SetText("- empty -");
 		n.Callback = WorldButtonClick;
 		n.projMtx = &Game::ScrMidProj;
-		n.text.projMtx = &Game::ScrMidProj;
+		n.SetTextProj(Game::ScrMidProj);
 		index++;
 	}
 
@@ -67,7 +67,7 @@ SavesMenu::SavesMenu() {
 	WorldType.SetText("World Type: Infdev-20100227");
 	WorldType.Callback = ChangeWorldType;
 	WorldType.projMtx = &Game::ScrTopRightProj;
-	WorldType.text.projMtx = &Game::ScrTopRightProj;
+	WorldType.SetTextProj(Game::ScrTopRightProj);
 }
 
 void SavesMenu::RenderScreen() {

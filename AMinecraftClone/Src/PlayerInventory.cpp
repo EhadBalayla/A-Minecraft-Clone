@@ -14,12 +14,12 @@ PlayerInventory::PlayerInventory() {
 		if (i < 9) {
 			items[i].position = glm::vec2(54.25 * (float)i - 217.0f, 202.5);
 			items[i].projMtx = &Game::ScrMidProj;
-			items[i].countText.projMtx = &Game::ScrMidProj;
+			items[i].SetTextProj(Game::ScrMidProj);
 		}
 		else {
 			items[i].position = glm::vec2(54.25 * (float)((i - 9) % 9) - 217.0f, 28.0 + (54.25 * ((i - 9) / 9)));
 			items[i].projMtx = &Game::ScrMidProj;
-			items[i].countText.projMtx = &Game::ScrMidProj;
+			items[i].SetTextProj(Game::ScrMidProj);
 		}
 	}
 }

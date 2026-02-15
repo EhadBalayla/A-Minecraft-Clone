@@ -9,7 +9,9 @@ public:
 	InventoryItem* item;
 
 	void Render();
-	TextDisplayer countText;
+
+	void SetTextProj(glm::mat4& MTX);
 private:
+	TextDisplayer countText;
 };
 

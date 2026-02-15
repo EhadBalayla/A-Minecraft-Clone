@@ -20,21 +20,21 @@ PauseMenu::PauseMenu() {
 	ContinueButton.SetText("Back to game");
 	ContinueButton.Callback = BackToGame;
 	ContinueButton.projMtx = &Game::ScrMidProj;
-	ContinueButton.text.projMtx = &Game::ScrMidProj;
+	ContinueButton.SetTextProj(Game::ScrMidProj);
 
 	QuitButton.position = glm::vec2(0, -100);
 	QuitButton.scale = glm::vec2(600, 60);
 	QuitButton.SetText("Save and quit to title");
 	QuitButton.Callback = Quit;
 	QuitButton.projMtx = &Game::ScrMidProj;
-	QuitButton.text.projMtx = &Game::ScrMidProj;
+	QuitButton.SetTextProj(Game::ScrMidProj);
 
 	OptionsButton.position = glm::vec2(0, 100);
 	OptionsButton.scale = glm::vec2(600, 60);
 	OptionsButton.SetText("Options...");
 	OptionsButton.Callback = GoIntoOptions;
 	OptionsButton.projMtx = &Game::ScrMidProj;
-	OptionsButton.text.projMtx = &Game::ScrMidProj;
+	OptionsButton.SetTextProj(Game::ScrMidProj);
 }
 
 

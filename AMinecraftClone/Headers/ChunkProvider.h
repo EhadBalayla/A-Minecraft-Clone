@@ -54,5 +54,6 @@ private:
 	ThreadPool genPool;
 	ThreadPool popPool;
 	ThreadPool meshPool;
+	ThreadPool Gen3Pool;
 };
 

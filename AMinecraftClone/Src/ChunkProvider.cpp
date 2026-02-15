@@ -42,7 +42,7 @@ void ChunkMesh(Chunk* c, WorldManager* owningWorld) {
 
 
 
-ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), /*pool(20)*/genPool(8), popPool(8), meshPool(5) {
+ChunkProvider::ChunkProvider(WorldManager* world) : owningWorld(world), /*pool(20)*/genPool(8), popPool(8), meshPool(8), Gen3Pool(1) {
 }
 ChunkProvider::~ChunkProvider() {
 	DeleteAllChunks();
@@ -59,7 +59,8 @@ Chunk* ChunkProvider::ProvideChunk(int ChunkX, int ChunkZ, uint8_t LOD) {
 	GetAllChunks(LOD)[glm::ivec2(ChunkX, ChunkZ)] = c;
 	c->CreateMeshObjects();
 
-	genPool.QueueJob({ ChunkGen, c, owningWorld});
+	if(Game::m_ChosenTerrain == 2) Gen3Pool.QueueJob({ ChunkGen, c, owningWorld });
+	else genPool.QueueJob({ ChunkGen, c, owningWorld});
 
 	return c;
 }

@@ -4,9 +4,9 @@
 #include "MathHelper.h"
 #include "Game.h"
 
-void AddFace(glm::uvec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset, std::vector<uint32_t>& verticies, std::vector<uint32_t>& indicies);
+void AddFace(glm::uvec3 pos, BlockFace face, int faceIndexOffset, uint32_t& indexOffset, std::vector<uint32_t>& verticies, std::vector<uint32_t>& indicies);
 void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
-void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
+void AddLiquidFace(glm::uvec3 pos, BlockFace face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies);
 
 
 void Chunk::CreateMeshObjects() {
@@ -84,7 +84,7 @@ void Chunk::RenderOpaque() {
     Game::e_OpaqueShader.setMat4("view", Game::View);
     Game::e_OpaqueShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width * LODFactor, 0, ChunkZ * Chunk_Length * LODFactor) - Game::player.GetPosition();
-    Game::e_OpaqueShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor)));
+    Game::e_OpaqueShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor, 1, LODFactor)));
 
 
     glBindVertexArray(meshes.m_VAO);
@@ -102,7 +102,7 @@ void Chunk::RenderPlants() {
     Game::e_PlantsShader.setMat4("view", Game::View);
     Game::e_PlantsShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width * LODFactor, 0, ChunkZ * Chunk_Length * LODFactor) - Game::player.GetPosition();
-    Game::e_PlantsShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor)));
+    Game::e_PlantsShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor, 1, LODFactor)));
 
 
     glBindVertexArray(meshes.m_VAO2);
@@ -118,7 +118,7 @@ void Chunk::RenderWater() {
     Game::e_WaterShader.setMat4("view", Game::View);
     Game::e_WaterShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width * LODFactor, 0, ChunkZ * Chunk_Length * LODFactor) - Game::player.GetPosition();
-    Game::e_WaterShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor)));
+    Game::e_WaterShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor, 1, LODFactor)));
     Game::e_WaterShader.setFloat("Time", SDL_GetTicks() / 1000.0f);
 
 
@@ -137,7 +137,7 @@ void Chunk::RenderTransparent() {
     Game::e_OpaqueShader.setMat4("view", Game::View);
     Game::e_OpaqueShader.setMat4("projection", Game::Proj);
     glm::vec3 relativePos = glm::dvec3(ChunkX * Chunk_Width * LODFactor, 0, ChunkZ * Chunk_Length * LODFactor) - Game::player.GetPosition();
-    Game::e_OpaqueShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor)));
+    Game::e_OpaqueShader.setMat4("model", glm::scale(glm::translate(glm::mat4(1.0), relativePos), glm::vec3(LODFactor, 1, LODFactor)));
 
 
     glBindVertexArray(meshes.m_VAO4);
@@ -154,18 +154,17 @@ void Chunk::CreateChunkMeshData() {
     uint32_t index3 = 0;
 
     for (int x = 0; x < Chunk_Width; x++) {
-        for (int y = 0; y < Chunk_Height; y += LODFactor) {
+        for (int y = 0; y < Chunk_Height; y++ /*+= LODFactor*/) {
             for (int z = 0; z < Chunk_Length; z++) {
                 BlockType type = m_Blocks[IndexAt(x, y, z)];
                 if (type == BlockType::Air)
                     continue;
 
-                glm::u8vec3 blockPos(x, y / LODFactor, z);
+                glm::u8vec3 blockPos(x, y /*/ LODFactor*/, z);
 
                 auto isAir = [&](int dx, int dy, int dz, BlockVisiblity visibility) -> bool { //for opaque blocks
-                    Block* block;
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
-                    nx = x + dx, ny = y + dy * LODFactor, nz = z + dz;
+                    nx = x + dx, ny = y + dy /** LODFactor*/, nz = z + dz;
                     if (nx < 0) { //check if outside on the X on the negative
                         return true;
                     }
@@ -187,9 +186,8 @@ void Chunk::CreateChunkMeshData() {
                     return m_Blocks[IndexAt(nx, ny, nz)] == BlockType::Air || Game::e_BlockRegistery[m_Blocks[IndexAt(nx, ny, nz)]].visibility != visibility;
                     };
                 auto isVis = [&](int dx, int dy, int dz, BlockVisiblity visibility)  -> bool {
-                    Block* block;
                     int nx, ny, nz; //these are the full coords in chunk space not just the offset
-                    nx = x + dx, ny = y + dy * LODFactor, nz = z + dz;
+                    nx = x + dx, ny = y + dy /** LODFactor*/, nz = z + dz;
                     if (nx < 0) { //check if outside on the X on the negative
 
                         return true;
@@ -215,31 +213,31 @@ void Chunk::CreateChunkMeshData() {
                 BlockData bd = Game::e_BlockRegistery[m_Blocks[IndexAt(x, y, z)]];
                 switch (Game::e_BlockRegistery[m_Blocks[IndexAt(x, y, z)]].visibility) {
                 case BlockVisiblity::Opaque:
-                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, Face::Back, bd.uv.Back, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
-                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, Face::Front, bd.uv.Front, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
-                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, Face::Left, bd.uv.Left, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
-                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, Face::Right, bd.uv.Right, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
-                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, Face::Top, bd.uv.Top, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
-                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, Face::Bottom, bd.uv.Bottom, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
+                    if (isAir(0, 0, -1, Opaque)) AddFace(blockPos, BlockFace::Back, bd.uv.Back, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
+                    if (isAir(0, 0, 1, Opaque)) AddFace(blockPos, BlockFace::Front, bd.uv.Front, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
+                    if (isAir(-1, 0, 0, Opaque)) AddFace(blockPos, BlockFace::Left, bd.uv.Left, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
+                    if (isAir(1, 0, 0, Opaque)) AddFace(blockPos, BlockFace::Right, bd.uv.Right, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
+                    if (isAir(0, 1, 0, Opaque)) AddFace(blockPos, BlockFace::Top, bd.uv.Top, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
+                    if (isAir(0, -1, 0, Opaque)) AddFace(blockPos, BlockFace::Bottom, bd.uv.Bottom, index, meshData.opaqueVerticies, meshData.opaqueIndicies);
                     break;
                 case BlockVisiblity::Plant:
                     AddPlantFace(blockPos, bd.uv.Back, index1, meshData.plantVerticies, meshData.plantIndicies);
                     break;
                 case BlockVisiblity::Liquid:
-                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, Face::Back, bd.uv.Back, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
-                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, Face::Front, bd.uv.Front, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
-                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Left, bd.uv.Left, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
-                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, Face::Right, bd.uv.Right, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
-                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, Face::Top, bd.uv.Top, index2, false, meshData.waterVerticies, meshData.waterIndicies);
-                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, Face::Bottom, bd.uv.Bottom, index2, false, meshData.waterVerticies, meshData.waterIndicies);
+                    if (isAir(0, 0, -1, Liquid)) AddLiquidFace(blockPos, BlockFace::Back, bd.uv.Back, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
+                    if (isAir(0, 0, 1, Liquid)) AddLiquidFace(blockPos, BlockFace::Front, bd.uv.Front, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
+                    if (isAir(-1, 0, 0, Liquid)) AddLiquidFace(blockPos, BlockFace::Left, bd.uv.Left, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
+                    if (isAir(1, 0, 0, Liquid)) AddLiquidFace(blockPos, BlockFace::Right, bd.uv.Right, index2, isVis(0, 1, 0, Liquid), meshData.waterVerticies, meshData.waterIndicies);
+                    if (isAir(0, 1, 0, Liquid)) AddLiquidFace(blockPos, BlockFace::Top, bd.uv.Top, index2, false, meshData.waterVerticies, meshData.waterIndicies);
+                    if (isAir(0, -1, 0, Liquid)) AddLiquidFace(blockPos, BlockFace::Bottom, bd.uv.Bottom, index2, false, meshData.waterVerticies, meshData.waterIndicies);
                     break;
                 case BlockVisiblity::Transparent:
-                    AddFace(blockPos, Face::Back, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
-                    AddFace(blockPos, Face::Front, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
-                    AddFace(blockPos, Face::Left, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
-                    AddFace(blockPos, Face::Right, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
-                    AddFace(blockPos, Face::Top, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
-                    AddFace(blockPos, Face::Bottom, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
+                    AddFace(blockPos, BlockFace::Back, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
+                    AddFace(blockPos, BlockFace::Front, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
+                    AddFace(blockPos, BlockFace::Left, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
+                    AddFace(blockPos, BlockFace::Right, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
+                    AddFace(blockPos, BlockFace::Top, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
+                    AddFace(blockPos, BlockFace::Bottom, bd.uv.Back, index3, meshData.transparentVerticies, meshData.transparentIndicies);
                     break;
                 }
             }
@@ -403,42 +401,42 @@ void waterFlag(uint16_t& pos, uint8_t& extras, uint16_t flag /*from 1 - 10*/) {
 }
 
 //adds face for a square block
-void AddFace(glm::uvec3 pos, Face face, int faceIndexOffset, uint32_t& indexOffset, std::vector<uint32_t>& verticies, std::vector<uint32_t>& indicies) {
+void AddFace(glm::uvec3 pos, BlockFace face, int faceIndexOffset, uint32_t& indexOffset, std::vector<uint32_t>& verticies, std::vector<uint32_t>& indicies) {
     uint32_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
 
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
     switch (face) {
-    case Face::Top:
+    case BlockFace::Top:
         e0 = getVertex(pos, faceIndexOffset, 0, 4, 0);
         e1 = getVertex(pos, faceIndexOffset, 1, 5, 0);
         e2 = getVertex(pos, faceIndexOffset, 2, 6, 0);
         e3 = getVertex(pos, faceIndexOffset, 3, 7, 0);
         break;
-    case Face::Bottom:
+    case BlockFace::Bottom:
         e0 = getVertex(pos, faceIndexOffset, 3, 0, 0);
         e1 = getVertex(pos, faceIndexOffset, 2, 3, 0);
         e2 = getVertex(pos, faceIndexOffset, 1, 2, 0);
         e3 = getVertex(pos, faceIndexOffset, 0, 1, 0);
         break;
-    case Face::Left:
+    case BlockFace::Left:
         e0 = getVertex(pos, faceIndexOffset, 3, 0, 2);
         e1 = getVertex(pos, faceIndexOffset, 0, 4, 2);
         e2 = getVertex(pos, faceIndexOffset, 1, 7, 2);
         e3 = getVertex(pos, faceIndexOffset, 2, 3, 2);
         break;
-    case Face::Right:
+    case BlockFace::Right:
         e0 = getVertex(pos, faceIndexOffset, 2, 1, 2);
         e1 = getVertex(pos, faceIndexOffset, 3, 2, 2);
         e2 = getVertex(pos, faceIndexOffset, 0, 6, 2);
         e3 = getVertex(pos, faceIndexOffset, 1, 5, 2);
         break;
-    case Face::Front:
+    case BlockFace::Front:
         e0 = getVertex(pos, faceIndexOffset, 3, 3, 1);
         e1 = getVertex(pos, faceIndexOffset, 0, 7, 1);
         e2 = getVertex(pos, faceIndexOffset, 1, 6, 1);
         e3 = getVertex(pos, faceIndexOffset, 2, 2, 1);
         break;
-    case Face::Back:
+    case BlockFace::Back:
         e0 = getVertex(pos, faceIndexOffset, 2, 0, 1);
         e1 = getVertex(pos, faceIndexOffset, 3, 1, 1);
         e2 = getVertex(pos, faceIndexOffset, 0, 5, 1);
@@ -513,13 +511,13 @@ void AddPlantFace(glm::uvec3 pos, uint8_t faceIndexOffset, uint32_t& indexOffset
     indexOffset += 4;
 }
 //adds face for a liquid block
-void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
+void AddLiquidFace(glm::uvec3 pos, BlockFace face, uint8_t faceIndexOffset, uint32_t& indexOffset, bool IsMiddle, std::vector<Vertex>& verticies, std::vector<uint32_t>& indicies) {
     uint8_t e0 = 0, e1 = 0, e2 = 0, e3 = 0;
     uint16_t p0 = convertPos(pos), p1 = convertPos(pos), p2 = convertPos(pos), p3 = convertPos(pos);
 
     //this entire Switch basically sets the normal and verticies position based on the position of the face in question and the direction of the block
     switch (face) {
-    case Face::Top:
+    case BlockFace::Top:
         e0 = getExtras(0, 4, 0);
         e1 = getExtras(1, 5, 0);
         e2 = getExtras(2, 6, 0);
@@ -530,7 +528,7 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p2, e2, 8);
         waterFlag(p3, e3, 8);
         break;
-    case Face::Bottom:
+    case BlockFace::Bottom:
         e0 = getExtras(3, 0, 0);
         e1 = getExtras(2, 3, 0);
         e2 = getExtras(1, 2, 0);
@@ -541,7 +539,7 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p2, e2, 10);
         waterFlag(p3, e3, 10);
         break;
-    case Face::Left:
+    case BlockFace::Left:
         e0 = getExtras(3, 0, 0);
         e1 = getExtras(1, 4, 0);
         e2 = getExtras(0, 7, 0);
@@ -552,7 +550,7 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p2, e2, IsMiddle ? 10 : 8);
         waterFlag(p3, e3, 10);
         break;
-    case Face::Right:
+    case BlockFace::Right:
         e0 = getExtras(2, 1, 0);
         e1 = getExtras(3, 2, 0);
         e2 = getExtras(0, 6, 0);
@@ -563,7 +561,7 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p2, e2, IsMiddle ? 10 : 8);
         waterFlag(p3, e3, IsMiddle ? 10 : 8);
         break;
-    case Face::Front:
+    case BlockFace::Front:
         e0 = getExtras(3, 3, 0);
         e1 = getExtras(0, 7, 0);
         e2 = getExtras(1, 6, 0);
@@ -574,7 +572,7 @@ void AddLiquidFace(glm::uvec3 pos, Face face, uint8_t faceIndexOffset, uint32_t&
         waterFlag(p2, e2, IsMiddle ? 10 : 8);
         waterFlag(p3, e3, 10);
         break;
-    case Face::Back:
+    case BlockFace::Back:
         e0 = getExtras(2, 0, 0);
         e1 = getExtras(3, 1, 0);
         e2 = getExtras(0, 5, 0);

@@ -34,7 +34,7 @@ glm::vec3 Entity::getLookVector() {
 	forward.y = sin(pitchRad);
 	forward.z = cos(pitchRad) * sin(yawRad);
 
-	return glm::normalize(forward);
+	return forward;
 }
 
 
@@ -100,12 +100,12 @@ void Entity::MoveAndCollide(float DeltaTime) {
 	nBlock = Game::level->GetWorld().getBlockAt(nPos.x, nPos.y, nPos.z);
 
 	newPos.y += dy;
-	if (dy > 0.0 && pBlock != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(pPos), aabb.MovedTo(newPos))) {
-		newPos.y = Block::blockHitbox.MovedTo(pPos).min.y - entityHeight;
+	if (dy > 0.0 && pBlock != BlockType::Air && AABBHelper::Intersects(blockHitbox.MovedTo(pPos), aabb.MovedTo(newPos))) {
+		newPos.y = blockHitbox.MovedTo(pPos).min.y - entityHeight;
 		velocity.y = 0.0;
 	}
-	else if (dy < 0.0 && nBlock != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(nPos), aabb.MovedTo(newPos))) {
-		newPos.y = Block::blockHitbox.MovedTo(nPos).max.y;
+	else if (dy < 0.0 && nBlock != BlockType::Air && AABBHelper::Intersects(blockHitbox.MovedTo(nPos), aabb.MovedTo(newPos))) {
+		newPos.y = blockHitbox.MovedTo(nPos).max.y;
 		velocity.y = 0.0;
 		IsOnGround = true;
 	}
@@ -119,11 +119,11 @@ void Entity::MoveAndCollide(float DeltaTime) {
 	nBlock = Game::level->GetWorld().getBlockAt(nPos.x, nPos.y, nPos.z);
 
 	newPos.z += dz;
-	if (dz > 0.0 && pBlock != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(pPos), aabb.MovedTo(newPos))) {
+	if (dz > 0.0 && pBlock != BlockType::Air && AABBHelper::Intersects(blockHitbox.MovedTo(pPos), aabb.MovedTo(newPos))) {
 		newPos.z = pPos.z + aabb.min.z;
 		velocity.z = 0.0;
 	}
-	else if (dz < 0.0 && nBlock != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(nPos), aabb.MovedTo(newPos))) {
+	else if (dz < 0.0 && nBlock != BlockType::Air && AABBHelper::Intersects(blockHitbox.MovedTo(nPos), aabb.MovedTo(newPos))) {
 		newPos.z = nPos.z + 1.0 + aabb.max.z;
 		velocity.z = 0.0;
 	}
@@ -136,11 +136,11 @@ void Entity::MoveAndCollide(float DeltaTime) {
 	nBlock = Game::level->GetWorld().getBlockAt(nPos.x, nPos.y, nPos.z);
 
 	newPos.x += dx;
-	if (dx > 0.0 && pBlock != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(pPos), aabb.MovedTo(newPos))) {
+	if (dx > 0.0 && pBlock != BlockType::Air && AABBHelper::Intersects(blockHitbox.MovedTo(pPos), aabb.MovedTo(newPos))) {
 		newPos.x = pPos.x + aabb.min.x;
 		velocity.x = 0.0;
 	}
-	else if (dx < 0.0 && nBlock != BlockType::Air && AABBHelper::Intersects(Block::blockHitbox.MovedTo(nPos), aabb.MovedTo(newPos))) {
+	else if (dx < 0.0 && nBlock != BlockType::Air && AABBHelper::Intersects(blockHitbox.MovedTo(nPos), aabb.MovedTo(newPos))) {
 		newPos.x = nPos.x + 1.0 + aabb.max.x;
 		velocity.x = 0.0;
 	}

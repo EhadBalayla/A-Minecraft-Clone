@@ -37,3 +37,7 @@ void ItemDisplayer::Render() {
 		countText.Render();
 	}
 }
+
+void ItemDisplayer::SetTextProj(glm::mat4& MTX) {
+	countText.projMtx = &MTX;
+}
