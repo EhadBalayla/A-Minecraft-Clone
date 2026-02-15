@@ -34,8 +34,11 @@ public:
 
 	//inventory stuff
 	InventoryItem m_PlayerItems[36];
-	void AddItem(Item item, int amount); //basically adds an item to the player's inventory,
+	void AddItem(ItemType item, int amount); //basically adds an item to the player's inventory,
 	void RemoveItem(InventoryItem* item, int amountToRemove); //for removing an item from the inventory
+
+	BlockType GetRayBlock() const { return rayBlock; }
+	glm::i64vec3 GetRayBlockPos() const { return rayBlockPos; }
 private:
 	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
 	glm::dvec3 getCameraPosition(); //returns the camera position
@@ -70,5 +73,10 @@ private:
 
 	bool ShouldUpdateChunks = true;
 	const float CreativeSpeed = 0.1f;
+
+	//cached ray
+	BlockType rayBlock = BlockType::Air;
+	glm::i64vec3 rayBlockPos = glm::i64vec3(0);
+	glm::dvec3 rayHitPos = glm::dvec3(0.0);
 };
 

@@ -2,9 +2,9 @@
 #include "Game.h"
 
 void ItemDisplayer::Render() {
-	ItemData id = Game::e_ItemRegistery[item->m_Item.getType()];
+	ItemData id = Game::e_ItemRegistery[item->m_Item];
 
-	if (id.type == ItemUsageType::PlaceableBlock && item->m_Item.getType() != ItemType::NoItem) {
+	if (id.type == ItemUsageType::PlaceableBlock && item->m_Item != ItemType::NoItem) {
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glFrontFace(GL_CW);

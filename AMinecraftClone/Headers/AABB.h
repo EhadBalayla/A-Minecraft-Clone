@@ -11,12 +11,6 @@ struct AABB {
 	}
 };
 
-struct Ray {
-	glm::dvec3 RayOrigin;
-	glm::dvec3 RayDirection;
-	double RayDistance;
-};
-
 namespace AABBHelper {
 	bool Intersects(const AABB& a, const AABB& b);
 }

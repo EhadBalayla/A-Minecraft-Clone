@@ -26,7 +26,7 @@ glm::mat4 Player::getViewMatrix() {
         cos(glm::radians(pitch)) * sin(glm::radians(yaw))
     };
 
-                        //this is where the position        //also here is position
+                        
     return glm::lookAt(glm::vec3(0.0, cameraHeight, 0.0), glm::vec3(0.0, cameraHeight, 0.0) + glm::normalize(front), {0, 1, 0});
 }
 glm::mat4 Player::getViewOnlyMatrix() {
@@ -41,33 +41,15 @@ glm::mat4 Player::getViewOnlyMatrix() {
 }
 
 void Player::AddStarterItems() {
-    Item i;
-    i.setType(ItemType::GrassBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::CobblestoneBlock);
-    AddItem(i, 48);
-
-    i.setType(ItemType::DiamondBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::BrickBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::WoodBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::WoodPlankBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::StoneBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::ObsidianBlock);
-    AddItem(i, 32);
-
-    i.setType(ItemType::BedrockBlock);
-    AddItem(i, 32);
+    AddItem(ItemType::GrassBlock, 32);
+    AddItem(ItemType::CobblestoneBlock, 32);
+    AddItem(ItemType::DiamondBlock, 32);
+    AddItem(ItemType::BrickBlock, 32);
+    AddItem(ItemType::WoodBlock, 32);
+    AddItem(ItemType::WoodPlankBlock, 32);
+    AddItem(ItemType::StoneBlock, 32);
+    AddItem(ItemType::ObsidianBlock, 32);
+    AddItem(ItemType::BedrockBlock, 32);
 }
 
 void Player::UpdateChunksAroundPlayer() {
@@ -134,6 +116,10 @@ void Player::Update(float DeltaTime) {
             position += glm::vec3(0.0f, -1.0f, 0.0f) * DeltaTime * CreativeSpeed;
     }
 
+    RayBlockInfo rayInfo = Game::level->GetWorld().RaycastBlock(getCameraPosition(), getLookVector(), 5.0f);
+    rayBlock = rayInfo.block;
+    rayBlockPos = rayInfo.blockPos;
+    rayHitPos = rayInfo.hitPos;
 }
 
 bool Player::CanPerformAbility() {
@@ -225,23 +211,21 @@ void Player::ProcessInput(SDL_Event& e) {
     else if (e.type == SDL_MOUSEBUTTONDOWN) { //for mouse 
         if (e.button.button == SDL_BUTTON_LEFT) { //for left click
             if(CanPerformAbility()) { //check if no menu is open
-                RayBlockInfo hitInfo = Game::level->GetWorld().RaycastBlock(getCameraPosition(), getLookVector(), 5.0f);
-                if (hitInfo.block != BlockType::Air) {
-                    Game::level->GetWorld().BreakBlock(hitInfo.blockPos.x, hitInfo.blockPos.y, hitInfo.blockPos.z);
+                if (rayBlock != BlockType::Air) {
+                    Game::level->GetWorld().BreakBlock(rayBlockPos.x, rayBlockPos.y, rayBlockPos.z);
                     Game::m_AudioManager.StartSound("Sounds\\grass4.wav");
                 }
             }
         }
         else if (e.button.button == SDL_BUTTON_RIGHT) { //for right click
             if(CanPerformAbility()) { //check if no menu is open
-                if(m_PlayerItems[selectedSlot - 1].m_Item.getType() != ItemType::NoItem) {
-                    switch (m_PlayerItems[selectedSlot - 1].m_Item.getData().type) {
+                if(m_PlayerItems[selectedSlot - 1].m_Item != ItemType::NoItem) {
+                    ItemData id = Game::e_ItemRegistery[m_PlayerItems[selectedSlot - 1].m_Item];
+                    switch (id.type) {
                     case ItemUsageType::PlaceableBlock:
                         PlayerPlaceBlocks();
-                        Game::m_AudioManager.StartSound("Sounds\\stone4.wav");
                         break;
                     }
-                    RemoveItem(&m_PlayerItems[selectedSlot - 1], 1);
                 }
             }
         }
@@ -264,24 +248,24 @@ void Player::setSelectedSlot(uint8_t slot) {
     Game::hudScreen.Selection.position = glm::vec2(-241.75855 + 60.5 * slotMultiplier, -30.2195);
 }
 
-void Player::AddItem(Item item, int amount) { //add item to inventory
+void Player::AddItem(ItemType item, int amount) { //add item to inventory
     int currentAmount = amount;
+    ItemData id = Game::e_ItemRegistery[item];
     for (int i = 0; i < 36; i++) { //iterates through the slots in the inventory
-        if (m_PlayerItems[i].m_Item.getType() == ItemType::NoItem) { //if the item in the currently iterated inventory slot is NoItem (item equivalent of block air... AKA hardcoded to act as nothing)
+        if (m_PlayerItems[i].m_Item == ItemType::NoItem) { //if the item in the currently iterated inventory slot is NoItem (item equivalent of block air... AKA hardcoded to act as nothing)
             
             m_PlayerItems[i].m_Amount = 0; //resets the amount of the item to be 0 just to be safe... it should already be in theory
-            m_PlayerItems[i].m_Item.setOnlyType(item.getType()); //sets the type to the item's type
-            m_PlayerItems[i].m_Item.setData(item.getData()); //copies the item data directly from the given item
+            m_PlayerItems[i].m_Item = item; //sets the type to the item's type
 
-            while (currentAmount > 0 && m_PlayerItems[i].m_Amount < m_PlayerItems[i].m_Item.getData().StackAmount) {
+            while (currentAmount > 0 && m_PlayerItems[i].m_Amount < id.StackAmount) {
                 m_PlayerItems[i].m_Amount++;
                 currentAmount--;
             }
         }
-        else if (m_PlayerItems[i].m_Item == item && m_PlayerItems[i].m_Amount < m_PlayerItems[i].m_Item.getData().StackAmount) //if the item that you want to add is already in the current hotbar slot and the amount isn't the stack amount
+        else if (m_PlayerItems[i].m_Item == item && m_PlayerItems[i].m_Amount < id.StackAmount) //if the item that you want to add is already in the current hotbar slot and the amount isn't the stack amount
         {
             //basically if the item already exists in currently iterated slot and its not in the stack amount... add more one at a time so that we won't go above the stack count
-            while (currentAmount > 0 && m_PlayerItems[i].m_Amount < m_PlayerItems[i].m_Item.getData().StackAmount) {
+            while (currentAmount > 0 && m_PlayerItems[i].m_Amount < id.StackAmount) {
                 m_PlayerItems[i].m_Amount++;
                 currentAmount--;
             }
@@ -297,34 +281,49 @@ void Player::RemoveItem(InventoryItem* item, int amountToRemove) {
     item->m_Amount -= amountToRemove;
     if (item->m_Amount <= 0) {
         item->m_Amount = 0;
-        item->m_Item.setType(ItemType::NoItem);
+        item->m_Item = ItemType::NoItem;
     }
 }
 
 
 //place block item
 void Player::PlayerPlaceBlocks() {
-    RayBlockInfo hitInfo = Game::level->GetWorld().RaycastBlock(getCameraPosition(), getLookVector(), 5.0f);
-    if (hitInfo.block != BlockType::Air) {
-        BlockType typeToPlace = m_PlayerItems[selectedSlot - 1].m_Item.getData().blockID;
-        switch (hitInfo.face) {
+    if (rayBlock != BlockType::Air) {
+        Game::m_AudioManager.StartSound("Sounds\\stone4.wav");
+        RemoveItem(&m_PlayerItems[selectedSlot - 1], 1);
+        ItemData id = Game::e_ItemRegistery[m_PlayerItems[selectedSlot - 1].m_Item];
+        BlockType typeToPlace = id.blockID;
+
+        BlockFace hitFace = BlockFace::Top;
+        double distX = rayHitPos.x - (rayBlockPos.x + 0.5);
+        double distY = rayHitPos.y - (rayBlockPos.y + 0.5);
+        double distZ = rayHitPos.z - (rayBlockPos.z + 0.5);
+
+        if (std::fabs(distX) > std::fabs(distY) && std::fabs(distX) > std::fabs(distZ))
+            hitFace = (distX > 0 ? BlockFace::Right : BlockFace::Left);
+        else if (std::fabs(distY) > std::fabs(distX) && std::fabs(distY) > std::fabs(distZ))
+            hitFace = (distY > 0 ? BlockFace::Top : BlockFace::Bottom);
+        else
+            hitFace = (distZ > 0 ? BlockFace::Back : BlockFace::Front);
+
+        switch (hitFace) {
         case BlockFace::Top:
-            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y + 1, hitInfo.blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(rayBlockPos.x, rayBlockPos.y + 1, rayBlockPos.z, typeToPlace);
             break;
         case BlockFace::Bottom:
-            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y - 1, hitInfo.blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(rayBlockPos.x, rayBlockPos.y - 1, rayBlockPos.z, typeToPlace);
             break;
         case BlockFace::Right:
-            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x + 1, hitInfo.blockPos.y, hitInfo.blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(rayBlockPos.x + 1, rayBlockPos.y, rayBlockPos.z, typeToPlace);
             break;
         case BlockFace::Left:
-            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x - 1, hitInfo.blockPos.y, hitInfo.blockPos.z, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(rayBlockPos.x - 1, rayBlockPos.y, rayBlockPos.z, typeToPlace);
             break;
         case BlockFace::Front:
-            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y, hitInfo.blockPos.z - 1, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(rayBlockPos.x, rayBlockPos.y, rayBlockPos.z - 1, typeToPlace);
             break;
         case BlockFace::Back:
-            Game::level->GetWorld().PlaceBlock(hitInfo.blockPos.x, hitInfo.blockPos.y, hitInfo.blockPos.z + 1, typeToPlace);
+            Game::level->GetWorld().PlaceBlock(rayBlockPos.x, rayBlockPos.y, rayBlockPos.z + 1, typeToPlace);
             break;
         }
     }

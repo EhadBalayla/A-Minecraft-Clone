@@ -5,7 +5,7 @@
 struct RayBlockInfo {
 	glm::i64vec3 blockPos;
 	BlockType block;
-	BlockFace face;
+	glm::dvec3 hitPos; // the position of the block + where the ray hit inside the block
 };
 
 class Level;
@@ -33,7 +33,7 @@ public:
 	void PlaceBlock(int x, int y, int z, BlockType type);
 	void BreakBlock(int x, int y, int z);
 
-	RayBlockInfo RaycastBlock(glm::dvec3 origin, glm::vec3 direction, float distance); //a raycasting function for detecting blocks starting from an origin point
+	RayBlockInfo RaycastBlock(glm::dvec3 origin, glm::vec3 direction, float distance); //same raycast function but without the blockface
 
 	ChunkGenerator& GetChunkGenerator();
 	ChunkProvider& GetChunkProvider();

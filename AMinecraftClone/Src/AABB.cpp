@@ -1,5 +1,4 @@
 #include "AABB.h"
-#include "Game.h"
 
 namespace AABBHelper {
     bool Intersects(const AABB& a, const AABB& b) {

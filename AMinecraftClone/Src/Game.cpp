@@ -232,12 +232,15 @@ void Game::GameLoop() {
 
 			player.Update(deltaTime);
 			level->LevelUpdate(deltaTime);
+			//m_Networking.Render();
 
 			//set the view matrix to the current camera's view
 			View = player.getViewMatrix();
 
 			level->RenderLevel();
-			//m_Networking.Render();
+			if (player.GetRayBlock() != BlockType::Air()) {
+				m_DebugRenderer.DrawSelectionOutline();
+			}
 
 			m_DebugRenderer.DrawChunkBoundaries();
 
