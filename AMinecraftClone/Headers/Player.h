@@ -19,12 +19,12 @@ public:
 
 	void Update(float DeltaTime) override;
 
-	glm::mat4 getViewMatrix(); //returns the view matrix of the player for the rendering
-	glm::mat4 getViewOnlyMatrix(); //returns the view matrix but without rotations
+	glm::mat4 getViewMatrix();
+	glm::mat4 getViewOnlyMatrix();
 
 	void ProcessInput(SDL_Event& e);
 	
-	void UpdateChunksAroundPlayer(); //for infinite render distance
+	void UpdateChunksAroundPlayer();
 
 	glm::ivec2 GetCurrentChunkCoords();
 
@@ -34,18 +34,19 @@ public:
 
 	//inventory stuff
 	InventoryItem m_PlayerItems[36];
-	void AddItem(ItemType item, int amount); //basically adds an item to the player's inventory,
-	void RemoveItem(InventoryItem* item, int amountToRemove); //for removing an item from the inventory
+	InventoryItem m_TempItem; //used for when clicking on a slot
+	InventoryItem m_CraftingItems[4]; //the crafting slots
+	void AddItem(ItemType item, int amount);
+	void RemoveItem(InventoryItem* item, int amountToRemove);
 
 	BlockType GetRayBlock() const { return rayBlock; }
 	glm::i64vec3 GetRayBlockPos() const { return rayBlockPos; }
 private:
-	const float cameraHeight = 1.62f; //the height difference between the player's position and the camera
-	glm::dvec3 getCameraPosition(); //returns the camera position
+	const float cameraHeight = 1.62f;
+	glm::dvec3 getCameraPosition();
 
-	float mouseSensitivity = 0.5f; //mouse sensitivity
+	float mouseSensitivity = 0.5f;
 
-	//checks for wether player is pressing on certain direction
 	bool IsMovingForward = false;
 	bool IsMovingBackward = false;
 	bool IsMovingLeft = false;
@@ -53,7 +54,7 @@ private:
 	bool IsJumping = false;
 	bool IsShifting = false;
 
-	bool CanPerformAbility(); //returns wether the player can perform an ability, as in wether any menu that should interrupt the player such as inventory is open
+	bool CanPerformAbility();
 
 
 
@@ -79,4 +80,6 @@ private:
 	glm::i64vec3 rayBlockPos = glm::i64vec3(0);
 	glm::dvec3 rayHitPos = glm::dvec3(0.0);
 };
+
+#define CACHEDITEM Game::player.m_TempItem
 

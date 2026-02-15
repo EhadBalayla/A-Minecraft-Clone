@@ -41,15 +41,7 @@ glm::mat4 Player::getViewOnlyMatrix() {
 }
 
 void Player::AddStarterItems() {
-    AddItem(ItemType::GrassBlock, 32);
-    AddItem(ItemType::CobblestoneBlock, 32);
-    AddItem(ItemType::DiamondBlock, 32);
-    AddItem(ItemType::BrickBlock, 32);
-    AddItem(ItemType::WoodBlock, 32);
-    AddItem(ItemType::WoodPlankBlock, 32);
-    AddItem(ItemType::StoneBlock, 32);
-    AddItem(ItemType::ObsidianBlock, 32);
-    AddItem(ItemType::BedrockBlock, 32);
+
 }
 
 void Player::UpdateChunksAroundPlayer() {
@@ -214,6 +206,7 @@ void Player::ProcessInput(SDL_Event& e) {
                 if (rayBlock != BlockType::Air) {
                     Game::level->GetWorld().BreakBlock(rayBlockPos.x, rayBlockPos.y, rayBlockPos.z);
                     Game::m_AudioManager.StartSound("Sounds\\grass4.wav");
+                    AddItem(Game::e_BlockItemRegistery[rayBlock], 1);
                 }
             }
         }
@@ -290,9 +283,9 @@ void Player::RemoveItem(InventoryItem* item, int amountToRemove) {
 void Player::PlayerPlaceBlocks() {
     if (rayBlock != BlockType::Air) {
         Game::m_AudioManager.StartSound("Sounds\\stone4.wav");
-        RemoveItem(&m_PlayerItems[selectedSlot - 1], 1);
         ItemData id = Game::e_ItemRegistery[m_PlayerItems[selectedSlot - 1].m_Item];
         BlockType typeToPlace = id.blockID;
+        RemoveItem(&m_PlayerItems[selectedSlot - 1], 1);
 
         BlockFace hitFace = BlockFace::Top;
         double distX = rayHitPos.x - (rayBlockPos.x + 0.5);

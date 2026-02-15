@@ -11,6 +11,8 @@ public:
 	void UpdateScreen();
 
 	ItemDisplayer items[36];
+	ItemDisplayer cachedItem;
+	ItemDisplayer craftingItems[4];
 	ImageDisplayer InventoryIMG;
 };
 

@@ -49,6 +49,7 @@ Player Game::player;
 Level* Game::level;
 std::unordered_map<BlockType, BlockData> Game::e_BlockRegistery;
 std::unordered_map<ItemType, ItemData> Game::e_ItemRegistery;
+std::unordered_map<BlockType, ItemType> Game::e_BlockItemRegistery;
 std::unordered_map<char, Glyph> Game::e_FontRegistery;
 bool Game::IsGameRunning = true;
 AudioManager Game::m_AudioManager;
@@ -62,7 +63,7 @@ bool Game::ShowDebugMenu = true;
 int Game::m_ChosenTerrain = 0;
 NetworkingManager Game::m_Networking;
 int Game::RenderDistance = 16;
-int Game::LODCount = 5;
+int Game::LODCount = 1;
 MainMenuMenu Game::MainMenuState = MainMenuMenu::Title;
 InGameMenu Game::InGameMenuState = InGameMenu::PauseMenu;
 GameState Game::GetGameState() { return state; }
@@ -258,6 +259,7 @@ void Game::GameLoop() {
 				}
 			}
 			if (player.IsInventory) {
+				inventoryMenu.UpdateScreen();
 				inventoryMenu.RenderScreen();
 			}
 
@@ -312,15 +314,48 @@ void Game::RegisterAllBlocks() { //register all block types in the hash map so t
 
 void Game::RegisterAllItems() { //register all item types in the hash map so they can be replicated for changing a block's type with custom parameters
 	e_ItemRegistery[NoItem] = { "No Item", ItemUsageType::PlaceableBlock, 64, BlockType::Air};
-	e_ItemRegistery[GrassBlock] = { "Grass Block", ItemUsageType::PlaceableBlock, 64, BlockType::Grass }; //register the grass block item
-	e_ItemRegistery[CobblestoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Cobblestone }; //register the grass block item
-	e_ItemRegistery[DiamondBlock] = { "Diamond Ore Block", ItemUsageType::PlaceableBlock, 64, BlockType::DiamondOre }; //register the grass block item
-	e_ItemRegistery[BrickBlock] = { "Brick Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bricks }; //register the grass block item
-	e_ItemRegistery[WoodBlock] = { "Wood Block", ItemUsageType::PlaceableBlock, 64, BlockType::Wood }; //register the grass block item
-	e_ItemRegistery[WoodPlankBlock] = { "Wooden Plank Block", ItemUsageType::PlaceableBlock, 64, BlockType::WoodenPlanks }; //register the grass block item
-	e_ItemRegistery[BedrockBlock] = { "Bedrock Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bedrock }; //register the grass block item
-	e_ItemRegistery[ObsidianBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Obsidian }; //register the grass block item
-	e_ItemRegistery[StoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Stone }; //register the grass block item
+	e_ItemRegistery[GrassBlock] = { "Grass Block", ItemUsageType::PlaceableBlock, 64, BlockType::Grass };
+	e_ItemRegistery[StoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Stone };
+	e_ItemRegistery[DirtBlock] = { "Dirt Block", ItemUsageType::PlaceableBlock, 64, BlockType::Dirt };
+	e_ItemRegistery[SandBlock] = { "Sand Block", ItemUsageType::PlaceableBlock, 64, BlockType::Sand };
+	e_ItemRegistery[GravelBlock] = { "Gravel Block", ItemUsageType::PlaceableBlock, 64, BlockType::Gravel };
+	e_ItemRegistery[CobblestoneBlock] = { "Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::Cobblestone };
+	e_ItemRegistery[MossyCobblestoneBlock] = { "Mossy Cobblestone Block", ItemUsageType::PlaceableBlock, 64, BlockType::MossyCobblestone };
+	e_ItemRegistery[WoodPlankBlock] = { "Wooden Plank Block", ItemUsageType::PlaceableBlock, 64, BlockType::WoodenPlanks };
+	e_ItemRegistery[WoodBlock] = { "Wood Block", ItemUsageType::PlaceableBlock, 64, BlockType::Wood };
+	e_ItemRegistery[BedrockBlock] = { "Bedrock Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bedrock };
+	e_ItemRegistery[BrickBlock] = { "Brick Block", ItemUsageType::PlaceableBlock, 64, BlockType::Bricks };
+	e_ItemRegistery[TNTBlock] = { "TNT Block", ItemUsageType::PlaceableBlock, 64, BlockType::TNT };
+	e_ItemRegistery[CoalOreBlock] = { "Coal Ore Block", ItemUsageType::PlaceableBlock, 64, BlockType::CoalOre };
+	e_ItemRegistery[IronOreBlock] = { "Iron Ore Block", ItemUsageType::PlaceableBlock, 64, BlockType::IronOre };
+	e_ItemRegistery[GoldOreBlock] = { "Gold Ore Block", ItemUsageType::PlaceableBlock, 64, BlockType::GoldOre };
+	e_ItemRegistery[DiamondOreBlock] = { "Diamond Ore Block", ItemUsageType::PlaceableBlock, 64, BlockType::DiamondOre };
+	e_ItemRegistery[GlassBlock] = { "Glass Block", ItemUsageType::PlaceableBlock, 64, BlockType::Glass };
+	e_ItemRegistery[MobSpawnerBlock] = { "Mob Spawner Block", ItemUsageType::PlaceableBlock, 64, BlockType::MobSpawner };
+	e_ItemRegistery[ObsidianBlock] = { "Obsidian Block", ItemUsageType::PlaceableBlock, 64, BlockType::Obsidian };
+	e_ItemRegistery[LeavesBlock] = { "Leaves Block", ItemUsageType::PlaceableBlock, 64, BlockType::Leaves };
+
+
+	e_BlockItemRegistery[BlockType::Grass] = ItemType::GrassBlock;
+	e_BlockItemRegistery[BlockType::Stone] = ItemType::StoneBlock;
+	e_BlockItemRegistery[BlockType::Dirt] = ItemType::DirtBlock;
+	e_BlockItemRegistery[BlockType::Sand] = ItemType::SandBlock;
+	e_BlockItemRegistery[BlockType::Gravel] = ItemType::GravelBlock;
+	e_BlockItemRegistery[BlockType::Cobblestone] = ItemType::CobblestoneBlock;
+	e_BlockItemRegistery[BlockType::MossyCobblestone] = ItemType::MossyCobblestoneBlock;
+	e_BlockItemRegistery[BlockType::WoodenPlanks] = ItemType::WoodPlankBlock;
+	e_BlockItemRegistery[BlockType::Wood] = ItemType::WoodBlock;
+	e_BlockItemRegistery[BlockType::Bedrock] = ItemType::BedrockBlock;
+	e_BlockItemRegistery[BlockType::Bricks] = ItemType::BrickBlock;
+	e_BlockItemRegistery[BlockType::TNT] = ItemType::TNTBlock;
+	e_BlockItemRegistery[BlockType::CoalOre] = ItemType::CoalOreBlock;
+	e_BlockItemRegistery[BlockType::IronOre] = ItemType::IronOreBlock;
+	e_BlockItemRegistery[BlockType::GoldOre] = ItemType::GoldOreBlock;
+	e_BlockItemRegistery[BlockType::DiamondOre] = ItemType::DiamondOreBlock;
+	e_BlockItemRegistery[BlockType::Glass] = ItemType::GlassBlock;
+	e_BlockItemRegistery[BlockType::MobSpawner] = ItemType::MobSpawnerBlock;
+	e_BlockItemRegistery[BlockType::Obsidian] = ItemType::ObsidianBlock;
+	e_BlockItemRegistery[BlockType::Leaves] = ItemType::LeavesBlock;
 }
 
 #include "stbi_image.h"

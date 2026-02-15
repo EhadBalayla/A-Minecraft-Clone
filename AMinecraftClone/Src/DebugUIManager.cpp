@@ -40,6 +40,11 @@ void DebugUIManager::Render(float DeltaTime) {
 	ImGui::Text("Toggle LOD0 border (f) "); ImGui::SameLine(); ImGui::Checkbox("##Toggle LOD0 border: ", &Game::ShowChunkBorder);
 	ImGui::Text("Toggle creative flight (c) "); ImGui::SameLine(); ImGui::Checkbox("##Toggle Creative: ", &Game::player.CreativeMode);
 
+	int MouseX;
+	int MouseY;
+	auto mouseState = SDL_GetMouseState(&MouseX, &MouseY);
+	ImGui::Text(std::string("Mouse X: " + std::to_string(MouseX) + ", Mouse Y: " + std::to_string(MouseY)).c_str());
+
 	ImGui::End();
 
 	ImGui::Render();

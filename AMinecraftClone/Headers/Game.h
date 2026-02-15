@@ -107,6 +107,7 @@ public:
 	
 	static std::unordered_map<BlockType, BlockData> e_BlockRegistery;
 	static std::unordered_map<ItemType, ItemData> e_ItemRegistery;
+	static std::unordered_map<BlockType, ItemType> e_BlockItemRegistery; //simply mapping block items to 
 	static std::unordered_map<char, Glyph> e_FontRegistery;
 
 	void Init();
